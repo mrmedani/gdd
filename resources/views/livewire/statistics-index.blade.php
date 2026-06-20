@@ -29,7 +29,7 @@
                         </button>
                     </div>
                     <div class="grid grid-cols-3 gap-2 min-w-[240px]">
-                        @foreach (['01' => 'Janvier', '02' => 'Février', '03' => 'Mars', '04' => 'Avril', '05' => 'Mai', '06' => 'Juin', '07' => 'Juillet', '08' => 'Août', '09' => 'Septembre', '10' => 'Octobre', '11' => 'Novembre', '12' => 'Décembre'] as $num => $label)
+                        @foreach (['01', '02', '03', '04', '05', '06', '07', '08', '09', '10', '11', '12'] as $num)
                             <button type="button"
                                     @click="
                                         $wire.set('period', yr + '-' + '{{ $num }}');
@@ -37,7 +37,7 @@
                                     "
                                     :class="$wire.period === (yr + '-' + '{{ $num }}') ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400' : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700/50'"
                                     class="px-2 py-2.5 rounded-lg text-sm font-medium transition-colors">
-                                {{ $label }}
+                                {{ Carbon\Carbon::createFromFormat('!m', $num)->translatedFormat('M') }}
                             </button>
                         @endforeach
                     </div>
@@ -85,12 +85,33 @@
             </div>
             @endif
         </div>
-        <div class="bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border border-slate-200/50 dark:border-slate-800/60 rounded-2xl p-5 shadow-lg">
+        <div class="relative bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border border-slate-200/50 dark:border-slate-800/60 rounded-2xl p-5 shadow-lg overflow-hidden">
+            <div class="absolute top-0 right-0 w-16 h-16 bg-indigo-50 dark:bg-indigo-500/5 rounded-full blur-2xl -mr-6 -mt-6"></div>
             <p class="text-slate-400 dark:text-slate-500 text-xs font-bold uppercase tracking-wider mb-1">{{ __('statistics.period_label') }}</p>
             <h3 class="text-lg font-black text-slate-800 dark:text-white leading-tight">{{ formatPeriodLabel($period) }}</h3>
-            <div class="mt-2">
-                <span class="text-[11px] text-slate-400 dark:text-slate-500 font-semibold">{{ __('statistics.avg_day') }}: {{ formatMoney($averagePerDay) }}</span>
+            <div class="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1">
+                <span class="inline-flex items-center gap-1 text-[11px] text-slate-500 dark:text-slate-400 font-semibold bg-slate-100 dark:bg-slate-800 px-2 py-1 rounded-lg">
+                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/></svg>
+                    {{ __('statistics.avg_day') }} {{ formatMoney($averagePerDay) }}
+                </span>
+                <span class="inline-flex items-center gap-1 text-[11px] text-slate-500 dark:text-slate-400 font-semibold bg-slate-100 dark:bg-slate-800 px-2 py-1 rounded-lg">
+                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+                    {{ $expenseCount }} {{ __('statistics.operations') }}
+                </span>
             </div>
+            @if(count($expensesByCategory) > 0)
+            @php $topCat = $expensesByCategory[0]; @endphp
+            <div class="mt-3 pt-3 border-t border-slate-100 dark:border-slate-800/40">
+                <div class="flex items-center justify-between text-[11px]">
+                    <span class="text-slate-400 dark:text-slate-500 font-medium">{{ __('statistics.top_category') }}</span>
+                    <span class="font-bold text-slate-700 dark:text-slate-300 truncate max-w-[140px]">{{ $topCat['label'] }}</span>
+                    <span class="font-bold text-slate-800 dark:text-slate-100">{{ $topCat['pct'] }}%</span>
+                </div>
+                <div class="w-full bg-slate-200 dark:bg-slate-700 rounded-full h-1.5 mt-1.5 overflow-hidden">
+                    <div class="bg-indigo-500 h-full rounded-full" style="width: {{ $topCat['pct'] }}%"></div>
+                </div>
+            </div>
+            @endif
         </div>
     </div>
 
@@ -154,10 +175,13 @@
                         <canvas id="catChart"></canvas>
                     </div>
                     <div class="space-y-2 max-h-64 overflow-y-auto">
-                        @foreach($expensesByCategory as $cat)
-                        <div class="flex items-center justify-between p-2.5 bg-slate-50/50 dark:bg-slate-950/30 rounded-xl border border-slate-100/50 dark:border-slate-800/40">
+                        @foreach($expensesByCategory as $i => $cat)
+                        <div class="flex items-center justify-between p-2.5 bg-slate-50/50 dark:bg-slate-950/30 rounded-xl border border-slate-100/50 dark:border-slate-800/40 hover:bg-slate-100 dark:hover:bg-slate-800/50 transition-colors">
                             <div class="flex items-center gap-2.5 min-w-0">
-                                <span class="w-3 h-3 rounded-full shrink-0" style="background: {{ $cat['color'] }}"></span>
+                                <span class="flex items-center justify-center w-5 h-5 rounded-full text-[10px] font-extrabold {{ $i === 0 ? 'bg-yellow-400 text-yellow-900' : ($i === 1 ? 'bg-slate-300 text-slate-700' : ($i === 2 ? 'bg-amber-700 text-amber-100' : 'bg-slate-200 dark:bg-slate-700 text-slate-500 dark:text-slate-400')) }}" style="{{ $i >= 3 ? '' : '' }}">
+                                    {{ $i + 1 }}
+                                </span>
+                                <span class="w-2.5 h-2.5 rounded-full shrink-0" style="background: {{ $cat['color'] }}"></span>
                                 <span class="text-xs font-semibold text-slate-700 dark:text-slate-300 truncate">{{ $cat['label'] }}</span>
                             </div>
                             <div class="text-right shrink-0 ml-3">
@@ -167,6 +191,14 @@
                         </div>
                         @endforeach
                     </div>
+                    @if(count($expensesByCategory) > 0)
+                    <div class="mt-3 pt-3 border-t border-slate-100 dark:border-slate-800/40 text-center">
+                        <span class="text-[11px] text-slate-400 dark:text-slate-500 font-medium">
+                            {{ __('statistics.total') }}: <strong class="text-slate-700 dark:text-slate-300">{{ formatMoney($totalExpenses) }}</strong>
+                            &middot; {{ $expenseCount }} {{ __('statistics.operations') }}
+                        </span>
+                    </div>
+                    @endif
                 </div>
             @else
                 <div class="h-64 flex flex-col items-center justify-center border-2 border-dashed border-slate-200 dark:border-slate-800 rounded-2xl">
@@ -182,17 +214,27 @@
                 {{ __('statistics.payment_methods') }}
             </h2>
             @if(count($paymentMethodData) > 0)
-                <div class="space-y-3">
+                @php
+                    $pmColors = ['cash' => '#10B981', 'card' => '#6366F1', 'check' => '#F59E0B', 'transfer' => '#3B82F6', 'other' => '#8B5CF6'];
+                @endphp
+                <div class="space-y-4">
                     @foreach($paymentMethodData as $pm)
-                    <div>
-                        <div class="flex justify-between items-center mb-1.5">
-                            <span class="text-xs font-semibold text-slate-600 dark:text-slate-400">{{ $pm['label'] }}</span>
-                            <span class="text-xs font-bold text-slate-800 dark:text-slate-200">{{ formatMoney($pm['total']) }} ({{ $pm['pct'] }}%)</span>
+                    @php $color = $pmColors[$pm['label']] ?? '#64748b'; @endphp
+                    <div class="bg-slate-50/40 dark:bg-slate-950/30 rounded-xl p-3 border border-slate-100/50 dark:border-slate-800/40">
+                        <div class="flex justify-between items-center mb-2">
+                            <div class="flex items-center gap-2">
+                                <span class="w-3 h-3 rounded-full" style="background: {{ $color }}"></span>
+                                <span class="text-xs font-semibold text-slate-700 dark:text-slate-300">{{ $pm['label'] }}</span>
+                            </div>
+                            <span class="text-xs font-bold text-slate-800 dark:text-slate-200">{{ formatMoney($pm['total']) }}</span>
                         </div>
-                        <div class="w-full bg-slate-100 dark:bg-slate-800 rounded-full h-2.5 overflow-hidden">
-                            <div class="bg-emerald-500 dark:bg-emerald-400 h-full rounded-full transition-all" style="width: {{ $pm['pct'] }}%"></div>
+                        <div class="w-full bg-slate-200 dark:bg-slate-700 rounded-full h-2 overflow-hidden">
+                            <div class="h-full rounded-full transition-all duration-500" style="width: {{ $pm['pct'] }}%; background: {{ $color }}"></div>
                         </div>
-                        <span class="text-[10px] text-slate-400 dark:text-slate-500 mt-0.5 block">{{ $pm['count'] }} {{ __('statistics.operations') }}</span>
+                        <div class="flex justify-between mt-1">
+                            <span class="text-[10px] text-slate-400 dark:text-slate-500 font-medium">{{ $pm['pct'] }}%</span>
+                            <span class="text-[10px] text-slate-400 dark:text-slate-500 font-medium">{{ $pm['count'] }} {{ __('statistics.operations') }}</span>
+                        </div>
                     </div>
                     @endforeach
                 </div>
@@ -291,7 +333,8 @@
                             <th class="py-3 px-6">{{ __('expenses.date') }}</th>
                             <th class="py-3 px-6">{{ __('expenses.description') }}</th>
                             <th class="py-3 px-6">{{ __('expenses.category') }}</th>
-                            <th class="py-3 px-6">{{ __('expenses.payment_method') }}</th>
+                            <th class="py-3 px-6 hidden md:table-cell">{{ __('expenses.payment_method') }}</th>
+                            <th class="py-3 px-6 hidden md:table-cell">{{ __('expenses.employee') }}</th>
                             <th class="py-3 px-6 text-right">{{ __('expenses.amount') }}</th>
                         </tr>
                     </thead>
@@ -305,7 +348,8 @@
                                     {{ $expense->category?->translated_name ?? $expense->category_key }}
                                 </span>
                             </td>
-                            <td class="py-3 px-6 text-xs font-semibold text-slate-500 dark:text-slate-400">{{ __('payment_methods.' . $expense->payment_method) }}</td>
+                            <td class="py-3 px-6 text-xs font-semibold text-slate-500 dark:text-slate-400 hidden md:table-cell">{{ __('payment_methods.' . $expense->payment_method) }}</td>
+                            <td class="py-3 px-6 text-xs font-semibold text-slate-500 dark:text-slate-400 hidden md:table-cell">{{ $expense->employee?->name ?? '-' }}</td>
                             <td class="py-3 px-6 text-right font-bold text-slate-900 dark:text-white whitespace-nowrap">{{ formatMoney($expense->amount) }}</td>
                         </tr>
                         @endforeach
@@ -336,31 +380,50 @@
             </h2>
         </div>
         @if(count($closureHistory) > 0)
-            <div class="overflow-x-auto">
-                <table class="min-w-full text-sm text-start {{ session('locale', 'ar') === 'ar' ? 'rtl:text-right' : 'ltr:text-left' }}">
-                    <thead class="bg-slate-50/50 dark:bg-slate-950/30 text-slate-500 dark:text-slate-500 font-bold text-xs uppercase tracking-wider border-b border-slate-100 dark:border-slate-800/60">
-                        <tr>
-                            <th class="py-4 px-6">{{ __('caisse.month') }}</th>
-                            <th class="py-4 px-6 text-right">{{ __('caisse.gains') }}</th>
-                            <th class="py-4 px-6 text-right">{{ __('caisse.expenses') }}</th>
-                            <th class="py-4 px-6 text-right">{{ __('caisse.balance') }}</th>
-                            <th class="py-4 px-6 text-center">{{ __('caisse.closed_by') }}</th>
-                            <th class="py-4 px-6 text-center">{{ __('caisse.close_date') }}</th>
-                        </tr>
-                    </thead>
-                    <tbody class="divide-y divide-slate-100 dark:divide-slate-800/50">
-                        @foreach($closureHistory as $c)
-                        <tr class="hover:bg-blue-50/20 dark:hover:bg-slate-800/30 transition-colors">
-                            <td class="py-4 px-6 font-bold text-slate-800 dark:text-slate-200 text-xs">{{ $c['label'] }}</td>
-                            <td class="py-4 px-6 text-right font-bold text-emerald-600 dark:text-emerald-400 whitespace-nowrap">{{ formatMoney($c['gains']) }}</td>
-                            <td class="py-4 px-6 text-right font-bold text-rose-500 whitespace-nowrap">{{ formatMoney($c['expenses']) }}</td>
-                            <td class="py-4 px-6 text-right font-extrabold whitespace-nowrap {{ $c['balance'] >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400' }}">{{ formatMoney($c['balance']) }}</td>
-                            <td class="py-4 px-6 text-center font-semibold text-slate-600 dark:text-slate-300">{{ $c['closed_by'] }}</td>
-                            <td class="py-4 px-6 text-center font-semibold text-slate-400 dark:text-slate-500 text-xs">{{ $c['date'] }}</td>
-                        </tr>
-                        @endforeach
-                    </tbody>
-                </table>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 p-6">
+                @foreach($closureHistory as $c)
+                @php
+                    $gainsPct = $c['gains'] > 0 ? round($c['gains'] / ($c['gains'] + $c['expenses']) * 100, 1) : 0;
+                    $expPct = $c['expenses'] > 0 ? round($c['expenses'] / ($c['gains'] + $c['expenses']) * 100, 1) : 0;
+                @endphp
+                <div class="bg-slate-50/50 dark:bg-slate-950/30 rounded-2xl border border-slate-200/50 dark:border-slate-800/40 p-5 hover:shadow-md transition-shadow">
+                    <div class="flex items-center justify-between mb-3">
+                        <span class="font-bold text-slate-800 dark:text-slate-200 text-sm">{{ $c['label'] }}</span>
+                        <span class="text-[10px] text-slate-400 dark:text-slate-500 font-medium">{{ $c['date'] }}</span>
+                    </div>
+                    <div class="flex items-center gap-3 mb-3">
+                        <span class="text-xs font-semibold text-slate-500 dark:text-slate-400">{{ __('caisse.closed_by') }}:</span>
+                        <span class="text-xs font-bold text-slate-700 dark:text-slate-300">{{ $c['closed_by'] }}</span>
+                    </div>
+                    <div class="space-y-2 mb-3">
+                        <div class="flex justify-between text-xs">
+                            <span class="font-semibold text-emerald-600 dark:text-emerald-400">{{ __('caisse.gains') }}: {{ formatMoney($c['gains']) }}</span>
+                            <span class="text-slate-400">{{ $gainsPct }}%</span>
+                        </div>
+                        <div class="w-full bg-slate-200 dark:bg-slate-700 rounded-full h-2 overflow-hidden">
+                            <div class="bg-emerald-500 h-full rounded-full" style="width: {{ $gainsPct }}%"></div>
+                        </div>
+                        <div class="flex justify-between text-xs">
+                            <span class="font-semibold text-rose-500">{{ __('caisse.expenses') }}: {{ formatMoney($c['expenses']) }}</span>
+                            <span class="text-slate-400">{{ $expPct }}%</span>
+                        </div>
+                        <div class="w-full bg-slate-200 dark:bg-slate-700 rounded-full h-2 overflow-hidden">
+                            <div class="bg-rose-500 h-full rounded-full" style="width: {{ $expPct }}%"></div>
+                        </div>
+                    </div>
+                    <div class="pt-3 border-t border-slate-200/50 dark:border-slate-800/40 flex items-center justify-between">
+                        <span class="text-xs font-bold text-slate-500 dark:text-slate-400">{{ __('caisse.balance') }}:</span>
+                        <span class="text-sm font-extrabold {{ $c['balance'] >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400' }}">
+                            @if($c['balance'] >= 0)
+                            <svg class="w-4 h-4 inline me-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 10l7-7m0 0l7 7m-7-7v18"/></svg>
+                            @else
+                            <svg class="w-4 h-4 inline me-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 14l-7 7m0 0l-7-7m7 7V3"/></svg>
+                            @endif
+                            {{ formatMoney($c['balance']) }}
+                        </span>
+                    </div>
+                </div>
+                @endforeach
             </div>
         @else
             <div class="p-12 flex flex-col items-center justify-center">
@@ -389,23 +452,44 @@
                         <th class="py-4 px-6">{{ __('caisse.month') }}</th>
                         <th class="py-4 px-6 text-center" style="width:80px">{{ __('common.type') }}</th>
                         <th class="py-4 px-6 text-right">{{ __('expenses.amount') }}</th>
-                        <th class="py-4 px-6 text-right">{{ __('statistics.remaining') }}</th>
+                        <th class="py-4 px-6 text-center">{{ __('statistics.remaining') }}</th>
                         <th class="py-4 px-6 text-center">{{ __('caisse.close_date') }}</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-slate-100 dark:divide-slate-800/50">
                     @foreach($deficitHistory as $d)
+                    @php
+                        $maxAmount = collect($deficitHistory)->pluck('amount')->max() ?: 1;
+                        $barWidth = ($d['amount'] / $maxAmount) * 100;
+                    @endphp
                     <tr class="hover:bg-slate-50/30 dark:hover:bg-slate-800/30 transition-colors">
                         <td class="py-4 px-6 font-bold text-slate-800 dark:text-slate-200 text-xs">{{ $d['month'] }}</td>
                         <td class="py-4 px-6 text-center">
                             @if($d['type'] === 'deficit_increased')
-                                <span class="inline-flex items-center justify-center w-7 h-7 bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 rounded-full text-xs font-bold" title="{{ __('statistics.increase') }}">+</span>
+                                <span class="inline-flex items-center gap-1 px-2.5 py-1 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 rounded-full text-xs font-bold border border-red-100/30 dark:border-red-800/30">
+                                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 10l7-7m0 0l7 7m-7-7v18"/></svg>
+                                    {{ __('statistics.increase') }}
+                                </span>
                             @else
-                                <span class="inline-flex items-center justify-center w-7 h-7 bg-amber-100 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400 rounded-full text-xs font-bold" title="{{ __('statistics.deduction') }}">−</span>
+                                <span class="inline-flex items-center gap-1 px-2.5 py-1 bg-amber-50 dark:bg-amber-900/20 text-amber-600 dark:text-amber-400 rounded-full text-xs font-bold border border-amber-100/30 dark:border-amber-800/30">
+                                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 14l-7 7m0 0l-7-7m7 7V3"/></svg>
+                                    {{ __('statistics.deduction') }}
+                                </span>
                             @endif
                         </td>
-                        <td class="py-4 px-6 text-right font-bold whitespace-nowrap {{ $d['type'] === 'deficit_increased' ? 'text-red-600 dark:text-red-400' : 'text-amber-600 dark:text-amber-400' }}">{{ formatMoney($d['amount']) }}</td>
-                        <td class="py-4 px-6 text-right font-bold whitespace-nowrap {{ $d['remaining'] > 0 ? 'text-red-600 dark:text-red-400' : 'text-emerald-600 dark:text-emerald-400' }}">{{ formatMoney($d['remaining']) }}</td>
+                        <td class="py-4 px-6">
+                            <div class="flex flex-col items-end">
+                                <span class="font-bold whitespace-nowrap {{ $d['type'] === 'deficit_increased' ? 'text-red-600 dark:text-red-400' : 'text-amber-600 dark:text-amber-400' }}">{{ formatMoney($d['amount']) }}</span>
+                                <div class="w-24 bg-slate-200 dark:bg-slate-700 rounded-full h-1.5 mt-1 overflow-hidden">
+                                    <div class="{{ $d['type'] === 'deficit_increased' ? 'bg-red-500' : 'bg-amber-500' }} h-full rounded-full" style="width: {{ $barWidth }}%"></div>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="py-4 px-6 text-center">
+                            <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold {{ $d['remaining'] > 0 ? 'bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 border border-red-100/30 dark:border-red-800/30' : 'bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400 border border-emerald-100/30 dark:border-emerald-800/30' }}">
+                                {{ formatMoney($d['remaining']) }}
+                            </span>
+                        </td>
                         <td class="py-4 px-6 text-center font-semibold text-slate-400 dark:text-slate-500 text-xs">{{ $d['date'] }}</td>
                     </tr>
                     @endforeach
