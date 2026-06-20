@@ -53,10 +53,24 @@
         <div class="kpi-card success">
             <div class="label">{{ __('reports.total_gains') }}</div>
             <div class="value" style="color:#059669">{{ formatMoney($gains) }} {{ $company['currency'] }}</div>
+            <div style="font-size:7px;color:#94a3b8;margin-top:2px;">
+                {{ __('reports.prev_period') }}: {{ formatMoney($prevGains) }}
+                @php $gainDelta = $gains - $prevGains; @endphp
+                @if($gainDelta != 0)
+                    <span style="color:{{ $gainDelta >= 0 ? '#059669' : '#dc2626' }}">({{ $gainDelta >= 0 ? '+' : '' }}{{ formatMoney($gainDelta) }})</span>
+                @endif
+            </div>
         </div>
         <div class="kpi-card primary">
             <div class="label">{{ __('reports.total_expenses') }}</div>
             <div class="value">{{ formatMoney($total) }} {{ $company['currency'] }}</div>
+            <div style="font-size:7px;color:#94a3b8;margin-top:2px;">
+                {{ __('reports.prev_period') }}: {{ formatMoney($prevTotal) }}
+                @php $expDelta = $total - $prevTotal; @endphp
+                @if($expDelta != 0)
+                    <span style="color:{{ $expDelta <= 0 ? '#059669' : '#dc2626' }}">({{ $expDelta >= 0 ? '+' : '' }}{{ formatMoney($expDelta) }})</span>
+                @endif
+            </div>
         </div>
         <div class="kpi-card" style="border-color: {{ $balance >= 0 ? '#bbf7d0' : '#fecaca' }}">
             <div class="label">{{ __('reports.balance') }}</div>
@@ -65,7 +79,19 @@
         <div class="kpi-card">
             <div class="label">{{ __('reports.expense_count') }}</div>
             <div class="value">{{ $expenses->count() }}</div>
+            <div style="font-size:7px;color:#94a3b8;margin-top:2px;">
+                {{ __('reports.prev_period') }}: {{ $prevCount }}
+                @php $cntDelta = $expenses->count() - $prevCount; @endphp
+                @if($cntDelta != 0)
+                    <span style="color:{{ $cntDelta <= 0 ? '#059669' : '#dc2626' }}">({{ $cntDelta >= 0 ? '+' : '' }}{{ $cntDelta }})</span>
+                @endif
+            </div>
         </div>
+    </div>
+
+    <!-- YTD Cumulative -->
+    <div style="text-align:center;margin-bottom:16px;padding:6px;background:#f8fafc;border-radius:4px;font-size:9px;color:#475569;">
+        <strong>{{ __('reports.ytd_cumulative') }} {{ $year }}:</strong> {{ formatMoney($ytdTotal) }} {{ $company['currency'] }}
     </div>
 
     <!-- Category Summary -->
@@ -104,6 +130,64 @@
                     </div>
                 @endforeach
             </div>
+        </div>
+    @endif
+
+    <!-- Budget vs Actual -->
+    @if($budgetComparison->count() > 0)
+        <div class="section">
+            <h2>{{ __('reports.budget_vs_actual') }}</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>{{ __('expenses.category') }}</th>
+                        <th class="right">{{ __('reports.budget') }}</th>
+                        <th class="right">{{ __('reports.actual') }}</th>
+                        <th class="right">{{ __('reports.variance') }}</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach($budgetComparison as $bc)
+                        <tr>
+                            <td>{{ $bc['name'] }}</td>
+                            <td class="right">{{ formatMoney($bc['budget']) }}</td>
+                            <td class="right">{{ formatMoney($bc['actual']) }}</td>
+                            <td class="right" style="color: {{ $bc['variance'] <= 0 ? '#059669' : '#dc2626' }}; font-weight:bold;">
+                                {{ $bc['variance'] >= 0 ? '+' : '' }}{{ formatMoney($bc['variance']) }} ({{ $bc['variance_pct'] }}%)
+                            </td>
+                        </tr>
+                    @endforeach
+                </tbody>
+            </table>
+        </div>
+    @endif
+
+    <!-- Top 10 Expenses -->
+    @if($topExpenses->count() > 0)
+        <div class="section">
+            <h2>{{ __('reports.top_expenses') }}</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th style="width:30px">#</th>
+                        <th>{{ __('expenses.date') }}</th>
+                        <th>{{ __('expenses.description') }}</th>
+                        <th>{{ __('expenses.category') }}</th>
+                        <th class="right">{{ __('expenses.amount') }}</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach($topExpenses as $i => $e)
+                        <tr>
+                            <td>{{ $i + 1 }}</td>
+                            <td>{{ $e->date->format('d/m/Y') }}</td>
+                            <td>{{ $e->description }}</td>
+                            <td>{{ $e->category?->parent?->translated_name ? $e->category->parent->translated_name . ' > ' . $e->category->translated_name : ($e->category?->translated_name ?? $e->category_key) }}</td>
+                            <td class="right" style="font-weight:bold;">{{ formatMoney($e->amount) }}</td>
+                        </tr>
+                    @endforeach
+                </tbody>
+            </table>
         </div>
     @endif
 

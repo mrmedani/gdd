@@ -3,7 +3,9 @@
 namespace App\Domains\Reports\Controllers;
 
 use App\Domains\Expenses\Models\Expense;
+use App\Domains\Expenses\Models\ExpenseCategory;
 use App\Domains\Reports\Requests\ReportRequest;
+use App\Domains\Settings\Models\Setting;
 use App\Domains\Treasury\Models\MonthlyClosure;
 use App\Http\Controllers\Controller;
 use Barryvdh\DomPDF\Facade\Pdf;
@@ -12,18 +14,40 @@ use App\Domains\Reports\Exports\ExpenseExport;
 
 class ReportController extends Controller
 {
+    private function applyFilters($query, array $data): void
+    {
+        if (!empty($data['category_id'])) {
+            $ids = ExpenseCategory::where('id', $data['category_id'])
+                ->orWhere('parent_id', $data['category_id'])
+                ->pluck('id');
+            $query->whereIn('category_id', $ids);
+        }
+        if (!empty($data['employee_id'])) {
+            $query->where('employee_id', $data['employee_id']);
+        }
+        if (!empty($data['payment_method'])) {
+            $query->where('payment_method', $data['payment_method']);
+        }
+    }
+
     public function monthlyPdf(ReportRequest $request)
     {
         $data = $request->validated();
         $yearMonth = sprintf('%04d-%02d', $data['year'], $data['month']);
 
-        $expenses = Expense::with('category.parent', 'employee')
-            ->byPeriod($yearMonth)
-            ->latest('date')
-            ->get();
+        $expenses = Expense::with('category.parent', 'employee');
+        $this->applyFilters($expenses, $data);
+        $expenses = $expenses->byPeriod($yearMonth)->latest('date')->get();
 
         $total = $expenses->sum('amount');
-        $byCategory = $expenses->groupBy(fn($e) => $e->category?->parent?->translated_name ?? $e->category?->translated_name ?? __("categories.{$e->category_key}"));
+        $byCategory = $expenses->groupBy(fn($e) => $e->category?->parent?->translated_name ?? $e->category?->translated_name ?? __("categories.{$e->category_key}"))
+            ->map(fn($items, $cat) => [
+                'name' => $cat,
+                'total' => $items->sum('amount'),
+                'count' => $items->count(),
+                'percentage' => $total > 0 ? round(($items->sum('amount') / $total) * 100, 1) : 0,
+            ])->sortByDesc('total');
+
         $byPaymentMethod = $expenses->groupBy('payment_method')
             ->map(fn($items) => [
                 'total' => $items->sum('amount'),
@@ -34,8 +58,48 @@ class ReportController extends Controller
         $gains = $closure?->gains ?? 0;
         $balance = $closure?->balance ?? ($gains - $total);
 
+        // Previous period comparison
+        $prevDate = \Carbon\Carbon::createFromFormat('!Y-m', $yearMonth)->subMonth();
+        $prevPeriod = getPeriodFromDate($prevDate);
+        $prevExpenses = Expense::byPeriod($prevPeriod);
+        $this->applyFilters($prevExpenses, $data);
+        $prevTotal = $prevExpenses->sum('amount');
+        $prevCount = $prevExpenses->count();
+        $prevClosure = MonthlyClosure::where('month', $prevPeriod)->first();
+        $prevGains = $prevClosure?->gains ?? 0;
+
+        // Budget vs actual
+        $budgets = Setting::get('category_budgets', '{}');
+        $budgets = is_string($budgets) ? json_decode($budgets, true) ?? [] : ($budgets ?? []);
+        $budgetComparison = collect();
+        foreach ($byCategory as $cat => $data) {
+            $catActual = $data['total'];
+            $catBudget = 0;
+            foreach ($expenses->where(fn($e) => ($e->category?->parent?->translated_name ?? $e->category?->translated_name ?? $e->category_key) === $cat) as $e) {
+                $catBudget += (float) ($budgets[$e->category_id] ?? 0);
+            }
+            if ($catBudget > 0) {
+                $budgetComparison->push([
+                    'name' => $cat,
+                    'budget' => $catBudget,
+                    'actual' => $catActual,
+                    'variance' => $catActual - $catBudget,
+                    'variance_pct' => $catBudget > 0 ? round((($catActual - $catBudget) / $catBudget) * 100, 1) : 0,
+                ]);
+            }
+        }
+
+        // Top 10 expenses
+        $topExpenses = $expenses->sortByDesc('amount')->take(10);
+
+        // YTD cumulative
+        $ytdStart = \Carbon\Carbon::createFromDate($data['year'], 1, 1);
+        $ytdExpenses = Expense::whereDate('date', '>=', $ytdStart)->whereDate('date', '<=', now());
+        $this->applyFilters($ytdExpenses, $data);
+        $ytdTotal = $ytdExpenses->sum('amount');
+
         $company = [
-            'name' => \App\Domains\Settings\Models\Setting::get('app_name', config('app.name')),
+            'name' => Setting::get('app_name', config('app.name')),
             'currency' => getCurrency(),
         ];
 
@@ -49,7 +113,14 @@ class ReportController extends Controller
             'balance' => $balance,
             'byCategory' => $byCategory,
             'byPaymentMethod' => $byPaymentMethod,
+            'prevTotal' => $prevTotal,
+            'prevCount' => $prevCount,
+            'prevGains' => $prevGains,
+            'budgetComparison' => $budgetComparison,
+            'topExpenses' => $topExpenses,
+            'ytdTotal' => $ytdTotal,
             'company' => $company,
+            'periodLabel' => formatPeriodLabel($yearMonth),
         ]);
 
         $pdf->setPaper('A4', 'portrait');
@@ -62,10 +133,9 @@ class ReportController extends Controller
     {
         $data = $request->validated();
 
-        $expenses = Expense::with('category.parent', 'employee')
-            ->byYear($data['year'])
-            ->latest('date')
-            ->get();
+        $expenses = Expense::with('category.parent', 'employee');
+        $this->applyFilters($expenses, $data);
+        $expenses = $expenses->byYear($data['year'])->latest('date')->get();
 
         $total = $expenses->sum('amount');
         $byMonth = collect(range(1, 12))->map(fn($m) => [
@@ -77,15 +147,24 @@ class ReportController extends Controller
 
         $byCategory = $expenses->groupBy(fn($e) => $e->category?->parent?->translated_name ?? $e->category?->translated_name ?? __("categories.{$e->category_key}"))
             ->map(fn($items) => [
+                'name' => $items->first()->category?->parent?->translated_name ?? $items->first()->category?->translated_name ?? '',
                 'total' => $items->sum('amount'),
                 'count' => $items->count(),
                 'percentage' => $total > 0 ? round(($items->sum('amount') / $total) * 100, 1) : 0,
-            ]);
+            ])->sortByDesc('total');
+
+        // Previous year comparison
+        $prevYearExpenses = Expense::byYear($data['year'] - 1);
+        $this->applyFilters($prevYearExpenses, $data);
+        $prevTotal = $prevYearExpenses->sum('amount');
 
         $gains = MonthlyClosure::where('month', 'like', "{$data['year']}-%")->sum('gains');
 
+        // Top 10 expenses
+        $topExpenses = $expenses->sortByDesc('amount')->take(10);
+
         $company = [
-            'name' => \App\Domains\Settings\Models\Setting::get('app_name', config('app.name')),
+            'name' => Setting::get('app_name', config('app.name')),
             'currency' => getCurrency(),
         ];
 
@@ -97,6 +176,8 @@ class ReportController extends Controller
             'balance' => $gains - $total,
             'byMonth' => $byMonth,
             'byCategory' => $byCategory,
+            'prevTotal' => $prevTotal,
+            'topExpenses' => $topExpenses,
             'company' => $company,
         ]);
 
@@ -110,7 +191,7 @@ class ReportController extends Controller
     {
         $data = $request->validated();
         return Excel::download(
-            new ExpenseExport($data['year'], $data['month'], 'monthly'),
+            new ExpenseExport($data['year'], $data['month'], 'monthly', $data),
             "depenses-{$data['month']}-{$data['year']}.xlsx"
         );
     }
@@ -119,7 +200,7 @@ class ReportController extends Controller
     {
         $data = $request->validated();
         return Excel::download(
-            new ExpenseExport($data['year'], null, 'annual'),
+            new ExpenseExport($data['year'], null, 'annual', $data),
             "depenses-{$data['year']}.xlsx"
         );
     }

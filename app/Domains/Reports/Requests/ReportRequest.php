@@ -15,6 +15,9 @@ class ReportRequest extends FormRequest
     {
         $rules = [
             'year' => 'required|integer|min:2020|max:2099',
+            'category_id' => 'nullable|integer|exists:expense_categories,id',
+            'employee_id' => 'nullable|integer|exists:employees,id',
+            'payment_method' => 'nullable|string',
         ];
 
         if ($this->routeIs('*.monthly.*')) {

@@ -16,11 +16,25 @@ class ExpenseExport implements FromCollection, WithHeadings, WithMapping, WithSt
         private int $year,
         private ?int $month = null,
         private string $type = 'monthly',
+        private array $filters = [],
     ) {}
 
     public function collection(): Collection
     {
         $query = Expense::with('category.parent', 'creator', 'employee');
+
+        if (!empty($this->filters['category_id'])) {
+            $ids = \App\Domains\Expenses\Models\ExpenseCategory::where('id', $this->filters['category_id'])
+                ->orWhere('parent_id', $this->filters['category_id'])
+                ->pluck('id');
+            $query->whereIn('category_id', $ids);
+        }
+        if (!empty($this->filters['employee_id'])) {
+            $query->where('employee_id', $this->filters['employee_id']);
+        }
+        if (!empty($this->filters['payment_method'])) {
+            $query->where('payment_method', $this->filters['payment_method']);
+        }
 
         if ($this->type === 'monthly' && $this->month) {
             $yearMonth = sprintf('%04d-%02d', $this->year, $this->month);

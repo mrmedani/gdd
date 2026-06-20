@@ -2,8 +2,11 @@
 
 namespace App\Domains\Reports\Livewire;
 
+use App\Domains\Employees\Models\Employee;
 use App\Domains\Expenses\Models\Expense;
+use App\Domains\Expenses\Models\ExpenseCategory;
 use App\Domains\Treasury\Models\MonthlyClosure;
+use App\Shared\Enums\PaymentMethod;
 use Illuminate\Support\Facades\Gate;
 use Livewire\Component;
 
@@ -11,6 +14,9 @@ class ReportsIndex extends Component
 {
     public string $selectedPeriod = '';
     public int $annualYear;
+    public ?int $filterCategory = null;
+    public ?int $filterEmployee = null;
+    public string $filterPaymentMethod = '';
 
     public float $previewTotal = 0;
     public int $previewCount = 0;
@@ -48,10 +54,7 @@ class ReportsIndex extends Component
         $this->previewPeriodStart = $range['start']->format('d/m/Y');
         $this->previewPeriodEnd = $range['end']->format('d/m/Y');
 
-        $expenses = Expense::with('category')
-            ->byPeriod($yearMonth)
-            ->latest('date')
-            ->get();
+        $expenses = $this->buildBaseQuery($yearMonth)->get();
 
         $this->previewTotal = $expenses->sum('amount');
         $this->previewCount = $expenses->count();
@@ -60,7 +63,7 @@ class ReportsIndex extends Component
         $this->previewGains = $closure?->gains ?? 0;
         $this->previewBalance = $closure?->balance ?? ($this->previewGains - $this->previewTotal);
 
-        $this->previewByCategory = $expenses->groupBy(fn($e) => $e->category?->translated_name ?? __("categories.{$e->category_key}"))
+        $this->previewByCategory = $expenses->groupBy(fn($e) => $e->category?->parent?->translated_name ?? $e->category?->translated_name ?? __("categories.{$e->category_key}"))
             ->map(fn($items, $cat) => [
                 'name' => $cat,
                 'total' => $items->sum('amount'),
@@ -70,6 +73,28 @@ class ReportsIndex extends Component
             ->sortByDesc('total')
             ->values()
             ->toArray();
+    }
+
+    private function buildBaseQuery(string $period): \Illuminate\Database\Eloquent\Builder
+    {
+        $query = Expense::with('category.parent')->byPeriod($period);
+
+        if ($this->filterCategory) {
+            $ids = ExpenseCategory::where('id', $this->filterCategory)
+                ->orWhere('parent_id', $this->filterCategory)
+                ->pluck('id');
+            $query->whereIn('category_id', $ids);
+        }
+
+        if ($this->filterEmployee) {
+            $query->where('employee_id', $this->filterEmployee);
+        }
+
+        if ($this->filterPaymentMethod) {
+            $query->where('payment_method', $this->filterPaymentMethod);
+        }
+
+        return $query;
     }
 
     public function render()
@@ -91,11 +116,17 @@ class ReportsIndex extends Component
             $cursor->subMonth();
         }
 
+        $categories = ExpenseCategory::active()->with('children')->whereNull('parent_id')->orderBy('name_ar')->get();
+        $employees = Employee::where('status', 'active')->orderBy('name')->get(['id', 'name']);
+
         return view('livewire.reports-index', [
             'years' => $years,
             'periods' => $allPeriods,
             'month' => (int) \Carbon\Carbon::createFromFormat('!Y-m', $this->selectedPeriod)->month,
             'year' => (int) \Carbon\Carbon::createFromFormat('!Y-m', $this->selectedPeriod)->year,
+            'categories' => $categories,
+            'employees' => $employees,
+            'paymentMethods' => PaymentMethod::cases(),
         ])->layout('layouts.app')->title(__('nav.reports'));
     }
 }

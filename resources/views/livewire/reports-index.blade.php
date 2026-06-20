@@ -21,20 +21,52 @@
             <div class="lg:col-span-2">
                 <form action="{{ route('reports.monthly.pdf') }}" method="POST" target="_blank">
                     @csrf
-                    <div class="mb-4">
-                        <label class="block text-xs font-bold text-slate-500 dark:text-slate-400 mb-2 uppercase tracking-wider">{{ __('reports.period') }}</label>
-                        <div class="relative">
-                            <select wire:model.live="selectedPeriod"
-                                    class="w-full px-4 py-2.5 bg-slate-50/50 dark:bg-slate-950/50 border border-slate-200 dark:border-slate-800 rounded-xl text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none text-slate-700 dark:text-slate-300 appearance-none shadow-inner font-semibold">
-                                @foreach($periods as $value => $label)
-                                    <option value="{{ $value }}">{{ $label }}</option>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+                        <div>
+                            <label class="block text-xs font-bold text-slate-500 dark:text-slate-400 mb-2 uppercase tracking-wider">{{ __('reports.period') }}</label>
+                            <div class="relative">
+                                <select wire:model.live="selectedPeriod"
+                                        class="w-full px-4 py-2.5 bg-slate-50/50 dark:bg-slate-950/50 border border-slate-200 dark:border-slate-800 rounded-xl text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none text-slate-700 dark:text-slate-300 appearance-none shadow-inner font-semibold">
+                                    @foreach($periods as $value => $label)
+                                        <option value="{{ $value }}">{{ $label }}</option>
+                                    @endforeach
+                                </select>
+                                <svg class="w-4 h-4 text-slate-400 dark:text-slate-500 absolute {{ session('locale', 'ar') === 'ar' ? 'left-4' : 'right-4' }} top-3 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                            </div>
+                            <p class="text-xs text-slate-400 dark:text-slate-500 font-medium mt-2">
+                                {{ __('reports.period_from') }} <strong>{{ $previewPeriodStart }}</strong> {{ __('reports.period_to') }} <strong>{{ $previewPeriodEnd }}</strong>
+                            </p>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-slate-500 dark:text-slate-400 mb-2 uppercase tracking-wider">{{ __('expenses.category') }}</label>
+                            <select wire:model.live="filterCategory" name="category_id" class="w-full px-4 py-2.5 bg-slate-50/50 dark:bg-slate-950/50 border border-slate-200 dark:border-slate-800 rounded-xl text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none text-slate-700 dark:text-slate-300 appearance-none shadow-inner font-semibold">
+                                <option value="">{{ __('common.all') }}</option>
+                                @foreach($categories as $cat)
+                                    <option value="{{ $cat->id }}">{{ $cat->translated_name }}</option>
+                                    @foreach($cat->children as $child)
+                                        <option value="{{ $child->id }}">&nbsp;&nbsp;└ {{ $child->translated_name }}</option>
+                                    @endforeach
                                 @endforeach
                             </select>
-                            <svg class="w-4 h-4 text-slate-400 dark:text-slate-500 absolute {{ session('locale', 'ar') === 'ar' ? 'left-4' : 'right-4' }} top-3 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
                         </div>
-                        <p class="text-xs text-slate-400 dark:text-slate-500 font-medium mt-2">
-                            {{ __('reports.period_from') }} <strong>{{ $previewPeriodStart }}</strong> {{ __('reports.period_to') }} <strong>{{ $previewPeriodEnd }}</strong>
-                        </p>
+                        <div>
+                            <label class="block text-xs font-bold text-slate-500 dark:text-slate-400 mb-2 uppercase tracking-wider">{{ __('employees.employee') }}</label>
+                            <select wire:model.live="filterEmployee" name="employee_id" class="w-full px-4 py-2.5 bg-slate-50/50 dark:bg-slate-950/50 border border-slate-200 dark:border-slate-800 rounded-xl text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none text-slate-700 dark:text-slate-300 appearance-none shadow-inner font-semibold">
+                                <option value="">{{ __('common.all') }}</option>
+                                @foreach($employees as $emp)
+                                    <option value="{{ $emp->id }}">{{ $emp->name }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-slate-500 dark:text-slate-400 mb-2 uppercase tracking-wider">{{ __('expenses.payment_method') }}</label>
+                            <select wire:model.live="filterPaymentMethod" name="payment_method" class="w-full px-4 py-2.5 bg-slate-50/50 dark:bg-slate-950/50 border border-slate-200 dark:border-slate-800 rounded-xl text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none text-slate-700 dark:text-slate-300 appearance-none shadow-inner font-semibold">
+                                <option value="">{{ __('common.all') }}</option>
+                                @foreach($paymentMethods as $pm)
+                                    <option value="{{ $pm->value }}">{{ __("payment_methods.{$pm->value}") }}</option>
+                                @endforeach
+                            </select>
+                        </div>
                     </div>
                     <input type="hidden" name="month" value="{{ $month }}">
                     <input type="hidden" name="year" value="{{ $year }}">
@@ -122,18 +154,32 @@
             <div class="lg:col-span-2">
                 <form action="{{ route('reports.annual.pdf') }}" method="POST" target="_blank">
                     @csrf
-                    <div>
-                        <label class="block text-xs font-bold text-slate-500 dark:text-slate-400 mb-2 uppercase tracking-wider">{{ __('reports.year') }}</label>
-                        <div class="relative">
-                            <select name="year" wire:model.live="annualYear" class="w-full px-4 py-2.5 bg-slate-50/50 dark:bg-slate-950/50 border border-slate-200 dark:border-slate-800 rounded-xl text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none text-slate-700 dark:text-slate-300 appearance-none shadow-inner font-semibold">
-                                @foreach($years as $y)
-                                    <option value="{{ $y }}">{{ $y }}</option>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+                        <div>
+                            <label class="block text-xs font-bold text-slate-500 dark:text-slate-400 mb-2 uppercase tracking-wider">{{ __('reports.year') }}</label>
+                            <div class="relative">
+                                <select name="year" wire:model.live="annualYear" class="w-full px-4 py-2.5 bg-slate-50/50 dark:bg-slate-950/50 border border-slate-200 dark:border-slate-800 rounded-xl text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none text-slate-700 dark:text-slate-300 appearance-none shadow-inner font-semibold">
+                                    @foreach($years as $y)
+                                        <option value="{{ $y }}">{{ $y }}</option>
+                                    @endforeach
+                                </select>
+                                <svg class="w-4 h-4 text-slate-400 dark:text-slate-500 absolute {{ session('locale', 'ar') === 'ar' ? 'left-4' : 'right-4' }} top-3 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-slate-500 dark:text-slate-400 mb-2 uppercase tracking-wider">{{ __('expenses.category') }}</label>
+                            <select name="category_id" class="w-full px-4 py-2.5 bg-slate-50/50 dark:bg-slate-950/50 border border-slate-200 dark:border-slate-800 rounded-xl text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none text-slate-700 dark:text-slate-300 appearance-none shadow-inner font-semibold">
+                                <option value="">{{ __('common.all') }}</option>
+                                @foreach($categories as $cat)
+                                    <option value="{{ $cat->id }}">{{ $cat->translated_name }}</option>
+                                    @foreach($cat->children as $child)
+                                        <option value="{{ $child->id }}">&nbsp;&nbsp;└ {{ $child->translated_name }}</option>
+                                    @endforeach
                                 @endforeach
                             </select>
-                            <svg class="w-4 h-4 text-slate-400 dark:text-slate-500 absolute {{ session('locale', 'ar') === 'ar' ? 'left-4' : 'right-4' }} top-3 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
                         </div>
                     </div>
-                    <div class="flex flex-col sm:flex-row gap-3 mt-6">
+                    <div class="flex flex-col sm:flex-row gap-3">
                         <button type="submit" class="flex-1 inline-flex items-center justify-center gap-2 bg-gradient-to-r from-rose-500 to-rose-600 text-white px-4 py-3 rounded-xl font-bold shadow-lg shadow-rose-500/20 hover:shadow-rose-500/40 hover:-translate-y-0.5 transition-all duration-200 cursor-pointer text-sm">
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
                             {{ __('reports.download_pdf') }}

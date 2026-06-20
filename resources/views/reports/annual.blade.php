@@ -54,6 +54,13 @@
         <div class="kpi-card primary">
             <div class="label">{{ __('reports.total_expenses') }}</div>
             <div class="value">{{ formatMoney($total) }} {{ $company['currency'] }}</div>
+            @if($prevTotal > 0)
+                @php $expDelta = $total - $prevTotal; @endphp
+                <div style="font-size:7px;color:#94a3b8;margin-top:2px;">
+                    {{ $year - 1 }}: {{ formatMoney($prevTotal) }}
+                    <span style="color:{{ $expDelta <= 0 ? '#059669' : '#dc2626' }}">({{ $expDelta >= 0 ? '+' : '' }}{{ formatMoney($expDelta) }})</span>
+                </div>
+            @endif
         </div>
         <div class="kpi-card" style="border-color: {{ $balance >= 0 ? '#bbf7d0' : '#fecaca' }}">
             <div class="label">{{ __('reports.balance') }}</div>
@@ -124,6 +131,35 @@
                     <span class="cat-amount">{{ formatMoney($data['total']) }} ({{ $data['count'] }})</span>
                 </div>
             @endforeach
+        </div>
+    @endif
+
+    <!-- Top 10 Expenses -->
+    @if($topExpenses->count() > 0)
+        <div class="section">
+            <h2>{{ __('reports.top_expenses') }}</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th style="width:30px">#</th>
+                        <th>{{ __('expenses.date') }}</th>
+                        <th>{{ __('expenses.description') }}</th>
+                        <th>{{ __('expenses.category') }}</th>
+                        <th class="right">{{ __('expenses.amount') }}</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach($topExpenses as $i => $e)
+                        <tr>
+                            <td>{{ $i + 1 }}</td>
+                            <td>{{ $e->date->format('d/m/Y') }}</td>
+                            <td>{{ $e->description }}</td>
+                            <td>{{ $e->category?->parent?->translated_name ? $e->category->parent->translated_name . ' > ' . $e->category->translated_name : ($e->category?->translated_name ?? $e->category_key) }}</td>
+                            <td class="right" style="font-weight:bold;">{{ formatMoney($e->amount) }}</td>
+                        </tr>
+                    @endforeach
+                </tbody>
+            </table>
         </div>
     @endif
 
