@@ -570,5 +570,9 @@
     "reports.weekly_summary": "Weekly summary",
     "reports.week": "Week",
     "reports.weeks": "weeks",
-    "reports.vs_year": "compared to"
+    "reports.vs_year": "compared to",
+    "settings.login_as": "Login as",
+    "settings.confirm_login_as": "Confirm login as this user?",
+    "settings.impersonating": "Logged in as :name",
+    "settings.leave_impersonation": "Return to my account"
 }

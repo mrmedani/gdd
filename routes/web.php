@@ -53,6 +53,22 @@ Route::get('/manifest.json', function () {
     ]);
 })->name('manifest.json');
 
+// Quitter le mode impersonation
+Route::post('/leave-impersonation', function () {
+    if (!session()->has('impersonator_id')) {
+        return redirect()->route('dashboard');
+    }
+
+    $impersonatorId = session('impersonator_id');
+    session()->forget('impersonator_id');
+    session()->forget('impersonator_name');
+
+    Auth::loginUsingId($impersonatorId);
+    session()->regenerate();
+
+    return redirect()->route('settings.users');
+})->middleware('auth')->name('leave-impersonation');
+
 // Route réservée aux admins pour les opérations de maintenance
 Route::middleware(['auth'])->group(function () {
     Route::get('/fix-env', function () {

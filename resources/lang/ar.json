@@ -568,5 +568,9 @@
     "reports.weekly_summary": "ملخص أسبوعي",
     "reports.week": "أسبوع",
     "reports.weeks": "أسابيع",
-    "reports.employee_salaries_subtotal": "المجموع الفرعي لرواتب الموظفين"
+    "reports.employee_salaries_subtotal": "المجموع الفرعي لرواتب الموظفين",
+    "settings.login_as": "تسجيل الدخول باسم",
+    "settings.confirm_login_as": "تأكيد تسجيل الدخول باسم هذا المستخدم؟",
+    "settings.impersonating": "تم تسجيل الدخول باسم :name",
+    "settings.leave_impersonation": "العودة إلى حسابي"
 }

@@ -570,5 +570,9 @@
     "fields.month_period_start_day": "Jour début de période",
     "fields.app_name": "Nom de l'application",
     "fields.app_logo": "Logo",
-    "fields.app_favicon": "Favicon"
+    "fields.app_favicon": "Favicon",
+    "settings.login_as": "Connexion en tant que",
+    "settings.confirm_login_as": "Confirmer la connexion en tant que cet utilisateur ?",
+    "settings.impersonating": "Connecté en tant que :name",
+    "settings.leave_impersonation": "Revenir à mon compte"
 }

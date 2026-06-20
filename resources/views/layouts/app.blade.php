@@ -335,6 +335,20 @@
                     </div>
                 </nav>
  
+                @if(session()->has('impersonator_id'))
+                    <div class="bg-amber-500/90 dark:bg-amber-600/80 backdrop-blur-md px-6 py-3 flex items-center justify-between text-white shadow-lg sticky top-0 z-30">
+                        <div class="flex items-center gap-3">
+                            <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"/></svg>
+                            <span class="text-sm font-bold">{{ __('settings.impersonating', ['name' => session('impersonator_name')]) }}</span>
+                        </div>
+                        <form method="POST" action="{{ route('leave-impersonation') }}">
+                            @csrf
+                            <button type="submit" class="text-xs font-bold px-4 py-2 bg-white/20 hover:bg-white/30 rounded-xl transition-colors cursor-pointer">
+                                {{ __('settings.leave_impersonation') }}
+                            </button>
+                        </form>
+                    </div>
+                @endif
                 <main class="flex-1 overflow-y-auto p-4 md:p-8 lg:p-10 pb-[env(safe-area-inset-bottom)]">
                     <div class="max-w-7xl mx-auto">
                         {{ $slot ?? '' }}

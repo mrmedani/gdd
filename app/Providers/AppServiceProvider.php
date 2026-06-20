@@ -141,6 +141,10 @@ class AppServiceProvider extends ServiceProvider
             return $user->hasPermission('audit-logs');
         });
 
+        Gate::define('login-as', function (User $user) {
+            return $user->hasPermission('login-as');
+        });
+
         Notification::extend('whatsapp', function ($app) {
             return $app->make(\App\Domains\Alerts\Channels\WhatsAppChannel::class);
         });

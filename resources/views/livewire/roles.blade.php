@@ -60,6 +60,7 @@
                             'audit-logs' => __('settings.audit_logs'),
                             'view-deficit' => __('settings.view_deficit'),
                             'delete-closure' => __('settings.delete_closure'),
+                            'login-as' => __('settings.login_as'),
                         ] as $key => $label)
                             @php $checked = $permValues[$key] ?? false; @endphp
                             <button type="button" wire:click="togglePermission('{{ $key }}')"

@@ -26,6 +26,7 @@ class Roles extends Component
         'audit-logs',
         'view-deficit',
         'delete-closure',
+        'login-as',
     ];
 
     public ?int $roleId = null;
@@ -46,6 +47,7 @@ class Roles extends Component
     public bool $perm_audit_logs = false;
     public bool $perm_view_deficit = false;
     public bool $perm_delete_closure = false;
+    public bool $perm_login_as = false;
 
     public bool $showForm = false;
 

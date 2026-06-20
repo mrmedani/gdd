@@ -5,6 +5,7 @@ namespace App\Domains\Settings\Livewire;
 use App\Models\Role;
 use App\Models\User;
 use App\Shared\Livewire\WithToast;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Hash;
 use Livewire\Component;
@@ -102,6 +103,25 @@ class Users extends Component
     public function cancelEdit(): void
     {
         $this->resetForm();
+    }
+
+    public function loginAsUser(int $id): void
+    {
+        Gate::authorize('login-as');
+
+        if ($id === auth()->id()) {
+            return;
+        }
+
+        $targetUser = User::findOrFail($id);
+
+        session()->put('impersonator_id', auth()->id());
+        session()->put('impersonator_name', auth()->user()->name);
+
+        Auth::login($targetUser);
+        session()->regenerate();
+
+        $this->redirect(route('dashboard'));
     }
 
     public function deleteUser(int $id): void
