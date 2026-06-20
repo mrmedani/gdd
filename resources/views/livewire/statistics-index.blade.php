@@ -172,7 +172,7 @@
             @if(count($expensesByCategory) > 0)
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div wire:key="cat-chart" class="relative h-64 flex items-center justify-center">
-                        <canvas id="catChart"></canvas>
+                        <canvas id="catChart" class="max-w-full max-h-full"></canvas>
                     </div>
                     <div class="space-y-2 max-h-64 overflow-y-auto">
                         @foreach($expensesByCategory as $i => $cat)
@@ -256,7 +256,7 @@
             </h2>
             @if(count($monthlyTrend) > 0)
                 <div wire:key="trend-chart-stat" class="relative h-72 w-full">
-                    <canvas id="trendChartStat"></canvas>
+                    <canvas id="trendChartStat" class="max-w-full max-h-full"></canvas>
                 </div>
             @else
                 <div class="h-72 flex flex-col items-center justify-center border-2 border-dashed border-slate-200 dark:border-slate-800 rounded-2xl">
@@ -501,123 +501,133 @@
 </div>
 
 @push('scripts')
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
 <script>
 let statCharts = {};
+let statInitTimer = null;
 
 function destroyStatCharts() {
     Object.values(statCharts).forEach(chart => { if (chart) chart.destroy(); });
     statCharts = {};
 }
 
-function initStatCharts() {
+function tryInitStatCharts() {
+    if (typeof Chart === 'undefined') {
+        statInitTimer = setTimeout(tryInitStatCharts, 200);
+        return;
+    }
     destroyStatCharts();
 
     Chart.defaults.font.family = "'Inter', 'Outfit', system-ui, sans-serif";
     Chart.defaults.color = '#64748b';
 
+    var catCanvas = document.getElementById('catChart');
     @if(count($expensesByCategory) > 0)
-    const isMobile = window.innerWidth < 640;
-    statCharts.category = new Chart(document.getElementById('catChart'), {
-        type: 'doughnut',
-        data: {
-            labels: {!! json_encode(array_column($expensesByCategory, 'label'), JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) !!},
-            datasets: [{
-                data: {!! json_encode(array_column($expensesByCategory, 'total'), JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) !!},
-                backgroundColor: {!! json_encode(array_column($expensesByCategory, 'color'), JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) !!},
-                borderWidth: 0,
-                hoverOffset: 8
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            cutout: '65%',
-            plugins: {
-                legend: { display: false },
-                tooltip: {
-                    backgroundColor: 'rgba(255, 255, 255, 0.95)',
-                    titleColor: '#1e293b',
-                    bodyColor: '#334155',
-                    borderColor: '#e2e8f0',
-                    borderWidth: 1,
-                    padding: 12,
-                    boxPadding: 6,
-                    callbacks: {
-                        label: function(context) {
-                            const total = context.dataset.data.reduce((a, b) => a + b, 0);
-                            const pct = total > 0 ? ((context.parsed / total) * 100).toFixed(1) : 0;
-                            return context.label + ': ' + new Intl.NumberFormat().format(context.parsed) + ' {{ getCurrency() }} (' + pct + '%)';
+    if (catCanvas) {
+        statCharts.category = new Chart(catCanvas, {
+            type: 'doughnut',
+            data: {
+                labels: {!! json_encode(array_column($expensesByCategory, 'label'), JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) !!},
+                datasets: [{
+                    data: {!! json_encode(array_column($expensesByCategory, 'total'), JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) !!},
+                    backgroundColor: {!! json_encode(array_column($expensesByCategory, 'color'), JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) !!},
+                    borderWidth: 0,
+                    hoverOffset: 8
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                cutout: '65%',
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        backgroundColor: 'rgba(255, 255, 255, 0.95)',
+                        titleColor: '#1e293b',
+                        bodyColor: '#334155',
+                        borderColor: '#e2e8f0',
+                        borderWidth: 1,
+                        padding: 12,
+                        boxPadding: 6,
+                        callbacks: {
+                            label: function(context) {
+                                const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                const pct = total > 0 ? ((context.parsed / total) * 100).toFixed(1) : 0;
+                                return context.label + ': ' + new Intl.NumberFormat().format(context.parsed) + ' {{ getCurrency() }} (' + pct + '%)';
+                            }
                         }
                     }
                 }
             }
-        }
-    });
+        });
+    }
     @endif
 
+    var trendCanvas = document.getElementById('trendChartStat');
     @if(count($monthlyTrend) > 0)
-    let ctx = document.getElementById('trendChartStat').getContext('2d');
-    let gradient = ctx.createLinearGradient(0, 0, 0, 400);
-    gradient.addColorStop(0, 'rgba(99, 102, 241, 0.5)');
-    gradient.addColorStop(1, 'rgba(99, 102, 241, 0.0)');
+    if (trendCanvas) {
+        let ctx = trendCanvas.getContext('2d');
+        let gradient = ctx.createLinearGradient(0, 0, 0, 400);
+        gradient.addColorStop(0, 'rgba(99, 102, 241, 0.5)');
+        gradient.addColorStop(1, 'rgba(99, 102, 241, 0.0)');
 
-    statCharts.trend = new Chart(ctx, {
-        type: 'line',
-        data: {
-            labels: {!! json_encode(array_column($monthlyTrend, 'month'), JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) !!},
-            datasets: [{
-                label: '{{ __('statistics.expenses') }}',
-                data: {!! json_encode(array_column($monthlyTrend, 'total'), JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) !!},
-                borderColor: '#6366F1',
-                borderWidth: 3,
-                backgroundColor: gradient,
-                fill: true,
-                tension: 0.4,
-                pointBackgroundColor: '#ffffff',
-                pointBorderColor: '#6366F1',
-                pointBorderWidth: 2,
-                pointRadius: 4,
-                pointHoverRadius: 6
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-                legend: { display: false },
-                tooltip: {
-                    backgroundColor: 'rgba(15, 23, 42, 0.9)',
-                    titleColor: '#fff',
-                    bodyColor: '#cbd5e1',
-                    padding: 12,
-                    displayColors: false,
-                    callbacks: {
-                        label: function(context) {
-                            return new Intl.NumberFormat().format(context.parsed.y) + ' {{ getCurrency() }}';
+        statCharts.trend = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: {!! json_encode(array_column($monthlyTrend, 'month'), JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) !!},
+                datasets: [{
+                    label: '{{ __('statistics.expenses') }}',
+                    data: {!! json_encode(array_column($monthlyTrend, 'total'), JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) !!},
+                    borderColor: '#6366F1',
+                    borderWidth: 3,
+                    backgroundColor: gradient,
+                    fill: true,
+                    tension: 0.4,
+                    pointBackgroundColor: '#ffffff',
+                    pointBorderColor: '#6366F1',
+                    pointBorderWidth: 2,
+                    pointRadius: 4,
+                    pointHoverRadius: 6
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        backgroundColor: 'rgba(15, 23, 42, 0.9)',
+                        titleColor: '#fff',
+                        bodyColor: '#cbd5e1',
+                        padding: 12,
+                        displayColors: false,
+                        callbacks: {
+                            label: function(context) {
+                                return new Intl.NumberFormat().format(context.parsed.y) + ' {{ getCurrency() }}';
+                            }
                         }
                     }
-                }
-            },
-            scales: {
-                y: {
-                    beginAtZero: true,
-                    grid: { color: '#f1f5f9', drawBorder: false },
-                    border: { display: false }
                 },
-                x: {
-                    grid: { display: false },
-                    border: { display: false }
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        grid: { color: '#f1f5f9', drawBorder: false },
+                        border: { display: false }
+                    },
+                    x: {
+                        grid: { display: false },
+                        border: { display: false }
+                    }
                 }
             }
-        }
-    });
+        });
+    }
     @endif
 }
 
-document.addEventListener('DOMContentLoaded', initStatCharts);
-document.addEventListener('livewire:init', function() {
-    Livewire.hook('morph.updated', initStatCharts);
+document.addEventListener('DOMContentLoaded', function () { tryInitStatCharts(); });
+document.addEventListener('livewire:init', function () {
+    Livewire.hook('morph.updated', function () { tryInitStatCharts(); });
 });
 </script>
 @endpush
