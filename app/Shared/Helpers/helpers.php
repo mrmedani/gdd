@@ -55,12 +55,19 @@ if (!function_exists('formatPeriodLabel')) {
         $range = getPeriodRange($yearMonth);
         $start = $range['start'];
         $end = $range['end'];
+        $locale = app()->getLocale();
+
         $startLabel = $start->translatedFormat('d F');
         $endLabel = $end->translatedFormat('d F Y');
         if ($start->year !== $end->year) {
             $startLabel = $start->translatedFormat('d F Y');
         }
-        return 'Du ' . $startLabel . ' au ' . $endLabel;
+
+        return match ($locale) {
+            'ar' => 'من ' . $startLabel . ' إلى ' . $endLabel,
+            'en' => 'From ' . $startLabel . ' to ' . $endLabel,
+            default => 'Du ' . $startLabel . ' au ' . $endLabel,
+        };
     }
 }
 

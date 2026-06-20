@@ -72,15 +72,15 @@ class ReportController extends Controller
         $budgets = Setting::get('category_budgets', '{}');
         $budgets = is_string($budgets) ? json_decode($budgets, true) ?? [] : ($budgets ?? []);
         $budgetComparison = collect();
-        foreach ($byCategory as $cat => $data) {
-            $catActual = $data['total'];
+        foreach ($byCategory as $catName => $catInfo) {
+            $catActual = $catInfo['total'];
             $catBudget = 0;
-            foreach ($expenses->where(fn($e) => ($e->category?->parent?->translated_name ?? $e->category?->translated_name ?? $e->category_key) === $cat) as $e) {
+            foreach ($expenses->where(fn($e) => ($e->category?->parent?->translated_name ?? $e->category?->translated_name ?? $e->category_key) === $catName) as $e) {
                 $catBudget += (float) ($budgets[$e->category_id] ?? 0);
             }
             if ($catBudget > 0) {
                 $budgetComparison->push([
-                    'name' => $cat,
+                    'name' => $catName,
                     'budget' => $catBudget,
                     'actual' => $catActual,
                     'variance' => $catActual - $catBudget,
@@ -98,12 +98,44 @@ class ReportController extends Controller
         $this->applyFilters($ytdExpenses, $data);
         $ytdTotal = $ytdExpenses->sum('amount');
 
+        // Daily breakdown (spending per day in period)
+        $range = getPeriodRange($yearMonth);
+        $dailyTotals = $expenses->groupBy(fn($e) => $e->date->format('Y-m-d'))
+            ->map(fn($items) => [
+                'total' => $items->sum('amount'),
+                'count' => $items->count(),
+            ]);
+        $dailyBreakdown = collect();
+        $periodDays = $range['start']->copy();
+        while ($periodDays->lte($range['end'])) {
+            $key = $periodDays->format('Y-m-d');
+            $dailyBreakdown->push([
+                'date' => $periodDays->copy(),
+                'label' => $periodDays->translatedFormat('D d'),
+                'total' => $dailyTotals[$key]['total'] ?? 0,
+                'count' => $dailyTotals[$key]['count'] ?? 0,
+            ]);
+            $periodDays->addDay();
+        }
+        $maxDaily = $dailyBreakdown->max('total');
+        $busiestDay = $dailyBreakdown->sortByDesc('total')->first();
+        $dailyAverage = $dailyBreakdown->count() > 0 ? $total / $dailyBreakdown->count() : 0;
+
+        // Employee breakdown
+        $byEmployee = $expenses->groupBy(fn($e) => $e->employee?->name ?? __('expenses.no_employee'))
+            ->map(fn($items, $emp) => [
+                'name' => $emp,
+                'total' => $items->sum('amount'),
+                'count' => $items->count(),
+                'percentage' => $total > 0 ? round(($items->sum('amount') / $total) * 100, 1) : 0,
+            ])->sortByDesc('total');
+
         $company = [
             'name' => Setting::get('app_name', config('app.name')),
             'currency' => getCurrency(),
         ];
 
-        $pdf = Pdf::loadView('reports.monthly', [
+        $html = view('reports.monthly', [
             'month' => $data['month'],
             'year' => $data['year'],
             'yearMonth' => $yearMonth,
@@ -119,9 +151,17 @@ class ReportController extends Controller
             'budgetComparison' => $budgetComparison,
             'topExpenses' => $topExpenses,
             'ytdTotal' => $ytdTotal,
+            'dailyBreakdown' => $dailyBreakdown,
+            'maxDaily' => $maxDaily,
+            'busiestDay' => $busiestDay,
+            'dailyAverage' => $dailyAverage,
+            'byEmployee' => $byEmployee,
             'company' => $company,
             'periodLabel' => formatPeriodLabel($yearMonth),
-        ]);
+        ])->render();
+
+        $html = \App\Shared\Helpers\ArabicPdfHelper::processHtml($html);
+        $pdf = Pdf::loadHTML($html);
 
         $pdf->setPaper('A4', 'portrait');
         $pdf->render();
@@ -163,12 +203,32 @@ class ReportController extends Controller
         // Top 10 expenses
         $topExpenses = $expenses->sortByDesc('amount')->take(10);
 
+        // Employee breakdown
+        $byEmployee = $expenses->groupBy(fn($e) => $e->employee?->name ?? __('expenses.no_employee'))
+            ->map(fn($items, $emp) => [
+                'name' => $emp,
+                'total' => $items->sum('amount'),
+                'count' => $items->count(),
+                'percentage' => $total > 0 ? round(($items->sum('amount') / $total) * 100, 1) : 0,
+            ])->sortByDesc('total');
+
+        // By payment method
+        $byPaymentMethod = $expenses->groupBy('payment_method')
+            ->map(fn($items) => [
+                'total' => $items->sum('amount'),
+                'count' => $items->count(),
+            ]);
+
+        // Monthly average
+        $activeMonths = $byMonth->filter(fn($m) => $m['count'] > 0)->count();
+        $monthlyAvg = $activeMonths > 0 ? $total / $activeMonths : 0;
+
         $company = [
             'name' => Setting::get('app_name', config('app.name')),
             'currency' => getCurrency(),
         ];
 
-        $pdf = Pdf::loadView('reports.annual', [
+        $html = view('reports.annual', [
             'year' => $data['year'],
             'expenses' => $expenses,
             'total' => $total,
@@ -178,8 +238,14 @@ class ReportController extends Controller
             'byCategory' => $byCategory,
             'prevTotal' => $prevTotal,
             'topExpenses' => $topExpenses,
+            'byEmployee' => $byEmployee,
+            'byPaymentMethod' => $byPaymentMethod,
+            'monthlyAvg' => $monthlyAvg,
             'company' => $company,
-        ]);
+        ])->render();
+
+        $html = \App\Shared\Helpers\ArabicPdfHelper::processHtml($html);
+        $pdf = Pdf::loadHTML($html);
 
         $pdf->setPaper('A4', 'portrait');
         $pdf->render();
