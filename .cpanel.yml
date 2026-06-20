@@ -1,0 +1,7 @@
+---
+deployment:
+  tasks:
+    - cd /home/gestionchronorex/public_html/gdd
+    - /opt/cpanel/composer/bin/composer install --no-dev --optimize-autoloader
+    - php artisan migrate --force
+    - php artisan optimize:clear
