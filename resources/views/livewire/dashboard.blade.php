@@ -157,21 +157,23 @@
             @endif
         </div>
 
-        <div class="bg-white/80 dark:bg-slate-900/80 backdrop-blur-md rounded-3xl shadow-premium dark:shadow-premium-dark border border-slate-200/50 dark:border-slate-800/60 p-8 hover:shadow-premium-hover dark:hover:shadow-premium-dark-hover transition-all duration-300">
-            <h2 class="text-lg font-bold text-slate-800 dark:text-white mb-6 flex items-center font-heading">
-                <span class="w-2.5 h-6 bg-purple-500 rounded-full me-3"></span>
-                {{ __('dashboard.monthly_trend') }}
-            </h2>
-            @if(count($monthlyTrend) > 0)
-                <div wire:key="trend-chart" class="relative h-64 w-full">
-                    <canvas id="trendChart"></canvas>
-                </div>
-            @else
-                <div wire:key="trend-chart-empty" class="h-64 flex flex-col items-center justify-center border-2 border-dashed border-slate-200 dark:border-slate-800 rounded-2xl">
-                    <p class="text-slate-400 dark:text-slate-500 font-semibold text-sm">{{ __('dashboard.no_data') }}</p>
-                </div>
-            @endif
-        </div>
+        @if(auth()->user()?->hasPermission('statistics'))
+            <div class="bg-white/80 dark:bg-slate-900/80 backdrop-blur-md rounded-3xl shadow-premium dark:shadow-premium-dark border border-slate-200/50 dark:border-slate-800/60 p-8 hover:shadow-premium-hover dark:hover:shadow-premium-dark-hover transition-all duration-300">
+                <h2 class="text-lg font-bold text-slate-800 dark:text-white mb-6 flex items-center font-heading">
+                    <span class="w-2.5 h-6 bg-purple-500 rounded-full me-3"></span>
+                    {{ __('dashboard.monthly_trend') }}
+                </h2>
+                @if(count($monthlyTrend) > 0)
+                    <div wire:key="trend-chart" class="relative h-64 w-full">
+                        <canvas id="trendChart"></canvas>
+                    </div>
+                @else
+                    <div wire:key="trend-chart-empty" class="h-64 flex flex-col items-center justify-center border-2 border-dashed border-slate-200 dark:border-slate-800 rounded-2xl">
+                        <p class="text-slate-400 dark:text-slate-500 font-semibold text-sm">{{ __('dashboard.no_data') }}</p>
+                    </div>
+                @endif
+            </div>
+        @endif
     </div>
 
     <!-- Recent Expenses Table -->
