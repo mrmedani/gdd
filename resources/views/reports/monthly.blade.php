@@ -380,6 +380,8 @@
     <!-- EMPLOYEE BREAKDOWN -->
     @php
         $visibleEmployees = $byEmployee->filter(fn($e) => $e['name'] !== __('expenses.no_employee'));
+        $empTotal = $visibleEmployees->sum('total');
+        $empCount = $visibleEmployees->sum('count');
     @endphp
     @if($visibleEmployees->count() > 1)
         <div class="section">
@@ -395,9 +397,12 @@
                     </tr>
                 </thead>
                 <tbody>
-                    @php $maxEmpTotal = $visibleEmployees->first()['total']; @endphp
+                    @php $maxEmpTotal = $visibleEmployees->max('total'); @endphp
                     @foreach($visibleEmployees as $emp)
-                        @php $barPct = $maxEmpTotal > 0 ? ($emp['total'] / $maxEmpTotal) * 100 : 0; @endphp
+                        @php
+                            $barPct = $maxEmpTotal > 0 ? ($emp['total'] / $maxEmpTotal) * 100 : 0;
+                            $empPct = $empTotal > 0 ? round(($emp['total'] / $empTotal) * 100, 1) : 0;
+                        @endphp
                         <tr>
                             <td>{{ $emp['name'] }}</td>
                             <td class="bar-cell">
@@ -408,11 +413,20 @@
                                 @endif
                             </td>
                             <td class="right" style="font-weight:bold;">{{ formatMoney($emp['total']) }}</td>
-                            <td class="right">{{ $emp['percentage'] }}%</td>
+                            <td class="right">{{ $empPct }}%</td>
                             <td class="center">{{ $emp['count'] }}</td>
                         </tr>
                     @endforeach
                 </tbody>
+                <tfoot>
+                    <tr>
+                        <td>{{ __('reports.total') }}</td>
+                        <td></td>
+                        <td class="right">{{ formatMoney($empTotal) }} {{ $company['currency'] }}</td>
+                        <td class="right">100%</td>
+                        <td class="center">{{ $empCount }}</td>
+                    </tr>
+                </tfoot>
             </table>
         </div>
     @endif
