@@ -213,9 +213,11 @@ class Dashboard extends Component
 
     private function categoryColor(int $id): string
     {
-        $hue = fmod(($id - 1) * 137.508, 360);
-        $sat = 55 + fmod(($id - 1) * 73, 30);
-        $lit = 40 + fmod(($id - 1) * 47, 30);
-        return "hsl({$hue}, {$sat}%, {$lit}%)";
+        $palette = [
+            '#EF4444', '#3B82F6', '#10B981', '#F59E0B', '#8B5CF6',
+            '#EC4899', '#06B6D4', '#F97316', '#14B8A6', '#6366F1',
+            '#84CC16', '#D946EF', '#0EA5E9', '#EAB308', '#22C55E',
+        ];
+        return $palette[($id - 1) % count($palette)];
     }
 }
