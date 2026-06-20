@@ -563,9 +563,10 @@
     "reports.vs_year": "مقارنة بسنة",
     "reports.top_expenses": "أهم 10 مصروفات",
     "reports.ytd_cumulative": "الإجمالي التراكمي للسنة",
-    "expenses.no_employee": "بدون موظف",
+    "expenses.no_employee": "غير معين",
     "reports.active_days": "الأيام النشطة",
     "reports.weekly_summary": "ملخص أسبوعي",
     "reports.week": "أسبوع",
-    "reports.weeks": "أسابيع"
+    "reports.weeks": "أسابيع",
+    "reports.employee_salaries_subtotal": "المجموع الفرعي لرواتب الموظفين"
 }
