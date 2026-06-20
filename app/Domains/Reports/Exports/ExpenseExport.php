@@ -20,7 +20,7 @@ class ExpenseExport implements FromCollection, WithHeadings, WithMapping, WithSt
 
     public function collection(): Collection
     {
-        $query = Expense::with('category', 'creator', 'employee');
+        $query = Expense::with('category.parent', 'creator', 'employee');
 
         if ($this->type === 'monthly' && $this->month) {
             $yearMonth = sprintf('%04d-%02d', $this->year, $this->month);
@@ -51,7 +51,9 @@ class ExpenseExport implements FromCollection, WithHeadings, WithMapping, WithSt
         return [
             $expense->date->format('Y-m-d'),
             $expense->description,
-            $expense->category?->translated_name ?? $expense->category_key,
+            $expense->category && $expense->category->parent
+                ? $expense->category->parent->translated_name . ' > ' . $expense->category->translated_name
+                : ($expense->category?->translated_name ?? $expense->category_key),
             (float) $expense->amount,
             __("payment_methods.{$expense->payment_method}"),
             $expense->employee?->name ?? '',

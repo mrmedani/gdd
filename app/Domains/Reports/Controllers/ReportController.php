@@ -17,13 +17,13 @@ class ReportController extends Controller
         $data = $request->validated();
         $yearMonth = sprintf('%04d-%02d', $data['year'], $data['month']);
 
-        $expenses = Expense::with('category', 'employee')
+        $expenses = Expense::with('category.parent', 'employee')
             ->byPeriod($yearMonth)
             ->latest('date')
             ->get();
 
         $total = $expenses->sum('amount');
-        $byCategory = $expenses->groupBy(fn($e) => $e->category?->translated_name ?? __("categories.{$e->category_key}"));
+        $byCategory = $expenses->groupBy(fn($e) => $e->category?->parent?->translated_name ?? $e->category?->translated_name ?? __("categories.{$e->category_key}"));
         $byPaymentMethod = $expenses->groupBy('payment_method')
             ->map(fn($items) => [
                 'total' => $items->sum('amount'),
@@ -62,7 +62,7 @@ class ReportController extends Controller
     {
         $data = $request->validated();
 
-        $expenses = Expense::with('category', 'employee')
+        $expenses = Expense::with('category.parent', 'employee')
             ->byYear($data['year'])
             ->latest('date')
             ->get();
@@ -75,7 +75,7 @@ class ReportController extends Controller
             'count' => $expenses->filter(fn($e) => (int) $e->date->month === $m)->count(),
         ]);
 
-        $byCategory = $expenses->groupBy(fn($e) => $e->category?->translated_name ?? __("categories.{$e->category_key}"))
+        $byCategory = $expenses->groupBy(fn($e) => $e->category?->parent?->translated_name ?? $e->category?->translated_name ?? __("categories.{$e->category_key}"))
             ->map(fn($items) => [
                 'total' => $items->sum('amount'),
                 'count' => $items->count(),

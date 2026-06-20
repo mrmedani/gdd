@@ -145,7 +145,7 @@
                     <tr>
                         <td>{{ $expense->date->format('d/m/Y') }}</td>
                         <td>{{ $expense->description }}</td>
-                        <td>{{ $expense->category?->translated_name ?? $expense->category_key }}</td>
+                        <td>{{ $expense->category && $expense->category->parent ? $expense->category->parent->translated_name . ' > ' . $expense->category->translated_name : ($expense->category?->translated_name ?? $expense->category_key) }}</td>
                         <td>{{ $expense->employee?->name ?? '-' }}</td>
                         <td class="right">{{ formatMoney($expense->amount) }}</td>
                     </tr>
