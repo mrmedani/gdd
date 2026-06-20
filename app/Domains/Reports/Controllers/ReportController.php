@@ -135,7 +135,7 @@ class ReportController extends Controller
             'currency' => getCurrency(),
         ];
 
-        $html = view('reports.monthly', [
+        $pdf = Pdf::loadView('reports.monthly', [
             'month' => $data['month'],
             'year' => $data['year'],
             'yearMonth' => $yearMonth,
@@ -158,10 +158,7 @@ class ReportController extends Controller
             'byEmployee' => $byEmployee,
             'company' => $company,
             'periodLabel' => formatPeriodLabel($yearMonth),
-        ])->render();
-
-        $html = \App\Shared\Helpers\ArabicPdfHelper::processHtml($html);
-        $pdf = Pdf::loadHTML($html);
+        ]);
 
         $pdf->setPaper('A4', 'portrait');
         $pdf->render();
@@ -228,7 +225,7 @@ class ReportController extends Controller
             'currency' => getCurrency(),
         ];
 
-        $html = view('reports.annual', [
+        $pdf = Pdf::loadView('reports.annual', [
             'year' => $data['year'],
             'expenses' => $expenses,
             'total' => $total,
@@ -242,10 +239,7 @@ class ReportController extends Controller
             'byPaymentMethod' => $byPaymentMethod,
             'monthlyAvg' => $monthlyAvg,
             'company' => $company,
-        ])->render();
-
-        $html = \App\Shared\Helpers\ArabicPdfHelper::processHtml($html);
-        $pdf = Pdf::loadHTML($html);
+        ]);
 
         $pdf->setPaper('A4', 'portrait');
         $pdf->render();
