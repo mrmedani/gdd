@@ -331,15 +331,12 @@
     @endif
 
     <!-- EMPLOYEE BREAKDOWN -->
-    @if($byEmployee->count() > 1)
-        @php
-            $noEmpLabel = __('expenses.no_employee');
-            $empSubtotal = $byEmployee->where('name', '!=', $noEmpLabel)->sum('total');
-            $empCount = $byEmployee->where('name', '!=', $noEmpLabel)->sum('count');
-            $hasSubtotal = $byEmployee->has($noEmpLabel) && $empSubtotal > 0;
-        @endphp
+    @php
+        $visibleEmployees = $byEmployee->filter(fn($e) => $e['name'] !== __('expenses.no_employee'));
+    @endphp
+    @if($visibleEmployees->count() > 1)
         <div class="section">
-            <h2>{{ __('reports.by_employee') }} <span class="badge">{{ $byEmployee->count() }}</span></h2>
+            <h2>{{ __('reports.by_employee') }} <span class="badge">{{ $visibleEmployees->count() }}</span></h2>
             <table class="data">
                 <thead>
                     <tr>
@@ -351,8 +348,8 @@
                     </tr>
                 </thead>
                 <tbody>
-                    @php $maxEmpTotal = $byEmployee->first()['total']; @endphp
-                    @foreach($byEmployee as $emp)
+                    @php $maxEmpTotal = $visibleEmployees->first()['total']; @endphp
+                    @foreach($visibleEmployees as $emp)
                         @php $barPct = $maxEmpTotal > 0 ? ($emp['total'] / $maxEmpTotal) * 100 : 0; @endphp
                         <tr>
                             <td>{{ $emp['name'] }}</td>
@@ -369,17 +366,6 @@
                         </tr>
                     @endforeach
                 </tbody>
-                <tfoot>
-                    @if($hasSubtotal)
-                        <tr style="background:#f0fdf4;">
-                            <td style="font-weight:bold;color:#059669;font-size:8px;">{{ __('reports.employee_salaries_subtotal') }}</td>
-                            <td></td>
-                            <td class="right" style="font-weight:bold;color:#059669;">{{ formatMoney($empSubtotal) }}</td>
-                            <td class="right" style="font-weight:bold;color:#059669;">{{ $total > 0 ? round(($empSubtotal / $total) * 100, 1) : 0 }}%</td>
-                            <td class="center" style="font-weight:bold;color:#059669;">{{ $empCount }}</td>
-                        </tr>
-                    @endif
-                </tfoot>
             </table>
         </div>
     @endif
