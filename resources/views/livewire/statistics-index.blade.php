@@ -7,17 +7,29 @@
             <p class="text-slate-500 dark:text-slate-500 text-sm mt-1.5 font-medium">{{ __('statistics.subtitle') }}</p>
         </div>
         <div class="w-full md:w-72">
-            <div x-data="{ open: false, yr: 0, positionPopup(container) { const popup = container.querySelector('.period-popup'); const btn = container.querySelector('button'); if (!popup || !btn) return; const r = btn.getBoundingClientRect(); popup.style.position = 'fixed'; popup.style.top = (r.bottom + 8) + 'px'; popup.style.left = r.left + 'px'; popup.style.minWidth = Math.max(280, r.width) + 'px'; popup.style.zIndex = '9999'; } }"
-                 x-init="yr = parseInt($wire.period.split('-')[0]) || (new Date).getFullYear()"
-                 class="relative">
-                <button type="button" @click="open = !open; if (open) { const c = $el.parentElement; $nextTick(() => positionPopup(c)) }"
-                        class="w-full flex items-center gap-3 px-4 py-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl font-semibold dark:text-white cursor-pointer text-left hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors shadow-sm">
-                    <svg class="w-5 h-5 text-slate-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
-                    <span>{{ formatPeriodLabel($period) }}</span>
+            <div x-data="{ 
+                     open: false, 
+                     period: @entangle('period').live,
+                     yr: {{ substr($period, 0, 4) ?: 'new Date().getFullYear()' }}
+                 }"
+                 class="relative z-50">
+                <button type="button" @click="open = !open"
+                        class="w-full flex items-center justify-between px-4 py-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl font-semibold dark:text-white cursor-pointer text-left hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-all duration-200 shadow-sm">
+                    <div class="flex items-center gap-3">
+                        <svg class="w-5 h-5 text-slate-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                        <span>{{ formatPeriodLabel($period) }}</span>
+                    </div>
+                    <svg class="w-4 h-4 text-slate-400 transition-transform duration-200" :class="{'rotate-180': open}" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"/></svg>
                 </button>
                 <div x-show="open"
+                     x-transition:enter="transition ease-out duration-200"
+                     x-transition:enter-start="opacity-0 translate-y-1"
+                     x-transition:enter-end="opacity-100 translate-y-0"
+                     x-transition:leave="transition ease-in duration-150"
+                     x-transition:leave-start="opacity-100 translate-y-0"
+                     x-transition:leave-end="opacity-0 translate-y-1"
                      @click.outside="open = false"
-                     class="period-popup bg-white dark:bg-slate-800 rounded-xl shadow-xl border border-slate-200 dark:border-slate-700 p-4"
+                     class="absolute top-full mt-2 ltr:left-0 rtl:right-0 w-full min-w-[280px] bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl rounded-2xl shadow-xl border border-slate-200/60 dark:border-slate-800/80 p-4 z-[9999]"
                      style="display:none">
                     <div class="flex items-center justify-between mb-3">
                         <button type="button" @click="yr--" class="p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300">
@@ -32,10 +44,10 @@
                         @foreach (['01', '02', '03', '04', '05', '06', '07', '08', '09', '10', '11', '12'] as $num)
                             <button type="button"
                                     @click="
-                                        $wire.set('period', yr + '-' + '{{ $num }}');
+                                        period = yr + '-' + '{{ $num }}';
                                         open = false;
                                     "
-                                    :class="$wire.period === (yr + '-' + '{{ $num }}') ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400' : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700/50'"
+                                    :class="period === (yr + '-' + '{{ $num }}') ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400 font-bold' : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700/50'"
                                     class="px-2 py-2.5 rounded-lg text-sm font-medium transition-colors">
                                 {{ Carbon\Carbon::createFromFormat('!m', $num)->translatedFormat('M') }}
                             </button>
@@ -171,8 +183,78 @@
             </h2>
             @if(count($expensesByCategory) > 0)
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div wire:key="cat-chart" class="relative h-64 flex items-center justify-center">
-                        <canvas id="catChart" class="max-w-full max-h-full"></canvas>
+                    <div wire:key="cat-chart" class="relative h-64 flex items-center justify-center"
+                         x-data="{
+                             chart: null,
+                             labels: {{ json_encode(array_column($expensesByCategory, 'label')) }},
+                             values: {{ json_encode(array_column($expensesByCategory, 'total')) }},
+                             colors: {{ json_encode(array_column($expensesByCategory, 'color')) }},
+                             init() {
+                                 let checkChart = () => {
+                                     if (typeof Chart !== 'undefined') {
+                                         this.initChart();
+                                     } else {
+                                         setTimeout(checkChart, 100);
+                                     }
+                                 };
+                                 checkChart();
+                             },
+                             initChart() {
+                                 const ctx = this.$refs.canvas.getContext('2d');
+                                 Chart.defaults.font.family = 'Inter, Outfit, system-ui, sans-serif';
+                                 Chart.defaults.color = '#64748b';
+                                 this.chart = new Chart(ctx, {
+                                     type: 'doughnut',
+                                     data: {
+                                         labels: this.labels,
+                                         datasets: [{
+                                             data: this.values,
+                                             backgroundColor: this.colors,
+                                             borderWidth: 0,
+                                             hoverOffset: 8
+                                         }]
+                                     },
+                                     options: {
+                                         responsive: true,
+                                         maintainAspectRatio: false,
+                                         cutout: '65%',
+                                         plugins: {
+                                             legend: { display: false },
+                                             tooltip: {
+                                                 backgroundColor: 'rgba(255, 255, 255, 0.95)',
+                                                 titleColor: '#1e293b',
+                                                 bodyColor: '#334155',
+                                                 borderColor: '#e2e8f0',
+                                                 borderWidth: 1,
+                                                 padding: 12,
+                                                 boxPadding: 6,
+                                                 callbacks: {
+                                                     label: function(context) {
+                                                         const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                                         const pct = total > 0 ? ((context.parsed / total) * 100).toFixed(1) : 0;
+                                                         return context.label + ': ' + new Intl.NumberFormat().format(context.parsed) + ' {{ getCurrency() }} (' + pct + '%)';
+                                                     }
+                                                 }
+                                             }
+                                         }
+                                     }
+                                 });
+                             }
+                         }"
+                         x-effect="
+                             labels = {{ json_encode(array_column($expensesByCategory, 'label')) }};
+                             values = {{ json_encode(array_column($expensesByCategory, 'total')) }};
+                             colors = {{ json_encode(array_column($expensesByCategory, 'color')) }};
+                             if (chart) {
+                                 chart.data.labels = labels;
+                                 chart.data.datasets[0].data = values;
+                                 chart.data.datasets[0].backgroundColor = colors;
+                                 chart.update();
+                             }
+                         ">
+                        <div wire:ignore class="w-full h-full">
+                            <canvas x-ref="canvas" class="max-w-full max-h-full"></canvas>
+                        </div>
                     </div>
                     <div class="space-y-2 max-h-64 overflow-y-auto">
                         @foreach($expensesByCategory as $i => $cat)
@@ -255,8 +337,90 @@
                 {{ __('statistics.trend') }}
             </h2>
             @if(count($monthlyTrend) > 0)
-                <div wire:key="trend-chart-stat" class="relative h-72 w-full">
-                    <canvas id="trendChartStat" class="max-w-full max-h-full"></canvas>
+                <div wire:key="trend-chart-stat" class="relative h-72 w-full"
+                     x-data="{
+                         chart: null,
+                         labels: {{ json_encode(array_column($monthlyTrend, 'month')) }},
+                         values: {{ json_encode(array_column($monthlyTrend, 'total')) }},
+                         init() {
+                             let checkChart = () => {
+                                 if (typeof Chart !== 'undefined') {
+                                     this.initChart();
+                                 } else {
+                                     setTimeout(checkChart, 100);
+                                 }
+                             };
+                             checkChart();
+                         },
+                         initChart() {
+                             const ctx = this.$refs.canvas.getContext('2d');
+                             let gradient = ctx.createLinearGradient(0, 0, 0, 400);
+                             gradient.addColorStop(0, 'rgba(99, 102, 241, 0.5)');
+                             gradient.addColorStop(1, 'rgba(99, 102, 241, 0.0)');
+                             this.chart = new Chart(ctx, {
+                                 type: 'line',
+                                 data: {
+                                     labels: this.labels,
+                                     datasets: [{
+                                         label: '{{ __('statistics.expenses') }}',
+                                         data: this.values,
+                                         borderColor: '#6366F1',
+                                         borderWidth: 3,
+                                         backgroundColor: gradient,
+                                         fill: true,
+                                         tension: 0.4,
+                                         pointBackgroundColor: '#ffffff',
+                                         pointBorderColor: '#6366F1',
+                                         pointBorderWidth: 2,
+                                         pointRadius: 4,
+                                         pointHoverRadius: 6
+                                     }]
+                                 },
+                                 options: {
+                                     responsive: true,
+                                     maintainAspectRatio: false,
+                                     plugins: {
+                                         legend: { display: false },
+                                         tooltip: {
+                                             backgroundColor: 'rgba(15, 23, 42, 0.9)',
+                                             titleColor: '#fff',
+                                             bodyColor: '#cbd5e1',
+                                             padding: 12,
+                                             displayColors: false,
+                                             callbacks: {
+                                                 label: function(context) {
+                                                     return new Intl.NumberFormat().format(context.parsed.y) + ' {{ getCurrency() }}';
+                                                 }
+                                             }
+                                         }
+                                     },
+                                     scales: {
+                                         y: {
+                                             beginAtZero: true,
+                                             grid: { color: '#f1f5f9', drawBorder: false },
+                                             border: { display: false }
+                                         },
+                                         x: {
+                                             grid: { display: false },
+                                             border: { display: false }
+                                         }
+                                     }
+                                 }
+                             });
+                         }
+                     }"
+                     x-effect="
+                         labels = {{ json_encode(array_column($monthlyTrend, 'month')) }};
+                         values = {{ json_encode(array_column($monthlyTrend, 'total')) }};
+                         if (chart) {
+                             chart.data.labels = labels;
+                             chart.data.datasets[0].data = values;
+                             chart.update();
+                         }
+                     ">
+                    <div wire:ignore class="w-full h-full">
+                        <canvas x-ref="canvas" class="max-w-full max-h-full"></canvas>
+                    </div>
                 </div>
             @else
                 <div class="h-72 flex flex-col items-center justify-center border-2 border-dashed border-slate-200 dark:border-slate-800 rounded-2xl">
@@ -434,7 +598,6 @@
             </div>
         @endif
     </div>
-</div>
 
     <!-- Deficit History -->
     @if(auth()->user()->hasPermission('view-deficit') && count($deficitHistory) > 0)
@@ -502,132 +665,4 @@
 
 @push('scripts')
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
-<script>
-let statCharts = {};
-let statInitTimer = null;
-
-function destroyStatCharts() {
-    Object.values(statCharts).forEach(chart => { if (chart) chart.destroy(); });
-    statCharts = {};
-}
-
-function tryInitStatCharts() {
-    if (typeof Chart === 'undefined') {
-        statInitTimer = setTimeout(tryInitStatCharts, 200);
-        return;
-    }
-    destroyStatCharts();
-
-    Chart.defaults.font.family = "'Inter', 'Outfit', system-ui, sans-serif";
-    Chart.defaults.color = '#64748b';
-
-    var catCanvas = document.getElementById('catChart');
-    @if(count($expensesByCategory) > 0)
-    if (catCanvas) {
-        statCharts.category = new Chart(catCanvas, {
-            type: 'doughnut',
-            data: {
-                labels: {!! json_encode(array_column($expensesByCategory, 'label'), JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) !!},
-                datasets: [{
-                    data: {!! json_encode(array_column($expensesByCategory, 'total'), JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) !!},
-                    backgroundColor: {!! json_encode(array_column($expensesByCategory, 'color'), JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) !!},
-                    borderWidth: 0,
-                    hoverOffset: 8
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                cutout: '65%',
-                plugins: {
-                    legend: { display: false },
-                    tooltip: {
-                        backgroundColor: 'rgba(255, 255, 255, 0.95)',
-                        titleColor: '#1e293b',
-                        bodyColor: '#334155',
-                        borderColor: '#e2e8f0',
-                        borderWidth: 1,
-                        padding: 12,
-                        boxPadding: 6,
-                        callbacks: {
-                            label: function(context) {
-                                const total = context.dataset.data.reduce((a, b) => a + b, 0);
-                                const pct = total > 0 ? ((context.parsed / total) * 100).toFixed(1) : 0;
-                                return context.label + ': ' + new Intl.NumberFormat().format(context.parsed) + ' {{ getCurrency() }} (' + pct + '%)';
-                            }
-                        }
-                    }
-                }
-            }
-        });
-    }
-    @endif
-
-    var trendCanvas = document.getElementById('trendChartStat');
-    @if(count($monthlyTrend) > 0)
-    if (trendCanvas) {
-        let ctx = trendCanvas.getContext('2d');
-        let gradient = ctx.createLinearGradient(0, 0, 0, 400);
-        gradient.addColorStop(0, 'rgba(99, 102, 241, 0.5)');
-        gradient.addColorStop(1, 'rgba(99, 102, 241, 0.0)');
-
-        statCharts.trend = new Chart(ctx, {
-            type: 'line',
-            data: {
-                labels: {!! json_encode(array_column($monthlyTrend, 'month'), JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) !!},
-                datasets: [{
-                    label: '{{ __('statistics.expenses') }}',
-                    data: {!! json_encode(array_column($monthlyTrend, 'total'), JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) !!},
-                    borderColor: '#6366F1',
-                    borderWidth: 3,
-                    backgroundColor: gradient,
-                    fill: true,
-                    tension: 0.4,
-                    pointBackgroundColor: '#ffffff',
-                    pointBorderColor: '#6366F1',
-                    pointBorderWidth: 2,
-                    pointRadius: 4,
-                    pointHoverRadius: 6
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: { display: false },
-                    tooltip: {
-                        backgroundColor: 'rgba(15, 23, 42, 0.9)',
-                        titleColor: '#fff',
-                        bodyColor: '#cbd5e1',
-                        padding: 12,
-                        displayColors: false,
-                        callbacks: {
-                            label: function(context) {
-                                return new Intl.NumberFormat().format(context.parsed.y) + ' {{ getCurrency() }}';
-                            }
-                        }
-                    }
-                },
-                scales: {
-                    y: {
-                        beginAtZero: true,
-                        grid: { color: '#f1f5f9', drawBorder: false },
-                        border: { display: false }
-                    },
-                    x: {
-                        grid: { display: false },
-                        border: { display: false }
-                    }
-                }
-            }
-        });
-    }
-    @endif
-}
-
-document.addEventListener('DOMContentLoaded', function () { tryInitStatCharts(); });
-document.addEventListener('livewire:init', function () {
-    Livewire.hook('morph.updated', function () { tryInitStatCharts(); });
-});
-</script>
 @endpush
