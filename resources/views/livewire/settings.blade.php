@@ -456,41 +456,66 @@
                     </div>
                     @endif
 
-                    <!-- Actions (wrapped in forms for Livewire submit, since wire:click needs Alpine) -->
+                    <!-- Actions (using JS + Livewire.$wire since Alpine x-data is broken) -->
                     <div class="flex flex-wrap gap-3">
-                        <form wire:submit="startWhatsAppWorker" class="contents">
-                            <button type="submit"
-                                class="px-5 py-2.5 font-bold rounded-xl transition-all shadow-md cursor-pointer
-                                {{ $waStarting ? 'bg-slate-300 text-slate-500 dark:bg-slate-700 dark:text-slate-400 shadow-none cursor-not-allowed' : 'bg-emerald-600 text-white hover:bg-emerald-700 hover:shadow-emerald-500/30 shadow-emerald-500/20' }}"
-                                @disabled($waStarting)>
-                                @if($waStarting)
-                                <span class="flex items-center gap-2">
-                                    <svg class="animate-spin w-4 h-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                                    </svg>
-                                    Démarrage...
-                                </span>
-                                @else
-                                <span>Start Worker</span>
-                                @endif
-                            </button>
-                        </form>
-                        <form wire:submit="refreshQr" class="contents">
-                            <button type="submit"
-                                class="px-5 py-2.5 bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 font-bold rounded-xl hover:bg-emerald-200 dark:hover:bg-emerald-900/50 border border-emerald-200/30 dark:border-emerald-800/40 transition-all cursor-pointer">
-                                Refresh QR
-                            </button>
-                        </form>
-                        <form wire:submit="disconnectWhatsApp" class="contents" onsubmit="return confirm('Êtes-vous sûr de vouloir déconnecter WhatsApp ?')">
-                            <button type="submit"
-                                class="px-5 py-2.5 bg-rose-600 text-white font-bold rounded-xl hover:bg-rose-700 hover:shadow-rose-500/30 transition-all shadow-md shadow-rose-500/20 cursor-pointer">
-                                Disconnect
-                            </button>
-                        </form>
+                        <button type="button" id="wa-start-btn"
+                            class="px-5 py-2.5 font-bold rounded-xl transition-all shadow-md cursor-pointer
+                            {{ $waStarting ? 'bg-slate-300 text-slate-500 dark:bg-slate-700 dark:text-slate-400 shadow-none cursor-not-allowed' : 'bg-emerald-600 text-white hover:bg-emerald-700 hover:shadow-emerald-500/30 shadow-emerald-500/20' }}"
+                            @disabled($waStarting)>
+                            @if($waStarting)
+                            <span class="flex items-center gap-2">
+                                <svg class="animate-spin w-4 h-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                </svg>
+                                Démarrage...
+                            </span>
+                            @else
+                            <span>Start Worker</span>
+                            @endif
+                        </button>
+                        <button type="button" id="wa-refresh-btn"
+                            class="px-5 py-2.5 bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 font-bold rounded-xl hover:bg-emerald-200 dark:hover:bg-emerald-900/50 border border-emerald-200/30 dark:border-emerald-800/40 transition-all cursor-pointer">
+                            Refresh QR
+                        </button>
+                        <button type="button" id="wa-disconnect-btn"
+                            class="px-5 py-2.5 bg-rose-600 text-white font-bold rounded-xl hover:bg-rose-700 hover:shadow-rose-500/30 transition-all shadow-md shadow-rose-500/20 cursor-pointer">
+                            Disconnect
+                        </button>
                     </div>
                 </div>
             </div>
+
+            <script>
+                document.addEventListener('DOMContentLoaded', function() {
+                    var waComp = null;
+                    function getComp() {
+                        if (!waComp && window.Livewire) {
+                            var all = window.Livewire.all();
+                            if (all.length) waComp = all[0];
+                        }
+                        return waComp;
+                    }
+                    document.getElementById('wa-start-btn')?.addEventListener('click', function() {
+                        var c = getComp();
+                        if (c && c.$wire) c.$wire.startWhatsAppWorker();
+                    });
+                    document.getElementById('wa-refresh-btn')?.addEventListener('click', function() {
+                        var c = getComp();
+                        if (c && c.$wire) c.$wire.refreshQr();
+                    });
+                    document.getElementById('wa-disconnect-btn')?.addEventListener('click', function() {
+                        if (confirm('Êtes-vous sûr de vouloir déconnecter WhatsApp ?')) {
+                            var c = getComp();
+                            if (c && c.$wire) c.$wire.disconnectWhatsApp();
+                        }
+                    });
+                    setInterval(function() {
+                        var c = getComp();
+                        if (c && c.$wire) c.$wire.pollWhatsAppStatus();
+                    }, 10000);
+                });
+            </script>
 
             <!-- Login Popup -->
             <div class="bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl rounded-3xl shadow-premium dark:shadow-premium-dark border border-slate-200/50 dark:border-slate-800/60 p-6 relative overflow-hidden group hover:shadow-premium-hover dark:hover:shadow-premium-dark-hover transition-all duration-300">
