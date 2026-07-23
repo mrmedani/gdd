@@ -4,17 +4,17 @@
         <!-- Header -->
         <div class="flex items-center justify-between">
             <div>
-                <h1 class="text-2xl font-bold text-slate-800 dark:text-white">Messages WhatsApp</h1>
-                <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">Personnalisez le contenu des notifications WhatsApp.</p>
+                <h1 class="text-2xl font-bold text-slate-800 dark:text-white">{{ __('settings.whatsapp_messages') }}</h1>
+                <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">{{ __('settings.whatsapp_messages_desc') }}</p>
             </div>
             <a href="{{ route('settings.index') }}" class="px-4 py-2 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 font-bold rounded-xl hover:bg-slate-200 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700 transition-all text-sm">
-                &larr; Retour
+                {{ __('settings.whatsapp_messages_back') }}
             </a>
         </div>
 
         @if(session()->has('saved'))
             <div class="bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800 text-emerald-700 dark:text-emerald-300 px-5 py-3 rounded-2xl text-sm font-bold">
-                Message enregistré avec succès.
+                {{ __('settings.whatsapp_messages_saved') }}
             </div>
         @endif
 
@@ -30,7 +30,7 @@
                             <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">{{ $template['label_ar'] }}</p>
                         </div>
                         <div class="flex items-center gap-3">
-                            <span class="text-xs font-bold text-slate-500 dark:text-slate-400">Activé</span>
+                            <span class="text-xs font-bold text-slate-500 dark:text-slate-400">{{ __('settings.whatsapp_messages_enabled') }}</span>
                             <button type="button" wire:click="$toggle('templates.{{ $index }}.enabled')" class="relative w-10 h-5 rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-emerald-500/30 cursor-pointer @if($template['enabled']) bg-emerald-600 @else bg-slate-200 dark:bg-slate-700 @endif">
                                 <span class="absolute top-0.5 start-[2px] w-4 h-4 bg-white border border-slate-300 rounded-full transition-transform duration-200 shadow-sm @if($template['enabled']) translate-x-full rtl:-translate-x-full @else translate-x-0 @endif"></span>
                             </button>
@@ -39,7 +39,7 @@
 
                     <!-- Variables -->
                     <div class="mb-4 p-3 bg-slate-50/50 dark:bg-slate-950/40 rounded-xl border border-slate-200/40 dark:border-slate-800/60">
-                        <span class="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Variables disponibles :</span>
+                        <span class="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">{{ __('settings.whatsapp_messages_variables') }}</span>
                         <div class="flex flex-wrap gap-1.5 mt-2">
                             @foreach($template['variables'] ?? [] as $var)
                                 <code class="px-2 py-0.5 bg-white dark:bg-slate-800 text-emerald-600 dark:text-emerald-400 text-xs font-mono rounded-md border border-slate-200 dark:border-slate-700">{{ '{' . $var . '}' }}</code>
@@ -49,13 +49,13 @@
 
                     <!-- FR -->
                     <div class="mb-3">
-                        <label class="block text-xs font-bold text-slate-500 dark:text-slate-400 mb-1.5 uppercase tracking-wider">Français</label>
+                        <label class="block text-xs font-bold text-slate-500 dark:text-slate-400 mb-1.5 uppercase tracking-wider">{{ __('settings.whatsapp_messages_fr') }}</label>
                         <textarea wire:model="templates.{{ $index }}.message_fr" rows="4" class="w-full px-4 py-3 bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl text-sm focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 outline-none transition-all text-slate-700 dark:text-slate-200 shadow-sm font-mono text-xs leading-relaxed"></textarea>
                     </div>
 
                     <!-- AR -->
                     <div class="mb-4">
-                        <label class="block text-xs font-bold text-slate-500 dark:text-slate-400 mb-1.5 uppercase tracking-wider">العربية</label>
+                        <label class="block text-xs font-bold text-slate-500 dark:text-slate-400 mb-1.5 uppercase tracking-wider">{{ __('settings.whatsapp_messages_ar') }}</label>
                         <textarea wire:model="templates.{{ $index }}.message_ar" rows="4" dir="rtl" class="w-full px-4 py-3 bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl text-sm focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 outline-none transition-all text-slate-700 dark:text-slate-200 shadow-sm font-mono text-xs leading-relaxed"></textarea>
                     </div>
 

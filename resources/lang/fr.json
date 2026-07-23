@@ -582,5 +582,15 @@
     "settings.login_as": "Connexion en tant que",
     "settings.confirm_login_as": "Confirmer la connexion en tant que cet utilisateur ?",
     "settings.impersonating": "Connecté en tant que :name",
-    "settings.leave_impersonation": "Revenir à mon compte"
+    "settings.leave_impersonation": "Revenir à mon compte",
+    "settings.whatsapp_messages": "Messages WhatsApp",
+    "settings.whatsapp_messages_desc": "Personnalisez le contenu des notifications WhatsApp.",
+    "settings.whatsapp_messages_back": "← Retour",
+    "settings.whatsapp_messages_saved": "Message enregistré avec succès.",
+    "settings.whatsapp_messages_enabled": "Activé",
+    "settings.whatsapp_messages_variables": "Variables disponibles :",
+    "settings.whatsapp_messages_fr": "Français",
+    "settings.whatsapp_messages_ar": "العربية",
+    "settings.whatsapp_messages_edit": "Personnaliser les messages WhatsApp",
+    "nav.whatsapp_messages": "Messages WhatsApp"
 }

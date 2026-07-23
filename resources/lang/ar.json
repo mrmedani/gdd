@@ -580,5 +580,15 @@
     "settings.login_as": "تسجيل الدخول باسم",
     "settings.confirm_login_as": "تأكيد تسجيل الدخول باسم هذا المستخدم؟",
     "settings.impersonating": "تم تسجيل الدخول باسم :name",
-    "settings.leave_impersonation": "العودة إلى حسابي"
+    "settings.leave_impersonation": "العودة إلى حسابي",
+    "settings.whatsapp_messages": "رسائل واتساب",
+    "settings.whatsapp_messages_desc": "تخصيص محتوى إشعارات واتساب.",
+    "settings.whatsapp_messages_back": "← رجوع",
+    "settings.whatsapp_messages_saved": "تم حفظ الرسالة بنجاح.",
+    "settings.whatsapp_messages_enabled": "مفعل",
+    "settings.whatsapp_messages_variables": "المتغيرات المتاحة:",
+    "settings.whatsapp_messages_fr": "الفرنسية",
+    "settings.whatsapp_messages_ar": "العربية",
+    "settings.whatsapp_messages_edit": "تخصيص رسائل واتساب",
+    "nav.whatsapp_messages": "رسائل واتساب"
 }
