@@ -375,8 +375,8 @@ class Settings extends Component
 
         if ($this->waStatus === 'qr_ready' && !$this->waQr) {
             $qr = WhatsAppService::getQr($url);
-            if ($qr && isset($qr['qr'])) {
-                $this->waQr = $qr['qr'];
+            if ($qr) {
+                $this->waQr = $qr;
             }
         } elseif ($this->waStatus !== 'qr_ready') {
             $this->waQr = null;
