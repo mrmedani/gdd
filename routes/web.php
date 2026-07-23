@@ -11,6 +11,12 @@ require __DIR__ . '/domains/treasury.php';
 require __DIR__ . '/domains/statistics.php';
 require __DIR__ . '/domains/profile.php';
 
+// Test WhatsApp (accessible sans auth)
+Route::any('/wa-test', function () {
+    return \App\Services\WhatsAppService::getStatus('http://127.0.0.1:9090')
+        ?? ['status' => 'error'];
+});
+
 // Route dynamique du manifest PWA (accessible sans auth pour l'installation)
 Route::get('/manifest.json', function () {
     $setting = function ($key, $default) {
