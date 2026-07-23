@@ -282,7 +282,7 @@
                                 </a>
                             </li>
                             @endif
-                            @if(auth()->user()->hasPermission('settings'))
+                            @if(auth()->user()->hasPermission('whatsapp-messages'))
                             <li>
                                 <a href="{{ route('settings.whatsapp-messages') }}" class="flex items-center px-4 py-3 rounded-xl transition-colors duration-200 group {{ request()->routeIs('settings.whatsapp-messages') ? 'bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-white font-semibold' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/50 hover:text-slate-900 dark:hover:text-white' }}">
                                     <div class="{{ request()->routeIs('settings.whatsapp-messages') ? 'bg-blue-600 text-white' : 'bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 group-hover:bg-slate-200 dark:group-hover:bg-slate-700' }} p-2 rounded-lg transition-colors me-3">

@@ -58,6 +58,7 @@
                             'users' => __('settings.manage_users'),
                             'roles' => __('settings.roles'),
                             'audit-logs' => __('settings.audit_logs'),
+                            'whatsapp-messages' => 'Messages WhatsApp',
                             'view-deficit' => __('settings.view_deficit'),
                             'delete-closure' => __('settings.delete_closure'),
                             'login-as' => __('settings.login_as'),

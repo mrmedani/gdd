@@ -484,12 +484,14 @@
                         </button>
                     </div>
 
+                    @if(auth()->user()->hasPermission('whatsapp-messages'))
                     <div class="mt-4 pt-4 border-t border-slate-200/40 dark:border-slate-800/60">
                         <a href="{{ route('settings.whatsapp-messages') }}" class="inline-flex items-center gap-2 text-sm font-bold text-emerald-600 dark:text-emerald-400 hover:text-emerald-700 dark:hover:text-emerald-300 transition-colors">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
                             {{ __('settings.whatsapp_messages_edit') }}
                         </a>
                     </div>
+                    @endif
                 </div>
             </div>
 

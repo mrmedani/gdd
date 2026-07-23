@@ -14,7 +14,7 @@ Route::middleware(['auth'])->prefix('settings')->name('settings.')->group(functi
     Route::get('/users', Users::class)->middleware('permission:users')->name('users');
     Route::get('/roles', Roles::class)->middleware('permission:roles')->name('roles');
     Route::get('/categories', Categories::class)->middleware('permission:categories')->name('categories');
-    Route::get('/whatsapp-messages', WhatsappMessages::class)->middleware('permission:settings')->name('whatsapp-messages');
+    Route::get('/whatsapp-messages', WhatsappMessages::class)->middleware('permission:whatsapp-messages')->name('whatsapp-messages');
     Route::get('/audit-logs', AuditLogs::class)->middleware('permission:audit-logs')->name('audit-logs');
     Route::get('/database-backup', DatabaseBackup::class)->middleware('permission:settings')->name('backup');
     Route::get('/backup/download/{filename}', function (string $filename) {

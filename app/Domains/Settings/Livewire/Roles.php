@@ -24,6 +24,7 @@ class Roles extends Component
         'users',
         'roles',
         'audit-logs',
+        'whatsapp-messages',
         'view-deficit',
         'delete-closure',
         'login-as',
@@ -45,6 +46,7 @@ class Roles extends Component
     public bool $perm_users = false;
     public bool $perm_roles = false;
     public bool $perm_audit_logs = false;
+    public bool $perm_whatsapp_messages = false;
     public bool $perm_view_deficit = false;
     public bool $perm_delete_closure = false;
     public bool $perm_login_as = false;
