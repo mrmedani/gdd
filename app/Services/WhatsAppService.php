@@ -51,97 +51,84 @@ class WhatsAppService
         return $result;
     }
 
+    private static function curlRequest(string $method, string $url, ?string $payload = null, int $timeout = 15): ?string
+    {
+        // Try curl_exec first (IPv4 forced)
+        if (function_exists('curl_init')) {
+            $ch = curl_init();
+            curl_setopt_array($ch, [
+                CURLOPT_URL => $url,
+                CURLOPT_RETURNTRANSFER => true,
+                CURLOPT_TIMEOUT => $timeout,
+                CURLOPT_CONNECTTIMEOUT => 5,
+                CURLOPT_IPRESOLVE => CURL_IPRESOLVE_V4,
+                CURLOPT_FAILONERROR => false,
+            ]);
+            if ($method === 'POST') {
+                curl_setopt_array($ch, [
+                    CURLOPT_POST => true,
+                    CURLOPT_POSTFIELDS => $payload ?? '',
+                    CURLOPT_HTTPHEADER => ['Content-Type: application/json'],
+                ]);
+            }
+            $result = curl_exec($ch);
+            $errno = curl_errno($ch);
+            curl_close($ch);
+            if ($result !== false && $errno === 0) {
+                return $result;
+            }
+        }
+
+        // Fallback: system curl via exec
+        $safeUrl = escapeshellarg($url);
+        $cmd = "curl -s --connect-timeout 5 --max-time {$timeout} -4";
+        if ($method === 'POST') {
+            $safePayload = escapeshellarg($payload ?? '');
+            $cmd .= " -X POST -H 'Content-Type: application/json' -d {$safePayload}";
+        }
+        $cmd .= " {$safeUrl}";
+        $output = @shell_exec($cmd);
+        if ($output !== null && $output !== '') {
+            return $output;
+        }
+
+        return null;
+    }
+
     public static function sendMessage(string $workerUrl, string $chatId, string $text): bool
     {
-        try {
-            $payload = json_encode([
-                'chatId' => $chatId,
-                'message' => $text,
-            ]);
-
-            $ctx = stream_context_create([
-                'http' => [
-                    'method' => 'POST',
-                    'header' => "Content-Type: application/json\r\nContent-Length: " . strlen($payload),
-                    'content' => $payload,
-                    'timeout' => 15,
-                    'ignore_errors' => true,
-                ],
-            ]);
-
-            $result = @file_get_contents($workerUrl . '/send', false, $ctx);
-
-            if ($result === false) {
-                Log::warning('WhatsApp: worker request failed');
-                return false;
-            }
-
-            $json = json_decode($result, true);
-            return ($json['ok'] ?? false) === true;
-        } catch (\Throwable $e) {
-            Log::warning('WhatsApp send error: ' . $e->getMessage());
+        $payload = json_encode(['chatId' => $chatId, 'message' => $text]);
+        $result = static::curlRequest('POST', $workerUrl . '/send', $payload, 15);
+        if ($result === null) {
+            Log::warning('WhatsApp: worker request failed');
             return false;
         }
+        $json = json_decode($result, true);
+        return ($json['ok'] ?? false) === true;
     }
 
     public static function startWorker(string $workerUrl): bool
     {
-        try {
-            $ctx = stream_context_create([
-                'http' => [
-                    'method' => 'POST',
-                    'timeout' => 5,
-                    'ignore_errors' => true,
-                ],
-            ]);
-            $result = @file_get_contents($workerUrl . '/start', false, $ctx);
-            return $result !== false;
-        } catch (\Throwable $e) {
-            return false;
-        }
+        return static::curlRequest('POST', $workerUrl . '/start', null, 5) !== null;
     }
 
     public static function getStatus(string $workerUrl): ?array
     {
-        try {
-            $result = @file_get_contents($workerUrl . '/status', false, stream_context_create([
-                'http' => ['timeout' => 5, 'ignore_errors' => true],
-            ]));
-            if ($result === false) return null;
-            return json_decode($result, true);
-        } catch (\Throwable $e) {
-            return null;
-        }
+        $result = static::curlRequest('GET', $workerUrl . '/status', null, 5);
+        if ($result === null) return null;
+        return json_decode($result, true);
     }
 
     public static function getQr(string $workerUrl): ?string
     {
-        try {
-            $result = @file_get_contents($workerUrl . '/qr', false, stream_context_create([
-                'http' => ['timeout' => 5, 'ignore_errors' => true],
-            ]));
-            if ($result === false) return null;
-            $json = json_decode($result, true);
-            return $json['qr'] ?? null;
-        } catch (\Throwable $e) {
-            return null;
-        }
+        $result = static::curlRequest('GET', $workerUrl . '/qr', null, 5);
+        if ($result === null) return null;
+        $json = json_decode($result, true);
+        return $json['qr'] ?? null;
     }
 
     public static function disconnect(string $workerUrl): bool
     {
-        try {
-            $ctx = stream_context_create([
-                'http' => [
-                    'method' => 'POST',
-                    'timeout' => 10,
-                    'ignore_errors' => true,
-                ],
-            ]);
-            $result = @file_get_contents($workerUrl . '/disconnect', false, $ctx);
-            return $result !== false;
-        } catch (\Throwable $e) {
-            return false;
-        }
+        return static::curlRequest('POST', $workerUrl . '/disconnect', null, 10) !== null;
     }
 }

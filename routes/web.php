@@ -108,19 +108,28 @@ Route::middleware(['auth'])->group(function () {
     // WhatsApp worker proxy (évite CORS / mixed content)
     Route::prefix('wa')->group(function () {
         Route::get('status', function () {
-            return \Illuminate\Support\Facades\Http::get('http://127.0.0.1:9090/status')->json();
+            return \App\Services\WhatsAppService::getStatus('http://127.0.0.1:9090')
+                ?? ['status' => 'error'];
         });
         Route::get('qr', function () {
-            return \Illuminate\Support\Facades\Http::get('http://127.0.0.1:9090/qr')->json();
+            $qr = \App\Services\WhatsAppService::getQr('http://127.0.0.1:9090');
+            return ['qr' => $qr];
         });
         Route::post('start', function () {
-            return \Illuminate\Support\Facades\Http::post('http://127.0.0.1:9090/start')->json();
+            $ok = \App\Services\WhatsAppService::startWorker('http://127.0.0.1:9090');
+            return ['status' => $ok ? 'ok' : 'error'];
         });
         Route::post('disconnect', function () {
-            return \Illuminate\Support\Facades\Http::post('http://127.0.0.1:9090/disconnect')->json();
+            $ok = \App\Services\WhatsAppService::disconnect('http://127.0.0.1:9090');
+            return ['status' => $ok ? 'ok' : 'error'];
         });
         Route::post('send', function (\Illuminate\Http\Request $req) {
-            return \Illuminate\Support\Facades\Http::post('http://127.0.0.1:9090/send', $req->all())->json();
+            $ok = \App\Services\WhatsAppService::sendMessage(
+                'http://127.0.0.1:9090',
+                $req->input('chatId', ''),
+                $req->input('message', '')
+            );
+            return ['ok' => $ok];
         });
     });
 });
