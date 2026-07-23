@@ -3,6 +3,7 @@
 namespace App\Domains\Alerts\Notifications;
 
 use Illuminate\Bus\Queueable;
+use App\Domains\Settings\Models\WhatsappMessageTemplate;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Notifications\Notification;
 
@@ -22,6 +23,16 @@ class HighExpenseNotification extends Notification
         $currency = getCurrency();
         $total = $this->expenses->sum('amount');
         $count = $this->expenses->count();
+
+        $template = WhatsappMessageTemplate::forType('high_expense');
+        if ($template) {
+            return $template->format([
+                'total' => number_format($total, 2),
+                'currency' => $currency,
+                'count' => $count,
+                'date' => now()->format('d/m/Y'),
+            ]);
+        }
 
         return "⚠️ Dépenses élevées détectées\n"
             . "──────────────\n"

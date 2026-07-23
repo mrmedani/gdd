@@ -5,6 +5,7 @@ namespace App\Domains\Settings\Observers;
 use App\Domains\Alerts\Models\Alert;
 use App\Domains\Expenses\Models\AuditLog;
 use App\Domains\Settings\Models\Setting;
+use App\Domains\Settings\Models\WhatsappMessageTemplate;
 use App\Domains\Treasury\Models\MonthlyClosure;
 use App\Services\TelegramService;
 use App\Services\WhatsAppService;
@@ -67,15 +68,22 @@ class MonthlyClosureObserver
 
             try {
                 $admins = \App\Models\User::whereHas('role', fn($q) => $q->where('name', 'admin'))->get();
-                $wsMessage = "⚠️ Augmentation du manque en caisse\n"
-                    . "──────────────\n"
-                    . "📆 Période : {$closureMonthLabel}\n"
-                    . "📈 Augmentation : " . formatMoney($deficitIncrease) . " {$currency}\n"
-                    . "💰 Nouveau total : " . formatMoney($newDeficit) . " {$currency}";
                 foreach ($admins as $admin) {
-                    if ($admin->notify_whatsapp && $admin->whatsapp_phone) {
-                        app(WhatsAppService::class)->sendTo($admin->whatsapp_phone, $wsMessage);
-                    }
+                    if (! $admin->notify_whatsapp || ! $admin->whatsapp_phone) continue;
+                    $template = WhatsappMessageTemplate::forType('deficit_increased');
+                    $msg = $template
+                        ? $template->format([
+                            'period' => $closureMonthLabel,
+                            'increase' => formatMoney($deficitIncrease),
+                            'currency' => $currency,
+                            'new_total' => formatMoney($newDeficit),
+                        ], $admin->locale ?? 'fr')
+                        : "⚠️ Augmentation du manque en caisse\n"
+                        . "──────────────\n"
+                        . "📆 Période : {$closureMonthLabel}\n"
+                        . "📈 Augmentation : " . formatMoney($deficitIncrease) . " {$currency}\n"
+                        . "💰 Nouveau total : " . formatMoney($newDeficit) . " {$currency}";
+                    app(WhatsAppService::class)->sendTo($admin->whatsapp_phone, $msg);
                 }
             } catch (\Throwable $e) {
                 \Illuminate\Support\Facades\Log::warning('WhatsApp deficit increased failed: ' . $e->getMessage());
@@ -141,22 +149,36 @@ class MonthlyClosureObserver
 
                 try {
                     $admins = \App\Models\User::whereHas('role', fn($q) => $q->where('name', 'admin'))->get();
-                    $wsDeductionMsg = "✅ Réduction du manque en caisse\n"
-                        . "──────────────\n"
-                        . "📆 Période : {$closureMonthLabel}\n"
-                        . "📉 Déduction : " . formatMoney($deduction) . " {$currency}\n"
-                        . "💰 Restant : " . formatMoney($newDeficit) . " {$currency}";
-                    $wsCoveredMsg = "🎉 Manque en caisse entièrement comblé !\n"
-                        . "──────────────\n"
-                        . "📆 Période : {$closureMonthLabel}\n"
-                        . "💰 Le solde du manque en caisse est désormais à zéro.";
-
                     foreach ($admins as $admin) {
-                        if ($admin->notify_whatsapp && $admin->whatsapp_phone) {
-                            app(WhatsAppService::class)->sendTo($admin->whatsapp_phone, $wsDeductionMsg);
-                            if ($newDeficit <= 0) {
-                                app(WhatsAppService::class)->sendTo($admin->whatsapp_phone, $wsCoveredMsg);
-                            }
+                        if (! $admin->notify_whatsapp || ! $admin->whatsapp_phone) continue;
+                        $locale = $admin->locale ?? 'fr';
+
+                        $deductionTemplate = WhatsappMessageTemplate::forType('deficit_deducted');
+                        $deductionMsg = $deductionTemplate
+                            ? $deductionTemplate->format([
+                                'period' => $closureMonthLabel,
+                                'deduction' => formatMoney($deduction),
+                                'currency' => $currency,
+                                'remaining' => formatMoney($newDeficit),
+                            ], $locale)
+                            : "✅ Réduction du manque en caisse\n"
+                            . "──────────────\n"
+                            . "📆 Période : {$closureMonthLabel}\n"
+                            . "📉 Déduction : " . formatMoney($deduction) . " {$currency}\n"
+                            . "💰 Restant : " . formatMoney($newDeficit) . " {$currency}";
+                        app(WhatsAppService::class)->sendTo($admin->whatsapp_phone, $deductionMsg);
+
+                        if ($newDeficit <= 0) {
+                            $coveredTemplate = WhatsappMessageTemplate::forType('deficit_covered');
+                            $coveredMsg = $coveredTemplate
+                                ? $coveredTemplate->format([
+                                    'period' => $closureMonthLabel,
+                                ], $locale)
+                                : "🎉 Manque en caisse entièrement comblé !\n"
+                                . "──────────────\n"
+                                . "📆 Période : {$closureMonthLabel}\n"
+                                . "💰 Le solde du manque en caisse est désormais à zéro.";
+                            app(WhatsAppService::class)->sendTo($admin->whatsapp_phone, $coveredMsg);
                         }
                     }
                 } catch (\Throwable $e) {

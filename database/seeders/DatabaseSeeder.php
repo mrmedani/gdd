@@ -8,6 +8,7 @@ use App\Domains\Expenses\Models\Expense;
 use App\Domains\Expenses\Models\ExpenseCategory;
 use App\Domains\Settings\Models\Setting;
 use Carbon\Carbon;
+use Database\Seeders\WhatsappMessageTemplateSeeder;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
 
@@ -67,6 +68,8 @@ class DatabaseSeeder extends Seeder
 
         Setting::set('currency', 'MAD');
         Setting::set('threshold', 10000);
+
+        $this->call(WhatsappMessageTemplateSeeder::class);
 
         $descriptions = [
             'salaries' => ['رواتب الموظفين', 'Salaires du personnel'],

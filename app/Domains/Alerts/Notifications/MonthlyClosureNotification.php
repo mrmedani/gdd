@@ -2,6 +2,7 @@
 
 namespace App\Domains\Alerts\Notifications;
 
+use App\Domains\Settings\Models\WhatsappMessageTemplate;
 use App\Domains\Treasury\Models\MonthlyClosure;
 use Illuminate\Notifications\Notification;
 
@@ -18,6 +19,17 @@ class MonthlyClosureNotification extends Notification
     {
         $currency = getCurrency();
         $label = formatPeriodLabel($this->closure->month);
+
+        $template = WhatsappMessageTemplate::forType('monthly_closure');
+        if ($template) {
+            return $template->format([
+                'period' => $label,
+                'gains' => number_format($this->closure->gains, 2),
+                'currency' => $currency,
+                'expenses' => number_format($this->closure->expenses, 2),
+                'balance' => number_format($this->closure->balance, 2),
+            ]);
+        }
 
         return "🔒 Clôture de période\n"
             . "──────────────\n"

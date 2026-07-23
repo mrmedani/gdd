@@ -3,6 +3,7 @@
 namespace App\Domains\Alerts\Notifications;
 
 use App\Domains\Expenses\Models\Expense;
+use App\Domains\Settings\Models\WhatsappMessageTemplate;
 use Illuminate\Notifications\Notification;
 
 class ExpenseDeletedNotification extends Notification
@@ -17,6 +18,15 @@ class ExpenseDeletedNotification extends Notification
     public function toWhatsApp(object $notifiable): string
     {
         $currency = getCurrency();
+
+        $template = WhatsappMessageTemplate::forType('expense_deleted');
+        if ($template) {
+            return $template->format([
+                'description' => e($this->expense->description),
+                'amount' => number_format($this->expense->amount, 2),
+                'currency' => $currency,
+            ]);
+        }
 
         return "🗑️ Dépense supprimée\n"
             . "──────────────\n"

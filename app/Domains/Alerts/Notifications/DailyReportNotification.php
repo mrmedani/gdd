@@ -2,6 +2,7 @@
 
 namespace App\Domains\Alerts\Notifications;
 
+use App\Domains\Settings\Models\WhatsappMessageTemplate;
 use Illuminate\Notifications\Notification;
 
 class DailyReportNotification extends Notification
@@ -22,6 +23,18 @@ class DailyReportNotification extends Notification
         $total = $this->stats['total_expenses'] ?? 0;
         $count = $this->stats['expense_count'] ?? 0;
         $periodLabel = $this->period === 'daily' ? 'Journalier' : ($this->period === 'weekly' ? 'Hebdomadaire' : 'Mensuel');
+
+        $template = WhatsappMessageTemplate::forType('daily_report');
+        if ($template) {
+            return $template->format([
+                'period_label' => $periodLabel,
+                'total' => number_format($total, 2),
+                'currency' => $currency,
+                'count' => $count,
+                'period_start' => $this->stats['period_start'] ?? '',
+                'period_end' => $this->stats['period_end'] ?? '',
+            ]);
+        }
 
         return "📊 Rapport {$periodLabel}\n"
             . "──────────────\n"

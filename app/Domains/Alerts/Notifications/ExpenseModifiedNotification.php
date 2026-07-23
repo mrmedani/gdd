@@ -3,6 +3,7 @@
 namespace App\Domains\Alerts\Notifications;
 
 use App\Domains\Expenses\Models\Expense;
+use App\Domains\Settings\Models\WhatsappMessageTemplate;
 use Illuminate\Notifications\Notification;
 
 class ExpenseModifiedNotification extends Notification
@@ -17,12 +18,23 @@ class ExpenseModifiedNotification extends Notification
     public function toWhatsApp(object $notifiable): string
     {
         $currency = getCurrency();
+        $category = e($this->expense->category?->translated_name ?? $this->expense->category_key ?? '—');
+
+        $template = WhatsappMessageTemplate::forType('expense_modified');
+        if ($template) {
+            return $template->format([
+                'description' => e($this->expense->description),
+                'amount' => number_format($this->expense->amount, 2),
+                'currency' => $currency,
+                'category' => $category,
+            ]);
+        }
 
         return "✏️ Dépense modifiée\n"
             . "──────────────\n"
             . "📝 " . e($this->expense->description) . "\n"
             . "💰 Montant : " . number_format($this->expense->amount, 2) . " {$currency}\n"
-            . "📂 Catégorie : " . e($this->expense->category?->translated_name ?? $this->expense->category_key ?? '—');
+            . "📂 Catégorie : " . $category;
     }
 
     public function toArray(object $notifiable): array

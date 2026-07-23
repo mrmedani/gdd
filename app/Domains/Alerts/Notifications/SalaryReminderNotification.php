@@ -2,6 +2,7 @@
 
 namespace App\Domains\Alerts\Notifications;
 
+use App\Domains\Settings\Models\WhatsappMessageTemplate;
 use Illuminate\Bus\Queueable;
 use Illuminate\Notifications\Notification;
 
@@ -19,6 +20,16 @@ class SalaryReminderNotification extends Notification
     public function toWhatsApp(object $notifiable): string
     {
         $currency = getCurrency();
+
+        $template = WhatsappMessageTemplate::forType('salary_reminder');
+        if ($template) {
+            return $template->format([
+                'count' => $this->count,
+                'total' => number_format($this->totalSalary, 2),
+                'currency' => $currency,
+                'date' => now()->format('d/m/Y'),
+            ]);
+        }
 
         return "💰 Rappel de paie\n"
             . "──────────────\n"
