@@ -104,6 +104,8 @@ class EmployeeForm extends Component
 
     public function createAdvance()
     {
+        Gate::authorize('manage-employees');
+
         $this->validate([
             'advanceAmount' => 'required|numeric|min:1',
             'advanceDate' => 'required|date',
@@ -141,6 +143,8 @@ class EmployeeForm extends Component
 
     public function createPayment()
     {
+        Gate::authorize('manage-employees');
+
         $this->validate([
             'paymentMonth' => 'required|numeric|min:1|max:12',
             'paymentYear' => 'required|numeric|min:2000',
@@ -205,6 +209,8 @@ class EmployeeForm extends Component
 
     public function deleteAdvance(int $id)
     {
+        Gate::authorize('manage-employees');
+
         $advance = SalaryAdvance::findOrFail($id);
         if ($advance->expense_id) {
             Expense::find($advance->expense_id)?->delete();
@@ -215,6 +221,8 @@ class EmployeeForm extends Component
 
     public function deletePayment(int $id)
     {
+        Gate::authorize('manage-employees');
+
         $payment = SalaryPayment::findOrFail($id);
         if ($payment->expense_id) {
             Expense::find($payment->expense_id)?->delete();

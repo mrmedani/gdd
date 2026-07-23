@@ -32,6 +32,7 @@ class Dashboard extends Component
     public float $dailyTotal = 0;
     public string $periodStartDate = '';
     public string $periodEndDate = '';
+    public ?float $growthRate = null;
 
     public string $alertFilterType = '';
     public string $alertFilterSeverity = '';
@@ -48,10 +49,8 @@ class Dashboard extends Component
         $this->periodEndDate = $range['end']->format('Y-m-d');
         $periodDays = $range['start']->diffInDays($range['end']);
 
-        $monthExpenses = Expense::whereBetween('date', [$range['start'], $range['end']])->get();
-
-        $this->monthlyTotal = $monthExpenses->sum('amount');
-        $this->monthlyCount = $monthExpenses->count();
+        $this->monthlyTotal = (float) Expense::whereBetween('date', [$range['start'], $range['end']])->sum('amount');
+        $this->monthlyCount = Expense::whereBetween('date', [$range['start'], $range['end']])->count();
         $this->averagePerDay = $periodDays > 0 ? round($this->monthlyTotal / $periodDays, 2) : 0;
 
         $this->dailyTotal = (float) Expense::whereDate('date', today())->sum('amount');
@@ -82,14 +81,23 @@ class Dashboard extends Component
             return ['key' => $p, 'start' => $r['start'], 'end' => $r['end']];
         });
 
-        $allExpenses = Expense::whereBetween('date', [$periods12->last()['start'], $periods12->first()['end']])
-            ->get(['date', 'amount']);
+        $startDay = getMonthPeriodStartDay();
 
-        $expenseTotals = [];
-        foreach ($allExpenses as $ex) {
-            $pk = getPeriodFromDate($ex->date);
-            $expenseTotals[$pk] = ($expenseTotals[$pk] ?? 0) + $ex->amount;
-        }
+        $periodTotals = Expense::whereBetween('date', [$periods12->last()['start'], $periods12->first()['end']])
+            ->selectRaw("
+                DATE_FORMAT(
+                    CASE 
+                        WHEN DAY(date) > ? THEN DATE_ADD(date, INTERVAL 1 MONTH)
+                        ELSE date
+                    END, 
+                    '%Y-%m'
+                ) as period, 
+                SUM(amount) as total
+            ", [$startDay])
+            ->groupBy('period')
+            ->pluck('total', 'period');
+
+        $expenseTotals = $periodTotals->map(fn($v) => (float) $v)->toArray();
 
         $this->monthlyTrend = $periods12->map(function ($p, $i) use ($now, $monthlyClosures, $expenseTotals) {
             $expensesTotal = (float) ($expenseTotals[$p['key']] ?? 0);
@@ -107,6 +115,16 @@ class Dashboard extends Component
         $this->currentPeriodLabel = formatPeriodLabel($currentPeriod);
 
         $this->cashDeficit = (float) Setting::get('cash_deficit', 0);
+
+        // Taux de croissance mois par mois (dernière clôture vs précédente)
+        $lastTwo = MonthlyClosure::orderBy('month', 'desc')->take(2)->pluck('gains');
+        if ($lastTwo->count() === 2) {
+            $current = (float) $lastTwo->first();
+            $previous = (float) $lastTwo->last();
+            $this->growthRate = $previous > 0
+                ? round(($current - $previous) / $previous * 100, 1)
+                : null;
+        }
 
         $this->recentExpenses = Expense::with('category')
             ->latest()

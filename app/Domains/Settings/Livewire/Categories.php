@@ -4,6 +4,7 @@ namespace App\Domains\Settings\Livewire;
 
 use App\Domains\Expenses\Models\ExpenseCategory;
 use App\Shared\Livewire\WithToast;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Str;
 use Livewire\Component;
 use Livewire\WithPagination;
@@ -22,6 +23,11 @@ class Categories extends Component
     public bool $is_active = true;
 
     public bool $showForm = false;
+
+    public function mount(): void
+    {
+        Gate::authorize('manage-categories');
+    }
 
     public function rules(): array
     {
@@ -58,6 +64,8 @@ class Categories extends Component
 
     public function save()
     {
+        Gate::authorize('manage-categories');
+
         if ($this->parent_id === '') {
             $this->parent_id = null;
         }
@@ -91,6 +99,8 @@ class Categories extends Component
 
     public function delete(int $id)
     {
+        Gate::authorize('manage-categories');
+
         $category = ExpenseCategory::withCount(['expenses', 'children'])->findOrFail($id);
         
         if ($category->expenses_count > 0) {
@@ -107,6 +117,8 @@ class Categories extends Component
 
     public function toggleActive(int $id)
     {
+        Gate::authorize('manage-categories');
+
         $category = ExpenseCategory::findOrFail($id);
         $category->update(['is_active' => !$category->is_active]);
         $this->notify(__('common.saved'));

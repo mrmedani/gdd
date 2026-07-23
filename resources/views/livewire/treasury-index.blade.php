@@ -1,18 +1,18 @@
-<div class="max-w-6xl mx-auto space-y-8 animate-fade-in">
+<div class="max-w-6xl mx-auto space-y-8">
     <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-4">
         <div>
-            <h1 class="text-3xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-emerald-600 to-teal-500 dark:from-emerald-400 dark:to-teal-300 tracking-tight font-heading">
+            <h1 class="text-3xl font-extrabold text-slate-800 dark:text-white tracking-tight font-heading">
                 {{ __('caisse.title') }}
             </h1>
             <p class="text-slate-500 dark:text-slate-500 text-sm mt-1.5 font-medium">{{ __('caisse.subtitle') }}</p>
         </div>
         @if($currentMonthClosed)
-            <div class="inline-flex items-center justify-center bg-slate-200 dark:bg-slate-800 text-slate-400 dark:text-slate-500 px-6 py-2.5 rounded-xl font-bold cursor-not-allowed select-none border border-slate-200 dark:border-slate-700" title="{{ __('caisse.already_closed', ['default' => 'Ce mois est déjà clôturé.']) }}">
+            <div class="inline-flex items-center justify-center bg-slate-200 dark:bg-slate-800 text-slate-400 dark:text-slate-500 px-6 py-2.5 rounded-xl font-semibold cursor-not-allowed select-none border border-slate-200 dark:border-slate-700" title="{{ __('caisse.already_closed', ['default' => 'Ce mois est déjà clôturé.']) }}">
                 <svg class="w-5 h-5 me-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
                 {{ __('caisse.month_already_closed', ['default' => 'Mois clôturé']) }}
             </div>
         @else
-            <button wire:click="$set('showCloseModal', true)" class="inline-flex items-center justify-center bg-gradient-to-r from-emerald-500 to-teal-600 text-white px-6 py-2.5 rounded-xl font-bold shadow-lg shadow-emerald-500/20 hover:shadow-emerald-500/40 hover:-translate-y-0.5 transition-all duration-200 cursor-pointer">
+            <button wire:click="$set('showCloseModal', true)" class="inline-flex items-center justify-center bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-2.5 rounded-xl font-semibold transition-colors cursor-pointer">
                 <svg class="w-5 h-5 me-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path></svg>
                 {{ __('caisse.close_month_btn') }}
             </button>
@@ -20,44 +20,41 @@
     </div>
 
     <!-- Global Stats -->
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 relative z-10">
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
         <!-- Balance -->
-        <div class="bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl rounded-3xl p-6 border border-slate-200/50 dark:border-slate-800/60 shadow-premium dark:shadow-premium-dark relative overflow-hidden group hover:shadow-premium-hover dark:hover:shadow-premium-dark-hover transition-all duration-300">
-            <div class="absolute -right-6 -top-6 w-24 h-24 bg-emerald-50/50 dark:bg-emerald-500/10 rounded-full blur-2xl group-hover:scale-100 transition-transform duration-500"></div>
-            <div class="flex items-center gap-4 relative z-10">
-                <div class="w-12 h-12 bg-gradient-to-br from-emerald-100 to-teal-50 dark:from-emerald-500/20 dark:to-teal-500/10 text-emerald-600 dark:text-emerald-400 rounded-2xl flex items-center justify-center shadow-sm">
+        <div class="bg-white dark:bg-slate-900 rounded-2xl p-6 border border-slate-200 dark:border-slate-800 shadow-sm">
+            <div class="flex items-center gap-4">
+                <div class="w-12 h-12 bg-emerald-100 dark:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 rounded-xl flex items-center justify-center">
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                 </div>
                 <div>
-                    <p class="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">{{ __('caisse.global_balance') }}</p>
-                    <h3 class="text-2xl font-black text-slate-800 dark:text-white leading-none flex items-baseline gap-1"><span dir="ltr">{{ number_format($globalBalance, 2, ',', ' ') }}</span> <span class="text-xs text-slate-400 font-semibold">{{ getCurrency() }}</span></h3>
+                    <p class="text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1">{{ __('caisse.global_balance') }}</p>
+                    <h3 class="text-2xl font-black text-slate-800 dark:text-white leading-none flex items-baseline gap-1 font-mono"><span dir="ltr">{{ number_format($globalBalance, 2, ',', ' ') }}</span> <span class="text-xs text-slate-400 font-semibold">{{ getCurrency() }}</span></h3>
                 </div>
             </div>
         </div>
 
         <!-- Total Gains -->
-        <div class="bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl rounded-3xl p-6 border border-slate-200/50 dark:border-slate-800/60 shadow-premium dark:shadow-premium-dark relative overflow-hidden group hover:shadow-premium-hover dark:hover:shadow-premium-dark-hover transition-all duration-300">
-            <div class="absolute -right-6 -top-6 w-24 h-24 bg-blue-50/50 dark:bg-blue-500/10 rounded-full blur-2xl group-hover:scale-100 transition-transform duration-500"></div>
-            <div class="flex items-center gap-4 relative z-10">
-                <div class="w-12 h-12 bg-gradient-to-br from-blue-100 to-indigo-50 dark:from-blue-500/20 dark:to-indigo-500/10 text-blue-600 dark:text-blue-400 rounded-2xl flex items-center justify-center shadow-sm">
+        <div class="bg-white dark:bg-slate-900 rounded-2xl p-6 border border-slate-200 dark:border-slate-800 shadow-sm">
+            <div class="flex items-center gap-4">
+                <div class="w-12 h-12 bg-blue-100 dark:bg-blue-500/20 text-blue-600 dark:text-blue-400 rounded-xl flex items-center justify-center">
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path></svg>
                 </div>
                 <div>
-                    <p class="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">{{ __('caisse.total_gains') }}</p>
-                    <h3 class="text-2xl font-black text-slate-800 dark:text-white leading-none flex items-baseline gap-1"><span dir="ltr">{{ number_format($totalGains, 2, ',', ' ') }}</span> <span class="text-xs text-slate-400 font-semibold">{{ getCurrency() }}</span></h3>
+                    <p class="text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1">{{ __('caisse.total_gains') }}</p>
+                    <h3 class="text-2xl font-black text-blue-600 dark:text-blue-400 leading-none flex items-baseline gap-1 font-mono"><span dir="ltr">{{ number_format($totalGains, 2, ',', ' ') }}</span> <span class="text-xs text-slate-400 font-semibold">{{ getCurrency() }}</span></h3>
                 </div>
             </div>
         </div>
 
         <!-- Total Expenses -->
-        <div class="bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl rounded-3xl p-6 border border-slate-200/50 dark:border-slate-800/60 shadow-premium dark:shadow-premium-dark relative overflow-hidden group hover:shadow-premium-hover dark:hover:shadow-premium-dark-hover transition-all duration-300">
-            <div class="absolute -right-6 -top-6 w-24 h-24 bg-rose-50/50 dark:bg-rose-500/10 rounded-full blur-2xl group-hover:scale-100 transition-transform duration-500"></div>
-            <div class="flex items-center gap-4 relative z-10">
-                <div class="w-12 h-12 bg-gradient-to-br from-rose-100 to-pink-50 dark:from-rose-500/20 dark:to-pink-500/10 text-rose-600 dark:text-rose-400 rounded-2xl flex items-center justify-center shadow-sm">
+        <div class="bg-white dark:bg-slate-900 rounded-2xl p-6 border border-slate-200 dark:border-slate-800 shadow-sm">
+            <div class="flex items-center gap-4">
+                <div class="w-12 h-12 bg-rose-100 dark:bg-rose-500/20 text-rose-600 dark:text-rose-400 rounded-xl flex items-center justify-center">
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 17h8m0 0V9m0 8l-8-8-4 4-6-6"></path></svg>
                 </div>
                 <div>
-                    <p class="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">{{ __('caisse.total_expenses') }}</p>
+                    <p class="text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1">{{ __('caisse.total_expenses') }}</p>
                     <h3 class="text-2xl font-black text-slate-800 dark:text-white leading-none flex items-baseline gap-1"><span dir="ltr">{{ number_format($totalExpenses, 2, ',', ' ') }}</span> <span class="text-xs text-slate-400 font-semibold">{{ getCurrency() }}</span></h3>
                 </div>
             </div>
@@ -65,9 +62,9 @@
     </div>
 
     <!-- Closures History -->
-    <div class="bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl rounded-3xl shadow-premium dark:shadow-premium-dark border border-slate-200/50 dark:border-slate-800/60 overflow-hidden relative z-10">
-        <div class="p-6 border-b border-slate-100 dark:border-slate-800/60 flex items-center gap-3 bg-slate-50/20 dark:bg-slate-950/20">
-            <div class="w-10 h-10 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 rounded-xl flex items-center justify-center border border-slate-200/30 dark:border-slate-700/50 shadow-sm">
+    <div class="bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 overflow-hidden">
+        <div class="p-6 border-b border-slate-100 dark:border-slate-800 flex items-center gap-3 bg-slate-50/20 dark:bg-slate-950/20">
+            <div class="w-10 h-10 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 rounded-lg flex items-center justify-center border border-slate-200/30 dark:border-slate-700/50">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
             </div>
             <h2 class="text-lg font-bold text-slate-800 dark:text-white">{{ __('caisse.history_title') }}</h2>
@@ -80,6 +77,7 @@
                         <th class="py-4 px-6">{{ __('caisse.gains') }}</th>
                         <th class="py-4 px-6">{{ __('caisse.expenses') }}</th>
                         <th class="py-4 px-6">{{ __('caisse.balance') }}</th>
+                        <th class="py-4 px-6 text-center">{{ __('caisse.growth') }}</th>
                         <th class="py-4 px-6">{{ __('caisse.close_date') }}</th>
                         <th class="py-4 px-6">{{ __('caisse.closed_by') }}</th>
                         @can('manage-delete-closure')
@@ -90,11 +88,21 @@
                 <tbody class="divide-y divide-slate-100 dark:divide-slate-800/50 bg-transparent">
                     @forelse($closures as $closure)
                         <tr class="hover:bg-blue-50/20 dark:hover:bg-slate-800/30 transition-colors">
-                            <td class="py-4 px-6 font-bold text-slate-800 dark:text-slate-200">{{ formatPeriodLabel($closure->month) }}</td>
+                            <td class="py-4 px-6 font-bold text-slate-800 dark:text-slate-200">{{ formatPeriodLabelShort($closure->month) }}</td>
                             <td class="py-4 px-6 font-bold text-blue-600 dark:text-blue-400 whitespace-nowrap"><span dir="ltr">+ {{ number_format($closure->gains, 2, ',', ' ') }}</span> <span class="text-xs text-slate-400 font-semibold ms-1">{{ getCurrency() }}</span></td>
                             <td class="py-4 px-6 font-bold text-rose-500 dark:text-rose-500 whitespace-nowrap"><span dir="ltr">- {{ number_format($closure->expenses, 2, ',', ' ') }}</span> <span class="text-xs text-slate-400 font-semibold ms-1">{{ getCurrency() }}</span></td>
                             <td class="py-4 px-6 font-extrabold whitespace-nowrap {{ $closure->balance >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400' }}">
                                 <span dir="ltr">{{ $closure->balance > 0 ? '+' : '' }}{{ number_format($closure->balance, 2, ',', ' ') }}</span> <span class="text-xs text-slate-400 font-semibold ms-1">{{ getCurrency() }}</span>
+                            </td>
+                            <td class="py-4 px-6 text-center font-extrabold whitespace-nowrap">
+                                @php $rate = $growthRates[$closure->month] ?? null; @endphp
+                                @if($rate !== null)
+                                    <span class="{{ $rate >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-500' }}">
+                                        {{ $rate >= 0 ? '+' : '' }}{{ number_format($rate, 1) }}%
+                                    </span>
+                                @else
+                                    <span class="text-slate-300 dark:text-slate-600">—</span>
+                                @endif
                             </td>
                             <td class="py-4 px-6 font-semibold text-slate-500 dark:text-slate-400 whitespace-nowrap">{{ $closure->created_at->format('d/m/Y H:i') }}</td>
                             <td class="py-4 px-6 font-semibold text-slate-700 dark:text-slate-300 whitespace-nowrap">{{ $closure->closer->name ?? '-' }}</td>
@@ -110,9 +118,9 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="7" class="py-16 text-center">
+                            <td colspan="8" class="py-16 text-center">
                                 <div class="flex flex-col items-center justify-center">
-                                    <div class="w-20 h-20 bg-slate-50 dark:bg-slate-900/50 rounded-full flex items-center justify-center mb-4 border border-slate-200/50 dark:border-slate-800/60">
+                                    <div class="w-16 h-16 bg-slate-50 dark:bg-slate-900/50 rounded-full flex items-center justify-center mb-4">
                                         <svg class="w-10 h-10 text-slate-300 dark:text-slate-700" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path></svg>
                                     </div>
                                     <p class="text-slate-500 dark:text-slate-400 font-bold text-lg">{{ __('caisse.no_closures') }}</p>
@@ -143,9 +151,9 @@
         
         <div x-show="show" 
              x-transition:enter="ease-out duration-300" x-transition:enter-start="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95" x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100" x-transition:leave="ease-in duration-200" x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100" x-transition:leave-end="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
-             class="relative bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl rounded-3xl shadow-2xl w-full max-w-md border border-slate-200/50 dark:border-slate-800/60 overflow-hidden">
+             class="relative bg-white dark:bg-slate-900 rounded-2xl shadow-lg w-full max-w-md border border-slate-200 dark:border-slate-800 overflow-hidden">
             
-            <div class="p-6 border-b border-slate-100 dark:border-slate-800/60 flex justify-between items-center bg-slate-50/50 dark:bg-slate-950/40">
+            <div class="p-6 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center bg-slate-50/50 dark:bg-slate-950/40">
                 <h3 class="text-lg font-bold text-slate-800 dark:text-white">{{ __('caisse.delete_modal_title') }}</h3>
                 <button @click="show = false" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors cursor-pointer">
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
@@ -160,13 +168,13 @@
 
                 <div>
                     <label class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">{{ __('caisse.delete_confirm_password') }} <span class="text-red-500">*</span></label>
-                    <input type="password" wire:model="deletePassword" class="w-full px-4 py-3 bg-slate-50/50 dark:bg-slate-950/50 border border-slate-200 dark:border-slate-800 rounded-xl focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500 dark:text-white outline-none transition-all font-bold" placeholder="••••••••">
+                    <input type="password" wire:model="deletePassword" class="w-full px-4 py-3 bg-slate-50/50 dark:bg-slate-950/50 border border-slate-200 dark:border-slate-800 rounded-xl focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500 dark:text-white outline-none transition-all font-semibold" placeholder="••••••••">
                     @error('deletePassword') <span class="text-rose-500 dark:text-rose-400 text-xs mt-1 block font-bold">{{ $message }}</span> @enderror
                 </div>
 
                 <div class="flex gap-3 justify-end pt-2 border-t border-slate-100 dark:border-slate-800/60">
-                    <button type="button" @click="show = false" class="px-6 py-2.5 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-bold rounded-xl hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors cursor-pointer border border-slate-200/50 dark:border-slate-700/50 shadow-sm">{{ __('caisse.cancel') }}</button>
-                    <button type="submit" class="px-6 py-2.5 bg-rose-600 text-white font-bold rounded-xl hover:bg-rose-700 hover:shadow-rose-500/30 transition-all shadow-md shadow-rose-500/20 flex items-center cursor-pointer">
+                    <button type="button" @click="show = false" class="px-6 py-2.5 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-semibold rounded-xl hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors cursor-pointer border border-slate-200/50 dark:border-slate-700/50">{{ __('caisse.cancel') }}</button>
+                    <button type="submit" class="px-6 py-2.5 bg-rose-600 text-white font-semibold rounded-xl hover:bg-rose-700 transition-colors flex items-center cursor-pointer">
                         <svg wire:loading wire:target="deleteClosure" class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                             <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                             <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
@@ -194,9 +202,9 @@
         <!-- Modal Content -->
         <div x-show="show" 
              x-transition:enter="ease-out duration-300" x-transition:enter-start="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95" x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100" x-transition:leave="ease-in duration-200" x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100" x-transition:leave-end="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
-             class="relative bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl rounded-3xl shadow-2xl w-full max-w-lg border border-slate-200/50 dark:border-slate-800/60 overflow-hidden animate-slide-up">
+             class="relative bg-white dark:bg-slate-900 rounded-2xl shadow-lg w-full max-w-lg border border-slate-200 dark:border-slate-800 overflow-hidden">
             
-            <div class="p-6 border-b border-slate-100 dark:border-slate-800/60 flex justify-between items-center bg-slate-50/50 dark:bg-slate-950/40">
+            <div class="p-6 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center bg-slate-50/50 dark:bg-slate-950/40">
                 <h3 class="text-lg font-bold text-slate-800 dark:text-white">{{ __('caisse.modal_title') }}</h3>
                 <button @click="show = false" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors cursor-pointer">
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
@@ -213,7 +221,7 @@
                             <svg class="w-5 h-5 text-slate-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
                             </svg>
-                            <span>{{ $closeMonth ? formatPeriodLabel($closeMonth) : 'Sélectionnez un mois' }}</span>
+                            <span>{{ $closeMonth ? formatPeriodLabelShort($closeMonth) : 'Sélectionnez un mois' }}</span>
                         </button>
 
                         <div x-show="pickerOpen" @click.outside="pickerOpen = false"
@@ -233,8 +241,12 @@
                             <div class="grid grid-cols-3 gap-2">
                                 @foreach (['01' => 'Janvier', '02' => 'Février', '03' => 'Mars', '04' => 'Avril', '05' => 'Mai', '06' => 'Juin', '07' => 'Juillet', '08' => 'Août', '09' => 'Septembre', '10' => 'Octobre', '11' => 'Novembre', '12' => 'Décembre'] as $num => $label)
                                     <button type="button"
-                                            @click="$wire.set('closeMonth', pickerYear + '-' + '{{ $num }}'); pickerOpen = false"
-                                            :class="$wire.closeMonth === (pickerYear + '-' + '{{ $num }}') ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400' : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700/50'"
+                                            @click="const p = pickerYear + '-' + '{{ $num }}'; if (!{{ json_encode($closedMonths) }}.includes(p)) { $wire.set('closeMonth', p); pickerOpen = false; }"
+                                            :class="{
+                                                'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400': $wire.closeMonth === (pickerYear + '-' + '{{ $num }}'),
+                                                'text-slate-300 dark:text-slate-600 opacity-40 cursor-not-allowed': {{ json_encode($closedMonths) }}.includes(pickerYear + '-' + '{{ $num }}'),
+                                                'text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700/50': $wire.closeMonth !== (pickerYear + '-' + '{{ $num }}') && !{{ json_encode($closedMonths) }}.includes(pickerYear + '-' + '{{ $num }}')
+                                            }"
                                             class="px-2 py-2.5 rounded-lg text-sm font-medium transition-colors">
                                         {{ $label }}
                                     </button>
@@ -247,7 +259,7 @@
 
                 <!-- Expenses Display (Readonly) -->
                 <div class="bg-rose-50/30 dark:bg-rose-950/20 border border-rose-100/50 dark:border-rose-900/30 p-4 rounded-xl">
-                    <label class="block text-xs font-bold text-rose-800 dark:text-rose-400 mb-1.5 uppercase tracking-wider">{{ __('caisse.total_expenses_auto') }}</label>
+                    <label class="block text-xs font-semibold text-rose-800 dark:text-rose-400 mb-1.5">{{ __('caisse.total_expenses_auto') }}</label>
                     <div class="text-2xl font-black text-rose-600 dark:text-rose-500 leading-none flex items-baseline gap-1">
                         <span dir="ltr">{{ number_format((float)$calculatedExpenses, 2, ',', ' ') }}</span> <span class="text-sm font-bold">{{ getCurrency() }}</span>
                     </div>
@@ -257,7 +269,7 @@
                 <div>
                     <label class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">{{ __('caisse.month_gains') }} <span class="text-red-500">*</span></label>
                     <div class="relative">
-                        <input type="text" inputmode="decimal" wire:model.live="closeGains" class="w-full px-4 py-3 bg-slate-50/50 dark:bg-slate-950/50 border border-slate-200 dark:border-slate-800 rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 dark:text-white outline-none transition-all font-bold" dir="ltr" placeholder="0.00">
+                        <input type="text" inputmode="decimal" wire:model.live="closeGains" class="w-full px-4 py-3 bg-slate-50/50 dark:bg-slate-950/50 border border-slate-200 dark:border-slate-800 rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 dark:text-white outline-none transition-all font-semibold" dir="ltr" placeholder="0.00">
                         <span class="absolute top-1/2 -translate-y-1/2 {{ session('locale', 'ar') === 'ar' ? 'left-4' : 'right-4' }} text-slate-400 dark:text-slate-500 font-bold text-sm">{{ getCurrency() }}</span>
                     </div>
                     @error('closeGains') <span class="text-red-500 dark:text-red-400 text-xs mt-1 block">{{ $message }}</span> @enderror
@@ -267,7 +279,7 @@
                 @if($closeGains !== '')
                 @php $previewBalance = (float)str_replace(',', '.', $closeGains) - (float)$calculatedExpenses; @endphp
                 <div class="pt-4 border-t border-slate-100 dark:border-slate-800/60">
-                    <p class="text-xs font-bold text-slate-500 dark:text-slate-400 mb-1 uppercase tracking-wider">{{ __('caisse.preview_balance') }}</p>
+                    <p class="text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1">{{ __('caisse.preview_balance') }}</p>
                     <div class="text-3xl font-black flex items-baseline gap-1 {{ $previewBalance >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-500' }}">
                         <span dir="ltr">{{ $previewBalance > 0 ? '+' : '' }}{{ number_format($previewBalance, 2, ',', ' ') }}</span> <span class="text-sm font-bold">{{ getCurrency() }}</span>
                     </div>
@@ -281,8 +293,8 @@
                 </div>
 
                 <div class="flex gap-3 justify-end pt-2 border-t border-slate-100 dark:border-slate-800/60">
-                    <button type="button" @click="show = false" class="px-6 py-2.5 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-bold rounded-xl hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors cursor-pointer border border-slate-200/50 dark:border-slate-700/50 shadow-sm">{{ __('caisse.cancel') }}</button>
-                    <button type="submit" class="px-6 py-2.5 bg-emerald-600 text-white font-bold rounded-xl hover:bg-emerald-700 hover:shadow-emerald-500/30 transition-all shadow-md shadow-emerald-500/20 flex items-center cursor-pointer">
+                    <button type="button" @click="show = false" class="px-6 py-2.5 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-semibold rounded-xl hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors cursor-pointer border border-slate-200/50 dark:border-slate-700/50">{{ __('caisse.cancel') }}</button>
+                    <button type="submit" class="px-6 py-2.5 bg-emerald-600 text-white font-semibold rounded-xl hover:bg-emerald-700 transition-colors flex items-center cursor-pointer">
                         <svg wire:loading wire:target="closeMonthSubmit" class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                             <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                             <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>

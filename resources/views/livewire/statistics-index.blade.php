@@ -173,8 +173,8 @@
     </div>
     @endif
 
-    <!-- Row 1: Category Chart + Payment Methods -->
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+    <!-- Visual Analytics (Charts) -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
         <!-- Category Doughnut + Table -->
         <div class="bg-white/80 dark:bg-slate-900/80 backdrop-blur-md rounded-3xl shadow-premium dark:shadow-premium-dark border border-slate-200/50 dark:border-slate-800/60 p-6 md:p-8 hover:shadow-premium-hover dark:hover:shadow-premium-dark-hover transition-all duration-300">
             <h2 class="text-lg font-bold text-slate-800 dark:text-white mb-6 flex items-center font-heading">
@@ -182,99 +182,32 @@
                 {{ __('statistics.by_category') }}
             </h2>
             @if(count($expensesByCategory) > 0)
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div wire:key="cat-chart" class="relative h-64 flex items-center justify-center"
-                         x-data="{
-                             chart: null,
-                             labels: {{ json_encode(array_column($expensesByCategory, 'label')) }},
-                             values: {{ json_encode(array_column($expensesByCategory, 'total')) }},
-                             colors: {{ json_encode(array_column($expensesByCategory, 'color')) }},
-                             init() {
-                                 let checkChart = () => {
-                                     if (typeof Chart !== 'undefined') {
-                                         this.initChart();
-                                     } else {
-                                         setTimeout(checkChart, 100);
-                                     }
-                                 };
-                                 checkChart();
-                             },
-                             initChart() {
-                                 const ctx = this.$refs.canvas.getContext('2d');
-                                 Chart.defaults.font.family = 'Inter, Outfit, system-ui, sans-serif';
-                                 Chart.defaults.color = '#64748b';
-                                 this.chart = new Chart(ctx, {
-                                     type: 'doughnut',
-                                     data: {
-                                         labels: this.labels,
-                                         datasets: [{
-                                             data: this.values,
-                                             backgroundColor: this.colors,
-                                             borderWidth: 0,
-                                             hoverOffset: 8
-                                         }]
-                                     },
-                                     options: {
-                                         responsive: true,
-                                         maintainAspectRatio: false,
-                                         cutout: '65%',
-                                         plugins: {
-                                             legend: { display: false },
-                                             tooltip: {
-                                                 backgroundColor: 'rgba(255, 255, 255, 0.95)',
-                                                 titleColor: '#1e293b',
-                                                 bodyColor: '#334155',
-                                                 borderColor: '#e2e8f0',
-                                                 borderWidth: 1,
-                                                 padding: 12,
-                                                 boxPadding: 6,
-                                                 callbacks: {
-                                                     label: function(context) {
-                                                         const total = context.dataset.data.reduce((a, b) => a + b, 0);
-                                                         const pct = total > 0 ? ((context.parsed / total) * 100).toFixed(1) : 0;
-                                                         return context.label + ': ' + new Intl.NumberFormat().format(context.parsed) + ' {{ getCurrency() }} (' + pct + '%)';
-                                                     }
-                                                 }
-                                             }
-                                         }
-                                     }
-                                 });
-                             }
-                         }"
-                         x-effect="
-                             labels = {{ json_encode(array_column($expensesByCategory, 'label')) }};
-                             values = {{ json_encode(array_column($expensesByCategory, 'total')) }};
-                             colors = {{ json_encode(array_column($expensesByCategory, 'color')) }};
-                             if (chart) {
-                                 chart.data.labels = labels;
-                                 chart.data.datasets[0].data = values;
-                                 chart.data.datasets[0].backgroundColor = colors;
-                                 chart.update();
-                             }
-                         ">
-                        <div wire:ignore class="w-full h-full">
-                            <canvas x-ref="canvas" class="max-w-full max-h-full"></canvas>
+                <div class="flex flex-col gap-6">
+                    <div class="flex flex-col md:flex-row gap-6">
+                        <div wire:key="cat-chart" class="relative h-64 w-full md:w-1/2"
+                             x-data="categoryChart(@js(array_column($expensesByCategory, 'label')), @js(array_column($expensesByCategory, 'total')), @js(array_column($expensesByCategory, 'color')))">
+                            <div wire:ignore x-ref="container" class="w-full h-full"></div>
                         </div>
-                    </div>
-                    <div class="space-y-2 max-h-64 overflow-y-auto">
-                        @foreach($expensesByCategory as $i => $cat)
-                        <div class="flex items-center justify-between p-2.5 bg-slate-50/50 dark:bg-slate-950/30 rounded-xl border border-slate-100/50 dark:border-slate-800/40 hover:bg-slate-100 dark:hover:bg-slate-800/50 transition-colors">
-                            <div class="flex items-center gap-2.5 min-w-0">
-                                <span class="flex items-center justify-center w-5 h-5 rounded-full text-[10px] font-extrabold {{ $i === 0 ? 'bg-yellow-400 text-yellow-900' : ($i === 1 ? 'bg-slate-300 text-slate-700' : ($i === 2 ? 'bg-amber-700 text-amber-100' : 'bg-slate-200 dark:bg-slate-700 text-slate-500 dark:text-slate-400')) }}" style="{{ $i >= 3 ? '' : '' }}">
-                                    {{ $i + 1 }}
-                                </span>
-                                <span class="w-2.5 h-2.5 rounded-full shrink-0" style="background: {{ $cat['color'] }}"></span>
-                                <span class="text-xs font-semibold text-slate-700 dark:text-slate-300 truncate">{{ $cat['label'] }}</span>
+                        <div class="space-y-2 max-h-64 overflow-y-auto w-full md:w-1/2">
+                            @foreach($expensesByCategory as $i => $cat)
+                            <div class="flex items-center justify-between p-2.5 bg-slate-50/50 dark:bg-slate-950/30 rounded-xl border border-slate-100/50 dark:border-slate-800/40 hover:bg-slate-100 dark:hover:bg-slate-800/50 transition-colors">
+                                <div class="flex items-center gap-2.5 min-w-0">
+                                    <span class="flex items-center justify-center w-5 h-5 rounded-full text-[10px] font-extrabold {{ $i === 0 ? 'bg-yellow-400 text-yellow-900' : ($i === 1 ? 'bg-slate-300 text-slate-700' : ($i === 2 ? 'bg-amber-700 text-amber-100' : 'bg-slate-200 dark:bg-slate-700 text-slate-500 dark:text-slate-400')) }}" style="{{ $i >= 3 ? '' : '' }}">
+                                        {{ $i + 1 }}
+                                    </span>
+                                    <span class="w-2.5 h-2.5 rounded-full shrink-0" style="background: {{ $cat['color'] }}"></span>
+                                    <span class="text-xs font-semibold text-slate-700 dark:text-slate-300 truncate">{{ $cat['label'] }}</span>
+                                </div>
+                                <div class="text-right shrink-0 ml-3">
+                                    <span class="text-xs font-bold text-slate-800 dark:text-slate-100 block">{{ formatMoney($cat['total']) }}</span>
+                                    <span class="text-[10px] text-slate-400 dark:text-slate-500 font-medium">{{ $cat['pct'] }}% ({{ $cat['count'] }})</span>
+                                </div>
                             </div>
-                            <div class="text-right shrink-0 ml-3">
-                                <span class="text-xs font-bold text-slate-800 dark:text-slate-100 block">{{ formatMoney($cat['total']) }}</span>
-                                <span class="text-[10px] text-slate-400 dark:text-slate-500 font-medium">{{ $cat['pct'] }}% ({{ $cat['count'] }})</span>
-                            </div>
+                            @endforeach
                         </div>
-                        @endforeach
                     </div>
                     @if(count($expensesByCategory) > 0)
-                    <div class="mt-3 pt-3 border-t border-slate-100 dark:border-slate-800/40 text-center">
+                    <div class="w-full mt-3 pt-3 border-t border-slate-100 dark:border-slate-800/40 text-center">
                         <span class="text-[11px] text-slate-400 dark:text-slate-500 font-medium">
                             {{ __('statistics.total') }}: <strong class="text-slate-700 dark:text-slate-300">{{ formatMoney($totalExpenses) }}</strong>
                             &middot; {{ $expenseCount }} {{ __('statistics.operations') }}
@@ -289,138 +222,16 @@
             @endif
         </div>
 
-        <!-- Payment Methods -->
+        <!-- Growth Chart -->
         <div class="bg-white/80 dark:bg-slate-900/80 backdrop-blur-md rounded-3xl shadow-premium dark:shadow-premium-dark border border-slate-200/50 dark:border-slate-800/60 p-6 md:p-8 hover:shadow-premium-hover dark:hover:shadow-premium-dark-hover transition-all duration-300">
             <h2 class="text-lg font-bold text-slate-800 dark:text-white mb-6 flex items-center font-heading">
                 <span class="w-2.5 h-6 bg-emerald-500 rounded-full me-3"></span>
-                {{ __('statistics.payment_methods') }}
+                {{ __('statistics.growth_trend') }}
             </h2>
-            @if(count($paymentMethodData) > 0)
-                @php
-                    $pmColors = ['cash' => '#10B981', 'card' => '#6366F1', 'check' => '#F59E0B', 'transfer' => '#3B82F6', 'other' => '#8B5CF6'];
-                @endphp
-                <div class="space-y-4">
-                    @foreach($paymentMethodData as $pm)
-                    @php $color = $pmColors[$pm['label']] ?? '#64748b'; @endphp
-                    <div class="bg-slate-50/40 dark:bg-slate-950/30 rounded-xl p-3 border border-slate-100/50 dark:border-slate-800/40">
-                        <div class="flex justify-between items-center mb-2">
-                            <div class="flex items-center gap-2">
-                                <span class="w-3 h-3 rounded-full" style="background: {{ $color }}"></span>
-                                <span class="text-xs font-semibold text-slate-700 dark:text-slate-300">{{ $pm['label'] }}</span>
-                            </div>
-                            <span class="text-xs font-bold text-slate-800 dark:text-slate-200">{{ formatMoney($pm['total']) }}</span>
-                        </div>
-                        <div class="w-full bg-slate-200 dark:bg-slate-700 rounded-full h-2 overflow-hidden">
-                            <div class="h-full rounded-full transition-all duration-500" style="width: {{ $pm['pct'] }}%; background: {{ $color }}"></div>
-                        </div>
-                        <div class="flex justify-between mt-1">
-                            <span class="text-[10px] text-slate-400 dark:text-slate-500 font-medium">{{ $pm['pct'] }}%</span>
-                            <span class="text-[10px] text-slate-400 dark:text-slate-500 font-medium">{{ $pm['count'] }} {{ __('statistics.operations') }}</span>
-                        </div>
-                    </div>
-                    @endforeach
-                </div>
-            @else
-                <div class="h-64 flex flex-col items-center justify-center border-2 border-dashed border-slate-200 dark:border-slate-800 rounded-2xl">
-                    <p class="text-slate-400 dark:text-slate-500 font-semibold text-sm">{{ __('statistics.no_data') }}</p>
-                </div>
-            @endif
-        </div>
-    </div>
-
-    <!-- Row 2: Trend Chart + Period Expenses Table -->
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        <!-- Trend -->
-        <div class="bg-white/80 dark:bg-slate-900/80 backdrop-blur-md rounded-3xl shadow-premium dark:shadow-premium-dark border border-slate-200/50 dark:border-slate-800/60 p-6 md:p-8 hover:shadow-premium-hover dark:hover:shadow-premium-dark-hover transition-all duration-300">
-            <h2 class="text-lg font-bold text-slate-800 dark:text-white mb-6 flex items-center font-heading">
-                <span class="w-2.5 h-6 bg-indigo-500 rounded-full me-3"></span>
-                {{ __('statistics.trend') }}
-            </h2>
-            @if(count($monthlyTrend) > 0)
-                <div wire:key="trend-chart-stat" class="relative h-72 w-full"
-                     x-data="{
-                         chart: null,
-                         labels: {{ json_encode(array_column($monthlyTrend, 'month')) }},
-                         values: {{ json_encode(array_column($monthlyTrend, 'total')) }},
-                         init() {
-                             let checkChart = () => {
-                                 if (typeof Chart !== 'undefined') {
-                                     this.initChart();
-                                 } else {
-                                     setTimeout(checkChart, 100);
-                                 }
-                             };
-                             checkChart();
-                         },
-                         initChart() {
-                             const ctx = this.$refs.canvas.getContext('2d');
-                             let gradient = ctx.createLinearGradient(0, 0, 0, 400);
-                             gradient.addColorStop(0, 'rgba(99, 102, 241, 0.5)');
-                             gradient.addColorStop(1, 'rgba(99, 102, 241, 0.0)');
-                             this.chart = new Chart(ctx, {
-                                 type: 'line',
-                                 data: {
-                                     labels: this.labels,
-                                     datasets: [{
-                                         label: '{{ __('statistics.expenses') }}',
-                                         data: this.values,
-                                         borderColor: '#6366F1',
-                                         borderWidth: 3,
-                                         backgroundColor: gradient,
-                                         fill: true,
-                                         tension: 0.4,
-                                         pointBackgroundColor: '#ffffff',
-                                         pointBorderColor: '#6366F1',
-                                         pointBorderWidth: 2,
-                                         pointRadius: 4,
-                                         pointHoverRadius: 6
-                                     }]
-                                 },
-                                 options: {
-                                     responsive: true,
-                                     maintainAspectRatio: false,
-                                     plugins: {
-                                         legend: { display: false },
-                                         tooltip: {
-                                             backgroundColor: 'rgba(15, 23, 42, 0.9)',
-                                             titleColor: '#fff',
-                                             bodyColor: '#cbd5e1',
-                                             padding: 12,
-                                             displayColors: false,
-                                             callbacks: {
-                                                 label: function(context) {
-                                                     return new Intl.NumberFormat().format(context.parsed.y) + ' {{ getCurrency() }}';
-                                                 }
-                                             }
-                                         }
-                                     },
-                                     scales: {
-                                         y: {
-                                             beginAtZero: true,
-                                             grid: { color: '#f1f5f9', drawBorder: false },
-                                             border: { display: false }
-                                         },
-                                         x: {
-                                             grid: { display: false },
-                                             border: { display: false }
-                                         }
-                                     }
-                                 }
-                             });
-                         }
-                     }"
-                     x-effect="
-                         labels = {{ json_encode(array_column($monthlyTrend, 'month')) }};
-                         values = {{ json_encode(array_column($monthlyTrend, 'total')) }};
-                         if (chart) {
-                             chart.data.labels = labels;
-                             chart.data.datasets[0].data = values;
-                             chart.update();
-                         }
-                     ">
-                    <div wire:ignore class="w-full h-full">
-                        <canvas x-ref="canvas" class="max-w-full max-h-full"></canvas>
-                    </div>
+            @if(count($growthTrend) > 0)
+                <div wire:key="growth-chart" class="relative h-72 w-full"
+                     x-data="growthChart(@js(array_column($growthTrend, 'label')), @js(array_column($growthTrend, 'rate')))">
+                    <div wire:ignore x-ref="container" class="w-full h-full"></div>
                 </div>
             @else
                 <div class="h-72 flex flex-col items-center justify-center border-2 border-dashed border-slate-200 dark:border-slate-800 rounded-2xl">
@@ -428,9 +239,12 @@
                 </div>
             @endif
         </div>
+    </div>
 
+    <!-- Data Breakdown (Tables & Lists) -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
         <!-- Category Table -->
-        <div class="bg-white/80 dark:bg-slate-900/80 backdrop-blur-md rounded-3xl shadow-premium dark:shadow-premium-dark border border-slate-200/50 dark:border-slate-800/60 p-6 md:p-8 overflow-hidden hover:shadow-premium-hover dark:hover:shadow-premium-dark-hover transition-all duration-300">
+        <div class="lg:col-span-2 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md rounded-3xl shadow-premium dark:shadow-premium-dark border border-slate-200/50 dark:border-slate-800/60 p-6 md:p-8 overflow-hidden hover:shadow-premium-hover dark:hover:shadow-premium-dark-hover transition-all duration-300">
             <h2 class="text-lg font-bold text-slate-800 dark:text-white mb-4 flex items-center font-heading">
                 <span class="w-2.5 h-6 bg-amber-500 rounded-full me-3"></span>
                 {{ __('statistics.category_detail') }}
@@ -479,8 +293,46 @@
                 </div>
             @endif
         </div>
-    </div>
 
+        <!-- Payment Methods -->
+        <div class="lg:col-span-1 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md rounded-3xl shadow-premium dark:shadow-premium-dark border border-slate-200/50 dark:border-slate-800/60 p-6 md:p-8 hover:shadow-premium-hover dark:hover:shadow-premium-dark-hover transition-all duration-300">
+            <h2 class="text-lg font-bold text-slate-800 dark:text-white mb-6 flex items-center font-heading">
+                <span class="w-2.5 h-6 bg-emerald-500 rounded-full me-3"></span>
+                {{ __('statistics.payment_methods') }}
+            </h2>
+            @if(count($paymentMethodData) > 0)
+                @php
+                    $pmColors = ['cash' => '#10B981', 'card' => '#6366F1', 'check' => '#F59E0B', 'transfer' => '#3B82F6', 'other' => '#8B5CF6'];
+                @endphp
+                <div class="space-y-4">
+                    @foreach($paymentMethodData as $pm)
+                    @php $color = $pmColors[$pm['label']] ?? '#64748b'; @endphp
+                    <div class="bg-slate-50/40 dark:bg-slate-950/30 rounded-xl p-3 border border-slate-100/50 dark:border-slate-800/40">
+                        <div class="flex justify-between items-center mb-2">
+                            <div class="flex items-center gap-2">
+                                <span class="w-3 h-3 rounded-full" style="background: {{ $color }}"></span>
+                                <span class="text-xs font-semibold text-slate-700 dark:text-slate-300">{{ $pm['label'] }}</span>
+                            </div>
+                            <span class="text-xs font-bold text-slate-800 dark:text-slate-200">{{ formatMoney($pm['total']) }}</span>
+                        </div>
+                        <div class="w-full bg-slate-200 dark:bg-slate-700 rounded-full h-2 overflow-hidden">
+                            <div class="h-full rounded-full transition-all duration-500" style="width: {{ $pm['pct'] }}%; background: {{ $color }}"></div>
+                        </div>
+                        <div class="flex justify-between mt-1">
+                            <span class="text-[10px] text-slate-400 dark:text-slate-500 font-medium">{{ $pm['pct'] }}%</span>
+                            <span class="text-[10px] text-slate-400 dark:text-slate-500 font-medium">{{ $pm['count'] }} {{ __('statistics.operations') }}</span>
+                        </div>
+                    </div>
+                    @endforeach
+                </div>
+            @else
+                <div class="h-64 flex flex-col items-center justify-center border-2 border-dashed border-slate-200 dark:border-slate-800 rounded-2xl">
+                    <p class="text-slate-400 dark:text-slate-500 font-semibold text-sm">{{ __('statistics.no_data') }}</p>
+                </div>
+            @endif
+        </div>
+    </div>
+    
     <!-- Expenses List for this Period -->
     <div class="bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl rounded-3xl shadow-premium dark:shadow-premium-dark border border-slate-200/50 dark:border-slate-800/60 overflow-hidden hover:shadow-premium-hover dark:hover:shadow-premium-dark-hover transition-all duration-300">
         <div class="p-6 border-b border-slate-100 dark:border-slate-800/60 bg-slate-50/20 dark:bg-slate-950/20">
@@ -534,6 +386,8 @@
             </div>
         @endif
     </div>
+
+
 
     <!-- Closure History -->
     <div class="bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl rounded-3xl shadow-premium dark:shadow-premium-dark border border-slate-200/50 dark:border-slate-800/60 overflow-hidden hover:shadow-premium-hover dark:hover:shadow-premium-dark-hover transition-all duration-300">
@@ -664,5 +518,353 @@
 </div>
 
 @push('scripts')
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
+<script src="https://cdn.jsdelivr.net/npm/echarts@5/dist/echarts.min.js"></script>
+
+<script>
+document.addEventListener('alpine:init', () => {
+    function createObserver(component) {
+        return new MutationObserver(() => { 
+            if (component.chart) { 
+                component.chart.dispose(); 
+                component.chart = echarts.init(component.$refs.container); 
+                component.renderChart(); 
+            } 
+        });
+    }
+
+    Alpine.data('categoryChart', (labels, values, colors) => ({
+        chart: null,
+        labels: labels,
+        values: values,
+        colors: colors,
+        isDark() { return document.documentElement.classList.contains('dark'); },
+        init() {
+            this.$watch('labels', () => { if(this.chart) this.renderChart(); });
+            let check = () => {
+                if (typeof echarts !== 'undefined') {
+                    this.chart = echarts.init(this.$refs.container);
+                    this.renderChart();
+                    createObserver(this).observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
+                } else { setTimeout(check, 100); }
+            };
+            check();
+        },
+        renderChart() {
+            const dark = this.isDark();
+            const total = this.values.reduce((a, b) => a + b, 0);
+            this.chart.setOption({
+                tooltip: {
+                    trigger: 'item',
+                    backgroundColor: dark ? 'rgba(15, 23, 42, 0.92)' : 'rgba(255, 255, 255, 0.96)',
+                    borderColor: dark ? 'rgba(51, 65, 85, 0.5)' : 'rgba(226, 232, 240, 0.8)',
+                    borderWidth: 1,
+                    padding: [12, 16],
+                    textStyle: { color: dark ? '#e2e8f0' : '#334155', fontSize: 13, fontWeight: 500 },
+                    extraCssText: 'border-radius: 12px; backdrop-filter: blur(12px); box-shadow: 0 8px 32px rgba(0,0,0,' + (dark ? '0.4' : '0.12') + ');',
+                    formatter: function(params) {
+                        const pct = total > 0 ? ((params.value / total) * 100).toFixed(1) : 0;
+                        return '<div style="font-size:14px;font-weight:700;margin-bottom:4px">' + params.marker + ' ' + params.name + '</div>' +
+                               '<div style="font-size:13px;color:' + (dark ? '#94a3b8' : '#64748b') + '">' + new Intl.NumberFormat().format(params.value) + ' DZD <span style="float:right;font-weight:700;color:' + (dark ? '#e2e8f0' : '#1e293b') + ';margin-left:12px">' + pct + '%</span></div>';
+                    }
+                },
+                legend: { show: false },
+                graphic: [{
+                    type: 'text',
+                    left: 'center',
+                    top: '42%',
+                    style: {
+                        text: new Intl.NumberFormat().format(total),
+                        fontSize: 20,
+                        fontWeight: 800,
+                        fill: dark ? '#f1f5f9' : '#1e293b',
+                        fontFamily: 'Instrument Sans, system-ui, sans-serif'
+                    }
+                }, {
+                    type: 'text',
+                    left: 'center',
+                    top: '54%',
+                    style: {
+                        text: 'DZD',
+                        fontSize: 11,
+                        fontWeight: 600,
+                        fill: dark ? '#64748b' : '#94a3b8',
+                        fontFamily: 'Instrument Sans, system-ui, sans-serif'
+                    }
+                }],
+                animationDuration: 1200,
+                animationEasing: 'cubicInOut',
+                series: [{
+                    type: 'pie',
+                    radius: ['52%', '78%'],
+                    center: ['50%', '50%'],
+                    avoidLabelOverlap: true,
+                    label: { show: false },
+                    emphasis: {
+                        scale: true,
+                        scaleSize: 8,
+                        itemStyle: {
+                            shadowBlur: 20,
+                            shadowOffsetX: 0,
+                            shadowColor: 'rgba(0, 0, 0, 0.25)'
+                        }
+                    },
+                    itemStyle: {
+                        borderRadius: 8,
+                        borderColor: dark ? '#0f172a' : '#ffffff',
+                        borderWidth: 3
+                    },
+                    data: this.labels.map((label, i) => ({
+                        value: this.values[i],
+                        name: label,
+                        itemStyle: { color: this.colors[i] }
+                    }))
+                }]
+            });
+        }
+    }));
+
+    Alpine.data('trendChart', (labels, values) => ({
+        chart: null,
+        labels: labels,
+        values: values,
+        isDark() { return document.documentElement.classList.contains('dark'); },
+        init() {
+            this.$watch('labels', () => { if(this.chart) this.renderChart(); });
+            let check = () => {
+                if (typeof echarts !== 'undefined') {
+                    this.chart = echarts.init(this.$refs.container);
+                    this.renderChart();
+                    createObserver(this).observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
+                } else { setTimeout(check, 100); }
+            };
+            check();
+        },
+        renderChart() {
+            const dark = this.isDark();
+            this.chart.setOption({
+                tooltip: {
+                    trigger: 'axis',
+                    backgroundColor: dark ? 'rgba(15, 23, 42, 0.92)' : 'rgba(255, 255, 255, 0.96)',
+                    borderColor: dark ? 'rgba(51, 65, 85, 0.5)' : 'rgba(226, 232, 240, 0.8)',
+                    borderWidth: 1,
+                    padding: [12, 16],
+                    textStyle: { color: dark ? '#e2e8f0' : '#334155', fontSize: 13, fontWeight: 500 },
+                    extraCssText: 'border-radius: 12px; backdrop-filter: blur(12px); box-shadow: 0 8px 32px rgba(0,0,0,' + (dark ? '0.4' : '0.12') + ');',
+                    formatter: function(params) {
+                        return '<div style="font-size:14px;font-weight:700;margin-bottom:6px">' + params[0].axisValueLabel + '</div>' +
+                               '<div style="font-size:22px;font-weight:800;color:#6366F1">' + new Intl.NumberFormat().format(params[0].value) + ' <span style="font-size:12px;font-weight:600;color:' + (dark ? '#64748b' : '#94a3b8') + '">DZD</span></div>';
+                    },
+                    axisPointer: {
+                        type: 'line',
+                        lineStyle: { color: dark ? 'rgba(99, 102, 241, 0.3)' : 'rgba(99, 102, 241, 0.2)', width: 1, type: 'dashed' }
+                    }
+                },
+                grid: { left: '3%', right: '4%', bottom: '3%', top: '8%', containLabel: true },
+                xAxis: {
+                    type: 'category',
+                    data: this.labels,
+                    axisLine: { show: false },
+                    axisTick: { show: false },
+                    axisLabel: { fontSize: 11, color: dark ? '#475569' : '#94a3b8', fontWeight: 600 },
+                    boundaryGap: false
+                },
+                yAxis: {
+                    type: 'value',
+                    splitLine: { lineStyle: { color: dark ? 'rgba(51, 65, 85, 0.3)' : '#f1f5f9', type: 'dashed' } },
+                    axisLabel: {
+                        fontSize: 11,
+                        color: dark ? '#475569' : '#94a3b8',
+                        fontWeight: 500,
+                        formatter: function(v) { return new Intl.NumberFormat('en', { notation: 'compact' }).format(v); }
+                    }
+                },
+                animationDuration: 1500,
+                animationEasing: 'cubicInOut',
+                series: [{
+                    type: 'line',
+                    smooth: true,
+                    symbol: 'circle',
+                    symbolSize: 8,
+                    showSymbol: false,
+                    data: this.values,
+                    lineStyle: {
+                        color: '#6366F1',
+                        width: 3.5,
+                        shadowColor: 'rgba(99, 102, 241, 0.35)',
+                        shadowBlur: 12,
+                        shadowOffsetY: 6
+                    },
+                    itemStyle: {
+                        color: '#6366F1',
+                        borderColor: dark ? '#1e293b' : '#ffffff',
+                        borderWidth: 3,
+                        shadowColor: 'rgba(99, 102, 241, 0.5)',
+                        shadowBlur: 10
+                    },
+                    areaStyle: {
+                        color: {
+                            type: 'linear', x: 0, y: 0, x2: 0, y2: 1,
+                            colorStops: [
+                                { offset: 0, color: 'rgba(99, 102, 241, 0.25)' },
+                                { offset: 0.8, color: 'rgba(99, 102, 241, 0.02)' },
+                                { offset: 1, color: 'rgba(99, 102, 241, 0)' }
+                            ]
+                        }
+                    },
+                    emphasis: { focus: 'series', itemStyle: { borderWidth: 4 } }
+                }]
+            });
+        }
+    }));
+
+    Alpine.data('growthChart', (labels, values) => ({
+        chart: null,
+        labels: labels,
+        values: values,
+        isDark() { return document.documentElement.classList.contains('dark'); },
+        init() {
+            this.$watch('labels', () => { if(this.chart) this.renderChart(); });
+            let check = () => {
+                if (typeof echarts !== 'undefined') {
+                    this.chart = echarts.init(this.$refs.container);
+                    this.renderChart();
+                    createObserver(this).observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
+                    
+                    window.addEventListener('resize', () => {
+                        if(this.chart) this.chart.resize();
+                    });
+                } else { setTimeout(check, 100); }
+            };
+            check();
+        },
+        renderChart() {
+            const dark = this.isDark();
+            
+            const colorPrimary = '#10B981';
+            const colorSecondary = '#34D399';
+            const colorGlow = 'rgba(16, 185, 129, 0.5)';
+            
+            // Format number with spaces (e.g. 1 000 000.00)
+            const formatMoney = (val) => {
+                return new Intl.NumberFormat('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(val) + ' DA';
+            };
+            
+            this.chart.setOption({
+                tooltip: {
+                    trigger: 'axis',
+                    backgroundColor: dark ? 'rgba(15, 23, 42, 0.85)' : 'rgba(255, 255, 255, 0.9)',
+                    borderColor: dark ? 'rgba(51, 65, 85, 0.5)' : 'rgba(226, 232, 240, 0.8)',
+                    borderWidth: 1,
+                    padding: [16, 20],
+                    textStyle: { color: dark ? '#f8fafc' : '#1e293b', fontSize: 13, fontWeight: 500 },
+                    extraCssText: 'border-radius: 16px; backdrop-filter: blur(16px); box-shadow: 0 10px 40px -10px rgba(16, 185, 129, 0.3);',
+                    formatter: function(params) {
+                        const v = params[0].value;
+                        return '<div style="font-size:13px;font-weight:600;color:' + (dark ? '#94a3b8' : '#64748b') + ';margin-bottom:8px;text-transform:uppercase;letter-spacing:0.5px">' + params[0].axisValueLabel + '</div>' +
+                               '<div style="display:flex;align-items:center;gap:8px;">' +
+                                 '<div style="font-size:24px;font-weight:800;color:' + (dark ? '#fff' : '#0f172a') + '; letter-spacing:-0.5px;">' + formatMoney(v) + '</div>' +
+                               '</div>';
+                    },
+                    axisPointer: {
+                        type: 'line',
+                        lineStyle: { 
+                            color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [{offset: 0, color: 'rgba(16, 185, 129, 0)'}, {offset: 0.5, color: 'rgba(16, 185, 129, 0.5)'}, {offset: 1, color: 'rgba(16, 185, 129, 0)'}]), 
+                            width: 2, 
+                            type: 'solid' 
+                        }
+                    }
+                },
+                grid: { left: '2%', right: '3%', bottom: '2%', top: '10%', containLabel: true },
+                xAxis: {
+                    type: 'category',
+                    data: this.labels,
+                    axisLine: { lineStyle: { color: dark ? '#334155' : '#e2e8f0', width: 2 } },
+                    axisTick: { show: false },
+                    axisLabel: { fontSize: 12, color: dark ? '#94a3b8' : '#64748b', fontWeight: 600, margin: 16 },
+                    boundaryGap: false
+                },
+                yAxis: {
+                    type: 'value',
+                    splitLine: { 
+                        lineStyle: { 
+                            color: dark ? 'rgba(51, 65, 85, 0.4)' : 'rgba(226, 232, 240, 0.6)', 
+                            type: 'dashed',
+                            width: 1
+                        } 
+                    },
+                    axisLabel: {
+                        fontSize: 12,
+                        color: dark ? '#94a3b8' : '#64748b',
+                        fontWeight: 600,
+                        formatter: function(v) { 
+                            if(v >= 1000000) return (v / 1000000).toFixed(1) + 'M DA';
+                            if(v >= 1000) return (v / 1000).toFixed(1) + 'K DA';
+                            return v + ' DA'; 
+                        },
+                        margin: 16
+                    }
+                },
+                animationDuration: 2000,
+                animationEasing: 'cubicOut',
+                series: [{
+                    type: 'line',
+                    smooth: true,
+                    symbol: 'circle',
+                    symbolSize: 0,
+                    showSymbol: false,
+                    data: this.values,
+                    lineStyle: {
+                        width: 4,
+                        color: new echarts.graphic.LinearGradient(0, 0, 1, 0, [
+                            { offset: 0, color: colorPrimary },
+                            { offset: 1, color: colorSecondary }
+                        ]),
+                        shadowColor: colorGlow,
+                        shadowBlur: 20,
+                        shadowOffsetY: 8
+                    },
+                    itemStyle: {
+                        color: '#fff',
+                        borderColor: colorPrimary,
+                        borderWidth: 3,
+                        shadowColor: colorGlow,
+                        shadowBlur: 15
+                    },
+                    areaStyle: {
+                        color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+                            { offset: 0, color: 'rgba(52, 211, 153, 0.4)' },
+                            { offset: 0.5, color: 'rgba(16, 185, 129, 0.1)' },
+                            { offset: 1, color: 'rgba(16, 185, 129, 0)' }
+                        ])
+                    },
+                    emphasis: { 
+                        focus: 'series',
+                        itemStyle: { 
+                            color: colorPrimary,
+                            borderColor: '#fff',
+                            borderWidth: 4,
+                            symbolSize: 12 
+                        } 
+                    }
+                }]
+            });
+        }
+    }));
+});
+</script>
+
+<script>
+(function() {
+    let resizeTimer;
+    window.addEventListener('resize', function() {
+        clearTimeout(resizeTimer);
+        resizeTimer = setTimeout(function() {
+            document.querySelectorAll('[x-ref="container"]').forEach(function(el) {
+                var inst = echarts.getInstanceByDom(el);
+                if (inst) inst.resize({ animation: { duration: 300, easing: 'cubicOut' } });
+            });
+        }, 150);
+    });
+})();
+</script>
 @endpush

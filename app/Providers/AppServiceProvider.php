@@ -141,6 +141,14 @@ class AppServiceProvider extends ServiceProvider
             return $user->hasPermission('audit-logs');
         });
 
+        Gate::define('manage-settings', function (User $user) {
+            return $user->hasPermission('settings');
+        });
+
+        Gate::define('manage-categories', function (User $user) {
+            return $user->hasPermission('categories');
+        });
+
         Gate::define('login-as', function (User $user) {
             return $user->hasPermission('login-as');
         });

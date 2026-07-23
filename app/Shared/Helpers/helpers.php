@@ -42,7 +42,7 @@ if (!function_exists('getPeriodRange')) {
     function getPeriodRange(string $yearMonth): array
     {
         $startDay = getMonthPeriodStartDay();
-        $date = \Carbon\Carbon::createFromFormat('Y-m-d', $yearMonth . '-01');
+        $date = \Carbon\Carbon::createFromFormat('Y-m-d', $yearMonth . '-01')->startOfDay();
         $end = $date->copy()->day($startDay);
         $start = $end->copy()->subMonth()->addDay();
         return ['start' => $start, 'end' => $end];
@@ -67,6 +67,28 @@ if (!function_exists('formatPeriodLabel')) {
             'ar' => 'من ' . $startLabel . ' إلى ' . $endLabel,
             'en' => 'From ' . $startLabel . ' to ' . $endLabel,
             default => 'Du ' . $startLabel . ' au ' . $endLabel,
+        };
+    }
+}
+
+if (!function_exists('formatPeriodLabelShort')) {
+    function formatPeriodLabelShort(string $yearMonth): string
+    {
+        $range = getPeriodRange($yearMonth);
+        $start = $range['start'];
+        $end = $range['end'];
+        $locale = app()->getLocale();
+
+        $startLabel = $start->translatedFormat('j M');
+        $endLabel = $end->translatedFormat('j M Y');
+        if ($start->year !== $end->year) {
+            $startLabel = $start->translatedFormat('j M Y');
+        }
+
+        return match ($locale) {
+            'ar' => $startLabel . ' ← ' . $endLabel,
+            'en' => $startLabel . ' → ' . $endLabel,
+            default => $startLabel . ' → ' . $endLabel,
         };
     }
 }

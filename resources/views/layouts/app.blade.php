@@ -3,7 +3,38 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-    <script>if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) document.documentElement.classList.add('dark')</script>
+    <script>
+        if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) document.documentElement.classList.add('dark');
+        
+        // Sync meta theme-color with manual dark mode toggle
+        function updateThemeColor() {
+            const isDark = document.documentElement.classList.contains('dark');
+            const themeColorMeta = document.querySelector('meta[name="theme-color"]:not([media])') || document.createElement('meta');
+            themeColorMeta.name = "theme-color";
+            
+            // Get colors from meta tags if they exist, fallback to injected colors
+            const lightColor = '{{ $pwaThemeColor ?? "#2563eb" }}';
+            const darkColor = '{{ $pwaThemeColorDark ?? "#0f172a" }}';
+            
+            themeColorMeta.content = isDark ? darkColor : lightColor;
+            
+            // Remove media-based theme-colors once manual toggle is used
+            document.querySelectorAll('meta[name="theme-color"][media]').forEach(el => el.remove());
+            document.head.appendChild(themeColorMeta);
+        }
+        
+        // Watch for manual toggle
+        const observer = new MutationObserver((mutations) => {
+            mutations.forEach((mutation) => {
+                if (mutation.attributeName === 'class') {
+                    updateThemeColor();
+                }
+            });
+        });
+        document.addEventListener('DOMContentLoaded', () => {
+            observer.observe(document.documentElement, { attributes: true });
+        });
+    </script>
     <title>@yield('title', config('app.name'))</title>
     @php $appFavicon = \App\Domains\Settings\Models\Setting::get('app_favicon'); @endphp
     @if($appFavicon)
@@ -16,10 +47,16 @@
         $pwaCustomIcon = \App\Domains\Settings\Models\Setting::get('pwa_icon', null);
         $pwaIconUrl = $pwaCustomIcon ? asset('storage/' . $pwaCustomIcon) : '/icons/icon-192x192.png';
     @endphp
+    <script>
+        // Store PHP values in JS variables for the script at the top
+        window.pwaThemeColor = '{{ $pwaThemeColor }}';
+        window.pwaThemeColorDark = '{{ $pwaThemeColorDark }}';
+    </script>
     <link rel="manifest" href="{{ route('manifest.json') }}">
     <meta name="theme-color" content="{{ $pwaThemeColor }}" media="(prefers-color-scheme: light)">
     <meta name="theme-color" content="{{ $pwaThemeColorDark }}" media="(prefers-color-scheme: dark)">
     <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="{{ $pwaShortName }}">
     <link rel="apple-touch-icon" href="{{ $pwaIconUrl }}">
     <!-- Fonts -->
@@ -95,14 +132,18 @@
     @livewireStyles
     @stack('styles')
 </head>
-<body class="font-sans antialiased bg-slate-50 text-slate-900 dark:bg-slate-900 dark:text-slate-100 transition-colors duration-300">
-    <div x-data="{ sidebar: window.innerWidth >= 1024 }" class="flex h-screen overflow-hidden">
+<body class="font-sans antialiased bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-slate-100 transition-colors duration-300 relative selection:bg-blue-500 selection:text-white">
+    <!-- Ambient 2026 Background Orbs -->
+    <div class="fixed top-0 start-1/4 w-[500px] h-[500px] bg-blue-500/10 dark:bg-blue-600/10 rounded-full blur-[120px] pointer-events-none z-0"></div>
+    <div class="fixed bottom-0 end-1/4 w-[450px] h-[450px] bg-indigo-500/10 dark:bg-purple-600/10 rounded-full blur-[100px] pointer-events-none z-0"></div>
+
+    <div x-data="{ sidebar: window.innerWidth >= 1024 }" class="flex h-screen overflow-hidden relative z-10">
         @auth
             <!-- Sidebar -->
-            <aside class="fixed inset-y-0 start-0 z-50 w-72 shrink-0 bg-white dark:bg-slate-800/90 backdrop-blur-lg border-e border-slate-200/80 dark:border-slate-700/50 transform transition-all duration-300 ease-in-out lg:relative lg:!translate-x-0 flex flex-col shadow-2xl lg:shadow-none overflow-hidden"
+            <aside class="fixed inset-y-0 start-0 z-50 w-72 shrink-0 bg-white dark:bg-slate-900 border-e border-slate-200 dark:border-slate-800 transform transition-all duration-300 ease-in-out lg:relative lg:!translate-x-0 flex flex-col shadow-sm lg:shadow-none overflow-hidden"
                    :class="sidebar ? 'translate-x-0' : 'ltr:-translate-x-full rtl:translate-x-full'">
                 
-                <div class="flex items-center justify-between h-20 px-6 pt-[env(safe-area-inset-top)] bg-gradient-to-r from-blue-700 to-indigo-800 border-b border-blue-800/10 dark:border-slate-700/20">
+                <div class="flex items-center justify-between h-20 px-6 pt-[env(safe-area-inset-top)] bg-blue-700 border-b border-blue-800/10 dark:border-slate-700/20">
                     @php $appLogo = \App\Domains\Settings\Models\Setting::get('app_logo'); @endphp
                     <a href="{{ route('dashboard') }}" class="flex items-center gap-3">
                         @if($appLogo)
@@ -121,65 +162,65 @@
                 <div class="flex-1 overflow-y-auto px-4 pt-6 pb-[env(safe-area-inset-bottom)] space-y-8">
                     <!-- Main Menu -->
                     <div>
-                        <p class="px-4 text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-3">{{ __('nav.main_menu') }}</p>
+                        <p class="px-4 text-xs font-semibold text-slate-400 dark:text-slate-500 mb-3">{{ __('nav.main_menu') }}</p>
                         <ul class="space-y-1">
                             @if(auth()->user()->hasPermission('dashboard'))
                             <li>
-                                <a href="{{ route('dashboard') }}" class="flex items-center px-4 py-3 rounded-xl transition-all duration-200 group {{ request()->routeIs('dashboard') ? 'bg-gradient-to-r from-blue-50 to-indigo-50 text-blue-700 dark:from-slate-700/50 dark:to-slate-700/30 dark:text-blue-400 shadow-sm border border-blue-100/50 dark:border-slate-600/50' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700 hover:text-blue-600 dark:hover:text-slate-200' }}">
-                                    <div class="{{ request()->routeIs('dashboard') ? 'bg-blue-600 text-white shadow-md shadow-blue-500/20' : 'bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-400 group-hover:bg-slate-200 dark:group-hover:bg-slate-600' }} p-2 rounded-lg transition-colors me-3 shadow-sm">
+                                <a href="{{ route('dashboard') }}" class="flex items-center px-4 py-3 rounded-xl transition-colors duration-200 group {{ request()->routeIs('dashboard') ? 'bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-white font-semibold' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/50 hover:text-slate-900 dark:hover:text-white' }}">
+                                    <div class="{{ request()->routeIs('dashboard') ? 'bg-blue-600 text-white' : 'bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 group-hover:bg-slate-200 dark:group-hover:bg-slate-700' }} p-2.5 rounded-xl transition-colors me-3">
                                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
                                     </div>
-                                    <span class="font-semibold text-sm">{{ __('nav.dashboard') }}</span>
+                                    <span class="text-sm">{{ __('nav.dashboard') }}</span>
                                 </a>
                             </li>
                             @endif
                             @if(auth()->user()->hasPermission('expenses'))
                             <li>
-                                <a href="{{ route('expenses.index') }}" class="flex items-center px-4 py-3 rounded-xl transition-all duration-200 group {{ request()->routeIs('expenses.*') ? 'bg-gradient-to-r from-blue-50 to-indigo-50 text-blue-700 dark:from-slate-700/50 dark:to-slate-700/30 dark:text-blue-400 shadow-sm border border-blue-100/50 dark:border-slate-600/50' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700 hover:text-blue-600 dark:hover:text-slate-200' }}">
-                                    <div class="{{ request()->routeIs('expenses.*') ? 'bg-blue-600 text-white shadow-md shadow-blue-500/20' : 'bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-400 group-hover:bg-slate-200 dark:group-hover:bg-slate-600' }} p-2 rounded-lg transition-colors me-3 shadow-sm">
+                                <a href="{{ route('expenses.index') }}" class="flex items-center px-4 py-3 rounded-xl transition-colors duration-200 group {{ request()->routeIs('expenses.*') ? 'bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-white font-semibold' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/50 hover:text-slate-900 dark:hover:text-white' }}">
+                                    <div class="{{ request()->routeIs('expenses.*') ? 'bg-blue-600 text-white' : 'bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 group-hover:bg-slate-200 dark:group-hover:bg-slate-700' }} p-2.5 rounded-xl transition-colors me-3">
                                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
                                     </div>
-                                    <span class="font-semibold text-sm">{{ __('nav.expenses') }}</span>
+                                    <span class="text-sm">{{ __('nav.expenses') }}</span>
                                 </a>
                             </li>
                             @endif
                             @if(auth()->user()->hasPermission('treasury'))
                             <li>
-                                <a href="{{ route('treasury.index') }}" class="flex items-center px-4 py-3 rounded-xl transition-all duration-200 group {{ request()->routeIs('treasury.*') ? 'bg-gradient-to-r from-emerald-50 to-teal-50 text-emerald-700 dark:from-slate-700/50 dark:to-slate-700/30 dark:text-emerald-400 shadow-sm border border-emerald-100/50 dark:border-slate-600/50' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700 hover:text-emerald-600 dark:hover:text-slate-200' }}">
-                                    <div class="{{ request()->routeIs('treasury.*') ? 'bg-emerald-600 text-white shadow-md shadow-emerald-500/20' : 'bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-400 group-hover:bg-slate-200 dark:group-hover:bg-slate-600' }} p-2 rounded-lg transition-colors me-3 shadow-sm">
+                                <a href="{{ route('treasury.index') }}" class="flex items-center px-4 py-3 rounded-xl transition-colors duration-200 group {{ request()->routeIs('treasury.*') ? 'bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-white font-semibold' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/50 hover:text-slate-900 dark:hover:text-white' }}">
+                                    <div class="{{ request()->routeIs('treasury.*') ? 'bg-blue-600 text-white' : 'bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 group-hover:bg-slate-200 dark:group-hover:bg-slate-700' }} p-2 rounded-lg transition-colors me-3">
                                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path></svg>
                                     </div>
-                                    <span class="font-semibold text-sm">{{ __('nav.treasury') }}</span>
+                                    <span class="text-sm">{{ __('nav.treasury') }}</span>
                                 </a>
                             </li>
                             @endif
                             @if(auth()->user()->hasPermission('employees'))
                             <li>
-                                <a href="{{ route('employees.index') }}" class="flex items-center px-4 py-3 rounded-xl transition-all duration-200 group {{ request()->routeIs('employees.*') ? 'bg-gradient-to-r from-blue-50 to-indigo-50 text-blue-700 dark:from-slate-700/50 dark:to-slate-700/30 dark:text-blue-400 shadow-sm border border-blue-100/50 dark:border-slate-600/50' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700 hover:text-blue-600 dark:hover:text-slate-200' }}">
-                                    <div class="{{ request()->routeIs('employees.*') ? 'bg-blue-600 text-white shadow-md shadow-blue-500/20' : 'bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-400 group-hover:bg-slate-200 dark:group-hover:bg-slate-600' }} p-2 rounded-lg transition-colors me-3 shadow-sm">
+                                <a href="{{ route('employees.index') }}" class="flex items-center px-4 py-3 rounded-xl transition-colors duration-200 group {{ request()->routeIs('employees.*') ? 'bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-white font-semibold' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/50 hover:text-slate-900 dark:hover:text-white' }}">
+                                    <div class="{{ request()->routeIs('employees.*') ? 'bg-blue-600 text-white' : 'bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 group-hover:bg-slate-200 dark:group-hover:bg-slate-700' }} p-2 rounded-lg transition-colors me-3">
                                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
                                     </div>
-                                    <span class="font-semibold text-sm">{{ __('nav.employees') ?? 'Employees' }}</span>
+                                    <span class="text-sm">{{ __('nav.employees') ?? 'Employees' }}</span>
                                 </a>
                             </li>
                             @endif
                             @if(auth()->user()->hasPermission('reports'))
                             <li>
-                                <a href="{{ route('reports.index') }}" class="flex items-center px-4 py-3 rounded-xl transition-all duration-200 group {{ request()->routeIs('reports.*') ? 'bg-gradient-to-r from-blue-50 to-indigo-50 text-blue-700 dark:from-slate-700/50 dark:to-slate-700/30 dark:text-blue-400 shadow-sm border border-blue-100/50 dark:border-slate-600/50' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700 hover:text-blue-600 dark:hover:text-slate-200' }}">
-                                    <div class="{{ request()->routeIs('reports.*') ? 'bg-blue-600 text-white shadow-md shadow-blue-500/20' : 'bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-400 group-hover:bg-slate-200 dark:group-hover:bg-slate-600' }} p-2 rounded-lg transition-colors me-3 shadow-sm">
+                                <a href="{{ route('reports.index') }}" class="flex items-center px-4 py-3 rounded-xl transition-colors duration-200 group {{ request()->routeIs('reports.*') ? 'bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-white font-semibold' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/50 hover:text-slate-900 dark:hover:text-white' }}">
+                                    <div class="{{ request()->routeIs('reports.*') ? 'bg-blue-600 text-white' : 'bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 group-hover:bg-slate-200 dark:group-hover:bg-slate-700' }} p-2 rounded-lg transition-colors me-3">
                                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
                                     </div>
-                                    <span class="font-semibold text-sm">{{ __('nav.reports') }}</span>
+                                    <span class="text-sm">{{ __('nav.reports') }}</span>
                                 </a>
                             </li>
                             @endif
                             @if(auth()->user()->hasPermission('statistics'))
                             <li>
-                                <a href="{{ route('statistics.index') }}" class="flex items-center px-4 py-3 rounded-xl transition-all duration-200 group {{ request()->routeIs('statistics.*') ? 'bg-gradient-to-r from-cyan-50 to-blue-50 text-cyan-700 dark:from-slate-700/50 dark:to-slate-700/30 dark:text-cyan-400 shadow-sm border border-cyan-100/50 dark:border-slate-600/50' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700 hover:text-cyan-600 dark:hover:text-slate-200' }}">
-                                    <div class="{{ request()->routeIs('statistics.*') ? 'bg-cyan-600 text-white shadow-md shadow-cyan-500/20' : 'bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-400 group-hover:bg-slate-200 dark:group-hover:bg-slate-600' }} p-2 rounded-lg transition-colors me-3 shadow-sm">
+                                <a href="{{ route('statistics.index') }}" class="flex items-center px-4 py-3 rounded-xl transition-colors duration-200 group {{ request()->routeIs('statistics.*') ? 'bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-white font-semibold' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/50 hover:text-slate-900 dark:hover:text-white' }}">
+                                    <div class="{{ request()->routeIs('statistics.*') ? 'bg-blue-600 text-white' : 'bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 group-hover:bg-slate-200 dark:group-hover:bg-slate-700' }} p-2 rounded-lg transition-colors me-3">
                                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 8v8m-4-5v5m-4-2v2m-2 4h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
                                     </div>
-                                    <span class="font-semibold text-sm">{{ __('nav.statistics') }}</span>
+                                    <span class="text-sm">{{ __('nav.statistics') }}</span>
                                 </a>
                             </li>
                             @endif
@@ -190,55 +231,55 @@
                     @if($hasAdminAccess)
                     <!-- Administration -->
                     <div>
-                        <p class="px-4 text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-3">{{ __('nav.administration') }}</p>
+                        <p class="px-4 text-xs font-semibold text-slate-400 dark:text-slate-500 mb-3">{{ __('nav.administration') }}</p>
                         <ul class="space-y-1">
                             @if(auth()->user()->hasPermission('settings'))
                             <li>
-                                <a href="{{ route('settings.index') }}" class="flex items-center px-4 py-3 rounded-xl transition-all duration-200 group {{ request()->routeIs('settings.index') ? 'bg-gradient-to-r from-purple-50 to-fuchsia-50 text-purple-700 dark:from-slate-700/50 dark:to-slate-700/30 dark:text-purple-400 shadow-sm border border-purple-100/50 dark:border-slate-600/50' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700 hover:text-purple-600 dark:hover:text-slate-200' }}">
-                                    <div class="{{ request()->routeIs('settings.index') ? 'bg-purple-600 text-white shadow-md shadow-purple-500/20' : 'bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-400 group-hover:bg-slate-200 dark:group-hover:bg-slate-600' }} p-2 rounded-lg transition-colors me-3 shadow-sm">
+                                <a href="{{ route('settings.index') }}" class="flex items-center px-4 py-3 rounded-xl transition-colors duration-200 group {{ request()->routeIs('settings.index') ? 'bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-white font-semibold' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/50 hover:text-slate-900 dark:hover:text-white' }}">
+                                    <div class="{{ request()->routeIs('settings.index') ? 'bg-blue-600 text-white' : 'bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 group-hover:bg-slate-200 dark:group-hover:bg-slate-700' }} p-2 rounded-lg transition-colors me-3">
                                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.066 2.573c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.573 1.066c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.066-2.573c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
                                     </div>
-                                    <span class="font-semibold text-sm">{{ __('nav.settings') }}</span>
+                                    <span class="text-sm">{{ __('nav.settings') }}</span>
                                 </a>
                             </li>
                             @endif
                             @if(auth()->user()->hasPermission('categories'))
                             <li>
-                                <a href="{{ route('settings.categories') }}" class="flex items-center px-4 py-3 rounded-xl transition-all duration-200 group {{ request()->routeIs('settings.categories') ? 'bg-gradient-to-r from-purple-50 to-fuchsia-50 text-purple-700 dark:from-slate-700/50 dark:to-slate-700/30 dark:text-purple-400 shadow-sm border border-purple-100/50 dark:border-slate-600/50' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700 hover:text-purple-600 dark:hover:text-slate-200' }}">
-                                    <div class="{{ request()->routeIs('settings.categories') ? 'bg-purple-600 text-white shadow-md shadow-purple-500/20' : 'bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-400 group-hover:bg-slate-200 dark:group-hover:bg-slate-600' }} p-2 rounded-lg transition-colors me-3 shadow-sm">
-                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"></path></svg>
+                                <a href="{{ route('settings.categories') }}" class="flex items-center px-4 py-3 rounded-xl transition-colors duration-200 group {{ request()->routeIs('settings.categories') ? 'bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-white font-semibold' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/50 hover:text-slate-900 dark:hover:text-white' }}">
+                                    <div class="{{ request()->routeIs('settings.categories') ? 'bg-blue-600 text-white' : 'bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 group-hover:bg-slate-200 dark:group-hover:bg-slate-700' }} p-2 rounded-lg transition-colors me-3">
+                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"/></svg>
                                     </div>
-                                    <span class="font-semibold text-sm">{{ __('settings.categories') ?? 'تصنيفات المصاريف' }}</span>
+                                    <span class="text-sm">{{ __('settings.categories') ?? 'تصنيفات المصاريف' }}</span>
                                 </a>
                             </li>
                             @endif
                             @if(auth()->user()->hasPermission('roles'))
                             <li>
-                                <a href="{{ route('settings.roles') }}" class="flex items-center px-4 py-3 rounded-xl transition-all duration-200 group {{ request()->routeIs('settings.roles') ? 'bg-gradient-to-r from-purple-50 to-fuchsia-50 text-purple-700 dark:from-slate-700/50 dark:to-slate-700/30 dark:text-purple-400 shadow-sm border border-purple-100/50 dark:border-slate-600/50' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700 hover:text-purple-600 dark:hover:text-slate-200' }}">
-                                    <div class="{{ request()->routeIs('settings.roles') ? 'bg-purple-600 text-white shadow-md shadow-purple-500/20' : 'bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-400 group-hover:bg-slate-200 dark:group-hover:bg-slate-600' }} p-2 rounded-lg transition-colors me-3 shadow-sm">
-                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
+                                <a href="{{ route('settings.roles') }}" class="flex items-center px-4 py-3 rounded-xl transition-colors duration-200 group {{ request()->routeIs('settings.roles') ? 'bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-white font-semibold' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/50 hover:text-slate-900 dark:hover:text-white' }}">
+                                    <div class="{{ request()->routeIs('settings.roles') ? 'bg-blue-600 text-white' : 'bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 group-hover:bg-slate-200 dark:group-hover:bg-slate-700' }} p-2 rounded-lg transition-colors me-3">
+                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
                                     </div>
-                                    <span class="font-semibold text-sm">{{ __('settings.roles') }}</span>
+                                    <span class="text-sm">{{ __('settings.roles') }}</span>
                                 </a>
                             </li>
                             @endif
                             @if(auth()->user()->hasPermission('users'))
                             <li>
-                                <a href="{{ route('settings.users') }}" class="flex items-center px-4 py-3 rounded-xl transition-all duration-200 group {{ request()->routeIs('settings.users') ? 'bg-gradient-to-r from-purple-50 to-fuchsia-50 text-purple-700 dark:from-slate-700/50 dark:to-slate-700/30 dark:text-purple-400 shadow-sm border border-purple-100/50 dark:border-slate-600/50' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700 hover:text-purple-600 dark:hover:text-slate-200' }}">
-                                    <div class="{{ request()->routeIs('settings.users') ? 'bg-purple-600 text-white shadow-md shadow-purple-500/20' : 'bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-400 group-hover:bg-slate-200 dark:group-hover:bg-slate-600' }} p-2 rounded-lg transition-colors me-3 shadow-sm">
+                                <a href="{{ route('settings.users') }}" class="flex items-center px-4 py-3 rounded-xl transition-colors duration-200 group {{ request()->routeIs('settings.users') ? 'bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-white font-semibold' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/50 hover:text-slate-900 dark:hover:text-white' }}">
+                                    <div class="{{ request()->routeIs('settings.users') ? 'bg-blue-600 text-white' : 'bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 group-hover:bg-slate-200 dark:group-hover:bg-slate-700' }} p-2 rounded-lg transition-colors me-3">
                                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
                                     </div>
-                                    <span class="font-semibold text-sm">{{ __('settings.manage_users') }}</span>
+                                    <span class="text-sm">{{ __('settings.manage_users') }}</span>
                                 </a>
                             </li>
                             @endif
                             @if(auth()->user()->hasPermission('audit-logs'))
                             <li>
-                                <a href="{{ route('settings.audit-logs') }}" class="flex items-center px-4 py-3 rounded-xl transition-all duration-200 group {{ request()->routeIs('settings.audit-logs') ? 'bg-gradient-to-r from-purple-50 to-fuchsia-50 text-purple-700 dark:from-slate-700/50 dark:to-slate-700/30 dark:text-purple-400 shadow-sm border border-purple-100/50 dark:border-slate-600/50' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700 hover:text-purple-600 dark:hover:text-slate-200' }}">
-                                    <div class="{{ request()->routeIs('settings.audit-logs') ? 'bg-purple-600 text-white shadow-md shadow-purple-500/20' : 'bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-400 group-hover:bg-slate-200 dark:group-hover:bg-slate-600' }} p-2 rounded-lg transition-colors me-3 shadow-sm">
+                                <a href="{{ route('settings.audit-logs') }}" class="flex items-center px-4 py-3 rounded-xl transition-colors duration-200 group {{ request()->routeIs('settings.audit-logs') ? 'bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-white font-semibold' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/50 hover:text-slate-900 dark:hover:text-white' }}">
+                                    <div class="{{ request()->routeIs('settings.audit-logs') ? 'bg-blue-600 text-white' : 'bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 group-hover:bg-slate-200 dark:group-hover:bg-slate-700' }} p-2 rounded-lg transition-colors me-3">
                                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/></svg>
                                     </div>
-                                    <span class="font-semibold text-sm">{{ __('settings.audit_logs') }}</span>
+                                    <span class="text-sm">{{ __('settings.audit_logs') }}</span>
                                 </a>
                             </li>
                             @endif
@@ -278,23 +319,33 @@
                         </div>
                         
                         <div class="flex items-center gap-4">
+                            <!-- Theme Toggle 2026 -->
+                            <button @click="dark = !dark" class="relative p-2.5 text-slate-500 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 bg-slate-100 dark:bg-slate-800/80 rounded-2xl transition-all duration-300 hover:scale-105 active:scale-95 border border-slate-200/50 dark:border-slate-700/50 cursor-pointer" title="Changer le thème">
+                                <template x-if="!dark">
+                                    <svg class="w-5 h-5 transform transition-transform duration-500 rotate-0 hover:rotate-90 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
+                                </template>
+                                <template x-if="dark">
+                                    <svg class="w-5 h-5 transform transition-transform duration-500 -rotate-12 hover:rotate-0 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/></svg>
+                                </template>
+                            </button>
+
                             <!-- Language Switcher -->
-                            <div class="flex bg-slate-100 dark:bg-slate-800/90 rounded-xl p-1 shadow-inner border border-slate-200/60 dark:border-slate-700/50">
+                            <div class="flex bg-slate-100/80 dark:bg-slate-800/80 backdrop-blur-md rounded-2xl p-1 shadow-inner border border-slate-200/60 dark:border-slate-700/50">
                                 <form method="POST" action="{{ route('locale.switch', 'ar') }}" class="inline">
                                     @csrf
-                                    <button type="submit" class="text-xs font-bold px-3 py-1.5 rounded-lg transition-all {{ session('locale', 'ar') === 'ar' ? 'bg-white dark:bg-slate-700 text-blue-600 dark:text-blue-400 shadow-sm border border-slate-200/30' : 'text-slate-500 hover:text-slate-700 dark:text-slate-400' }}">AR</button>
+                                    <button type="submit" class="text-xs font-bold px-3 py-1.5 rounded-xl transition-all duration-300 {{ session('locale', 'ar') === 'ar' ? 'bg-white dark:bg-slate-700 text-blue-600 dark:text-blue-400 shadow-sm border border-slate-200/50 dark:border-slate-600' : 'text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200' }}">AR</button>
                                 </form>
                                 <form method="POST" action="{{ route('locale.switch', 'fr') }}" class="inline">
                                     @csrf
-                                    <button type="submit" class="text-xs font-bold px-3 py-1.5 rounded-lg transition-all {{ session('locale') === 'fr' ? 'bg-white dark:bg-slate-700 text-blue-600 dark:text-blue-400 shadow-sm border border-slate-200/30' : 'text-slate-500 hover:text-slate-700 dark:text-slate-400' }}">FR</button>
+                                    <button type="submit" class="text-xs font-bold px-3 py-1.5 rounded-xl transition-all duration-300 {{ session('locale') === 'fr' ? 'bg-white dark:bg-slate-700 text-blue-600 dark:text-blue-400 shadow-sm border border-slate-200/50 dark:border-slate-600' : 'text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200' }}">FR</button>
                                 </form>
                                 <form method="POST" action="{{ route('locale.switch', 'en') }}" class="inline">
                                     @csrf
-                                    <button type="submit" class="text-xs font-bold px-3 py-1.5 rounded-lg transition-all {{ session('locale') === 'en' ? 'bg-white dark:bg-slate-700 text-blue-600 dark:text-blue-400 shadow-sm border border-slate-200/30' : 'text-slate-500 hover:text-slate-700 dark:text-slate-400' }}">EN</button>
+                                    <button type="submit" class="text-xs font-bold px-3 py-1.5 rounded-xl transition-all duration-300 {{ session('locale') === 'en' ? 'bg-white dark:bg-slate-700 text-blue-600 dark:text-blue-400 shadow-sm border border-slate-200/50 dark:border-slate-600' : 'text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200' }}">EN</button>
                                 </form>
                             </div>
 
-                            <div class="w-px h-8 bg-slate-200 dark:bg-slate-800 mx-1"></div>
+                            <div class="w-px h-8 bg-slate-200/80 dark:bg-slate-800 mx-1"></div>
 
                             <!-- User Dropdown -->
                             <div class="relative" x-data="{ open: false }">

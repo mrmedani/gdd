@@ -4,6 +4,7 @@ namespace App\Domains\Employees\Livewire;
 
 use App\Domains\Employees\Models\Employee;
 use App\Shared\Livewire\WithToast;
+use Illuminate\Support\Facades\Gate;
 use Livewire\Component;
 use Livewire\WithPagination;
 
@@ -32,6 +33,8 @@ class EmployeeList extends Component
 
     public function delete(int $id)
     {
+        Gate::authorize('manage-employees');
+
         $employee = Employee::withCount('payments')->findOrFail($id);
         
         if ($employee->payments_count > 0) {

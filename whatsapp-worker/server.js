@@ -31,7 +31,13 @@ let startingLock = false;
 let heartbeatTimer = null;
 
 function getChromePath() {
-    const home = process.env.HOME || '/home/gestion';
+    if (process.env.PUPPETEER_EXECUTABLE_PATH && fs.existsSync(process.env.PUPPETEER_EXECUTABLE_PATH)) {
+        return process.env.PUPPETEER_EXECUTABLE_PATH;
+    }
+    if (process.env.CHROME_PATH && fs.existsSync(process.env.CHROME_PATH)) {
+        return process.env.CHROME_PATH;
+    }
+    const home = process.env.HOME || process.env.USERPROFILE || '/home/gestion';
     const cacheDir = path.join(home, '.cache', 'puppeteer');
     if (fs.existsSync(cacheDir)) {
         try { return walkDirForChrome(cacheDir); } catch (e) {}
@@ -44,10 +50,14 @@ function walkDirForChrome(dir) {
     for (const entry of entries) {
         const full = path.join(dir, entry);
         if (!fs.statSync(full).isDirectory()) continue;
-        const chromePath = path.join(full, 'chrome-linux64', 'chrome');
-        if (fs.existsSync(chromePath)) return chromePath;
-        const nested = walkDirForChrome(full);
-        if (nested) return nested;
+        for (const subdir of fs.readdirSync(full)) {
+            const sub = path.join(full, subdir);
+            if (!fs.statSync(sub).isDirectory()) continue;
+            for (const exe of ['chrome', 'chrome.exe']) {
+                const cp = path.join(sub, exe);
+                if (fs.existsSync(cp)) return cp;
+            }
+        }
     }
     return null;
 }

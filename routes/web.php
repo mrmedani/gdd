@@ -44,12 +44,30 @@ Route::get('/manifest.json', function () {
         'description' => $setting('pwa_description', 'Application de gestion des dépenses et trésorerie'),
         'start_url' => '/',
         'display' => $setting('pwa_display', 'standalone'),
-        'background_color' => $setting('pwa_bg_color', '#f1f5f9'),
-        'theme_color' => $setting('pwa_theme_color', '#2563eb'),
+        'display_override' => ['window-controls-overlay', 'standalone', 'minimal-ui'],
+        'background_color' => $setting('pwa_bg_color', '#0f172a'),
+        'theme_color' => $setting('pwa_theme_color', '#3b82f6'),
         'orientation' => $setting('pwa_orientation', 'portrait-primary'),
+        'categories' => ['finance', 'productivity', 'business'],
         'lang' => app()->getLocale(),
         'dir' => in_array(app()->getLocale(), ['ar']) ? 'rtl' : 'ltr',
         'icons' => $icons,
+        'shortcuts' => [
+            [
+                'name' => __('dashboard.dashboard', [], app()->getLocale()),
+                'short_name' => 'Dashboard',
+                'description' => 'Voir le tableau de bord',
+                'url' => '/',
+                'icons' => [['src' => '/icons/icon-192x192.png', 'sizes' => '192x192', 'type' => 'image/png']]
+            ],
+            [
+                'name' => __('expenses.add_expense', [], app()->getLocale()),
+                'short_name' => 'Nouvelle',
+                'description' => 'Ajouter une nouvelle dépense',
+                'url' => '/expenses?action=create',
+                'icons' => [['src' => '/icons/icon-192x192.png', 'sizes' => '192x192', 'type' => 'image/png']]
+            ]
+        ]
     ]);
 })->name('manifest.json');
 

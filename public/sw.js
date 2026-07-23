@@ -1,10 +1,10 @@
-const CACHE_NAME = 'chronorex-v3';
+const CACHE_NAME = 'chronorex-v4';
 
 const PRECACHE_URLS = [
     '/manifest.json',
     '/icons/icon-192x192.png',
     '/icons/icon-512x512.png',
-    '/offline',
+    '/offline.html',
 ];
 
 self.addEventListener('install', event => {
@@ -85,7 +85,7 @@ self.addEventListener('fetch', event => {
             }).catch(() => {
                 return caches.match(request).then(cached => {
                     if (cached) return cached;
-                    return caches.match('/offline');
+                    return caches.match('/offline.html');
                 });
             })
         );

@@ -1,23 +1,23 @@
 <div>
     <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
         <div>
-            <h1 class="text-3xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-blue-700 to-indigo-600 dark:from-blue-400 dark:to-indigo-300 tracking-tight font-heading">
+            <h1 class="text-3xl font-extrabold text-slate-800 dark:text-white tracking-tight font-heading">
                 {{ $expenseId ? __('expenses.edit') : __('expenses.add') }}
             </h1>
             <p class="text-slate-500 dark:text-slate-400 text-sm mt-1.5 font-medium">{{ __('expenses.form_desc') }}</p>
         </div>
-        <a href="{{ route('expenses.index') }}" class="inline-flex items-center justify-center bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 px-6 py-2.5 rounded-xl font-bold hover:bg-slate-50 dark:hover:bg-slate-700 transition-all duration-300 shadow-sm">
+        <a href="{{ route('expenses.index') }}" class="inline-flex items-center justify-center bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 px-6 py-2.5 rounded-xl font-semibold hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors">
             {{ __('common.back') }}
         </a>
     </div>
 
-    <div class="bg-white/80 dark:bg-slate-800/80 backdrop-blur-xl rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-[0_8px_30px_rgb(0,0,0,0.2)] border border-white/60 dark:border-slate-700/60 p-6 md:p-10 relative z-10 max-w-4xl">
+    <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-sm p-6 md:p-10 max-w-4xl">
         <form wire:submit.prevent="save" method="POST" class="space-y-8">
             <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
                 <!-- Date -->
                 <div>
                     <label class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">{{ __('expenses.date') }} <span class="text-red-500 dark:text-red-400">*</span></label>
-                    <input type="date" wire:model="date" class="w-full px-4 py-3 bg-slate-50/50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all text-slate-700 dark:text-slate-300 shadow-inner dark:shadow-none dark:[color-scheme:dark]">
+                    <input type="date" wire:model="date" class="w-full px-4 py-3 bg-slate-50/50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all text-slate-700 dark:text-slate-300 dark:[color-scheme:dark]">
                     @error('date') <span class="text-red-500 text-xs mt-1 block">{{ $message }}</span> @enderror
                 </div>
                 
@@ -25,8 +25,8 @@
                 <div>
                     <label class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">{{ __('expenses.amount') }} <span class="text-red-500 dark:text-red-400">*</span></label>
                     <div class="relative">
-                        <input type="text" inputmode="decimal" wire:model="amount" class="w-full px-4 py-3 bg-slate-50/50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all text-slate-700 dark:text-slate-300 shadow-inner dark:shadow-none" dir="ltr">
-                        <span class="absolute top-1/2 -translate-y-1/2 {{ session('locale', 'ar') === 'ar' ? 'left-4' : 'right-4' }} text-slate-400 dark:text-slate-500 font-bold text-sm">{{ getCurrency() }}</span>
+                        <input type="text" inputmode="decimal" wire:model="amount" class="w-full px-4 py-3 bg-slate-50/50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all text-slate-700 dark:text-slate-300" dir="ltr">
+                        <span class="absolute top-1/2 -translate-y-1/2 {{ session('locale', 'ar') === 'ar' ? 'left-4' : 'right-4' }} text-slate-400 dark:text-slate-500 font-semibold text-sm">{{ getCurrency() }}</span>
                     </div>
                     @error('amount') <span class="text-red-500 text-xs mt-1 block">{{ $message }}</span> @enderror
                 </div>
@@ -34,7 +34,7 @@
                 <!-- Category -->
                 <div>
                     <label class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">{{ __('expenses.category') }} <span class="text-red-500 dark:text-red-400">*</span></label>
-                    <select wire:model.live="category_id" class="w-full px-4 py-3 bg-slate-50/50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all text-slate-700 dark:text-slate-300 shadow-inner dark:shadow-none">
+                    <select wire:model.live="category_id" class="w-full px-4 py-3 bg-slate-50/50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all text-slate-700 dark:text-slate-300">
                         <option value="">{{ __('common.select') }}</option>
                         @foreach($categories as $cat)
                             <option value="{{ $cat->id }}">{{ $cat->translated_name }}</option>
@@ -46,7 +46,7 @@
                 <!-- Sub-category (optional) -->
                 <div wire:key="sub-category-field" @class(['block' => $showSubCategoryField, 'hidden' => !$showSubCategoryField])>
                     <label class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">{{ __('expenses.sub_category') }} <span class="text-slate-400 text-xs font-normal">({{ __('common.optional') }})</span></label>
-                    <select wire:model.live="sub_category_id" class="w-full px-4 py-3 bg-slate-50/50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all text-slate-700 dark:text-slate-300 shadow-inner dark:shadow-none">
+                    <select wire:model.live="sub_category_id" class="w-full px-4 py-3 bg-slate-50/50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all text-slate-700 dark:text-slate-300">
                         <option value="">{{ __('common.select') }}</option>
                         @foreach($subCategories as $sub)
                             <option value="{{ $sub['id'] }}">{{ $sub['name_' . app()->getLocale()] ?: $sub['name_fr'] ?: $sub['name_ar'] }}</option>
@@ -57,7 +57,7 @@
                 <!-- Payment Method -->
                 <div>
                     <label class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">{{ __('expenses.payment_method') }} <span class="text-red-500 dark:text-red-400">*</span></label>
-                    <select wire:model="payment_method" class="w-full px-4 py-3 bg-slate-50/50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all text-slate-700 dark:text-slate-300 shadow-inner dark:shadow-none">
+                    <select wire:model="payment_method" class="w-full px-4 py-3 bg-slate-50/50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all text-slate-700 dark:text-slate-300">
                         @foreach($paymentMethods as $pm)
                             <option value="{{ $pm['value'] }}">{{ $pm['label'] }}</option>
                         @endforeach
@@ -68,7 +68,7 @@
                 <!-- Employee (only for salaries) -->
                 <div wire:key="employee-field" @class(['block' => $showEmployeeField, 'hidden' => !$showEmployeeField])>
                     <label class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">{{ __('expenses.employee') }} <span class="text-red-500 dark:text-red-400">*</span></label>
-                    <select wire:model.live="employee_id" @if($showEmployeeField) required @endif class="w-full px-4 py-3 bg-slate-50/50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all text-slate-700 dark:text-slate-300 shadow-inner dark:shadow-none">
+                    <select wire:model.live="employee_id" @if($showEmployeeField) required @endif class="w-full px-4 py-3 bg-slate-50/50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all text-slate-700 dark:text-slate-300">
                         <option value="">{{ __('common.select') }}</option>
                         @foreach($employees as $emp)
                             <option value="{{ $emp->id }}">{{ $emp->name }}</option>
@@ -96,7 +96,7 @@
             <!-- Description -->
             <div>
                 <label class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">{{ __('expenses.description') }} <span class="text-red-500 dark:text-red-400">*</span></label>
-                <textarea wire:model="description" rows="2" placeholder="{{ __('expenses.desc_placeholder') }}" class="w-full px-4 py-3 bg-slate-50/50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all text-slate-700 dark:text-slate-300 shadow-inner dark:shadow-none dark:placeholder-slate-500"></textarea>
+                <textarea wire:model="description" rows="2" placeholder="{{ __('expenses.desc_placeholder') }}" class="w-full px-4 py-3 bg-slate-50/50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all text-slate-700 dark:text-slate-300 dark:placeholder-slate-500"></textarea>
                 @error('description') <span class="text-red-500 text-xs mt-1 block">{{ $message }}</span> @enderror
             </div>
 
@@ -105,7 +105,7 @@
                 <!-- Notes -->
                 <div>
                     <label class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">{{ __('expenses.notes') }}</label>
-                    <textarea wire:model="notes" rows="4" placeholder="{{ __('expenses.notes_placeholder') }}" class="w-full px-4 py-3 bg-slate-50/50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all text-slate-700 dark:text-slate-300 shadow-inner dark:shadow-none dark:placeholder-slate-500"></textarea>
+                    <textarea wire:model="notes" rows="4" placeholder="{{ __('expenses.notes_placeholder') }}" class="w-full px-4 py-3 bg-slate-50/50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all text-slate-700 dark:text-slate-300 dark:placeholder-slate-500"></textarea>
                 </div>
 
                 <!-- Receipt Upload -->
@@ -118,7 +118,7 @@
                             @if($receipt)
                                 <svg class="w-8 h-8 text-blue-500 dark:text-blue-400 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
                                 <span class="text-blue-600 dark:text-blue-400 font-semibold text-sm truncate w-full text-center">{{ $receipt->getClientOriginalName() }}</span>
-                                <button type="button" wire:click="removeReceipt" class="mt-2 text-xs text-red-500 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 relative z-30 font-bold bg-white dark:bg-slate-800 px-2 py-1 rounded shadow-sm">{{ __('expenses.remove_receipt') }}</button>
+                                <button type="button" wire:click="removeReceipt" class="mt-2 text-xs text-red-500 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 relative z-30 font-semibold bg-white dark:bg-slate-800 px-2 py-1 rounded">{{ __('expenses.remove_receipt') }}</button>
                             @else
                                 <svg class="w-8 h-8 text-slate-400 dark:text-slate-500 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path></svg>
                                 <span class="text-slate-500 dark:text-slate-400 font-medium text-sm">{{ __('expenses.drag_drop_receipt') }}</span>
@@ -149,10 +149,10 @@
 
             <!-- Action Buttons -->
             <div class="pt-8 border-t border-slate-100 dark:border-slate-700/50 flex flex-col-reverse md:flex-row justify-end gap-3 md:gap-4 mt-8">
-                <a href="{{ route('expenses.index') }}" class="w-full md:w-auto px-8 py-3 bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300 font-bold rounded-xl hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors text-center border border-slate-200 dark:border-slate-600 shadow-sm">
+                <a href="{{ route('expenses.index') }}" class="w-full md:w-auto px-8 py-3 bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300 font-semibold rounded-xl hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors text-center border border-slate-200 dark:border-slate-600">
                     {{ __('common.cancel') }}
                 </a>
-                <button type="submit" class="w-full md:w-auto inline-flex items-center justify-center bg-gradient-to-r from-blue-600 to-blue-700 text-white px-10 py-3 rounded-xl font-bold shadow-lg shadow-blue-500/20 dark:shadow-blue-900/20 hover:shadow-blue-500/40 dark:hover:shadow-blue-900/40 hover:-translate-y-0.5 transition-all duration-300">
+                <button type="submit" class="w-full md:w-auto inline-flex items-center justify-center bg-blue-600 text-white px-10 py-3 rounded-xl font-semibold hover:bg-blue-700 transition-colors">
                     <svg wire:loading wire:target="save" class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                         <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                         <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>

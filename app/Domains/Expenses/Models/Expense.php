@@ -39,18 +39,19 @@ class Expense extends Model
         ];
     }
 
+    public static function assertPeriodNotClosed(string $date): void
+    {
+        $period = getPeriodFromDate($date);
+        if (\App\Domains\Treasury\Models\MonthlyClosure::where('month', $period)->exists()) {
+            throw new \Exception(__('expenses.month_closed', ['default' => 'Ce mois a déjà été clôturé et ne peut plus être modifié.']));
+        }
+    }
+
     protected static function booted()
     {
-        $checkClosure = function ($expense) {
-            $period = getPeriodFromDate($expense->date);
-            if (\App\Domains\Treasury\Models\MonthlyClosure::where('month', $period)->exists()) {
-                throw new \Exception(__('expenses.month_closed', ['default' => 'Ce mois a déjà été clôturé et ne peut plus être modifié.']));
-            }
-        };
-
-        static::creating($checkClosure);
-        static::updating($checkClosure);
-        static::deleting($checkClosure);
+        static::creating(fn ($expense) => static::assertPeriodNotClosed($expense->date));
+        static::updating(fn ($expense) => static::assertPeriodNotClosed($expense->date));
+        static::deleting(fn ($expense) => static::assertPeriodNotClosed($expense->date));
     }
 
     public function category(): \Illuminate\Database\Eloquent\Relations\BelongsTo

@@ -70,13 +70,21 @@ class TreasuryIndex extends Component
         
         $balance = (float) $this->closeGains - (float) $this->calculatedExpenses;
 
-        MonthlyClosure::create([
-            'month' => $this->closeMonth,
-            'gains' => $this->closeGains,
-            'expenses' => $this->calculatedExpenses,
-            'balance' => $balance,
-            'closed_by' => auth()->id(),
-        ]);
+        try {
+            MonthlyClosure::create([
+                'month' => $this->closeMonth,
+                'gains' => $this->closeGains,
+                'expenses' => $this->calculatedExpenses,
+                'balance' => $balance,
+                'closed_by' => auth()->id(),
+            ]);
+        } catch (\Illuminate\Database\QueryException $e) {
+            if (str_contains($e->getMessage(), 'Duplicate entry')) {
+                $this->notify(__('caisse.already_closed', ['default' => 'Ce mois est déjà clôturé.']));
+                return;
+            }
+            throw $e;
+        }
 
         $this->showCloseModal = false;
         $this->reset('closeGains');
@@ -85,7 +93,7 @@ class TreasuryIndex extends Component
             $admins = User::whereHas('role', fn($q) => $q->where('name', 'admin'))
                 ->orWhere('notify_whatsapp', true)
                 ->get();
-            $closure = MonthlyClosure::where('month', $this->closeMonth)->latest()->first();
+            $closure = MonthlyClosure::where('month', $this->closeMonth)->first();
             if ($closure) {
                 Notification::sendNow($admins, new MonthlyClosureNotification($closure));
             }
@@ -134,6 +142,20 @@ class TreasuryIndex extends Component
         $totalGains = MonthlyClosure::sum('gains');
         $totalExpenses = MonthlyClosure::sum('expenses');
         $currentMonthClosed = MonthlyClosure::where('month', getPeriodFromDate(now()))->exists();
+        $closedMonths = MonthlyClosure::pluck('month')->toArray();
+
+        // Calcul du taux de croissance mois par mois
+        $allClosures = MonthlyClosure::orderBy('month', 'asc')->get(['month', 'gains']);
+        $growthRates = [];
+        $prevGains = null;
+        foreach ($allClosures as $c) {
+            if ($prevGains !== null && $prevGains > 0) {
+                $growthRates[$c->month] = round((($c->gains - $prevGains) / $prevGains) * 100, 1);
+            } else {
+                $growthRates[$c->month] = null;
+            }
+            $prevGains = $c->gains;
+        }
 
         return view('livewire.treasury-index', [
             'closures' => $closures,
@@ -141,6 +163,8 @@ class TreasuryIndex extends Component
             'totalGains' => $totalGains,
             'totalExpenses' => $totalExpenses,
             'currentMonthClosed' => $currentMonthClosed,
+            'closedMonths' => $closedMonths,
+            'growthRates' => $growthRates,
         ])->layout('layouts.app')->title('Caisse');
     }
 }

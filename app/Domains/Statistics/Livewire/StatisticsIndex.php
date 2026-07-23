@@ -32,6 +32,7 @@ class StatisticsIndex extends Component
     public array $expensesByCategory = [];
     public array $paymentMethodData = [];
     public array $monthlyTrend = [];
+    public array $growthTrend = [];
 
     // Deficit
     public float $dailyTotal = 0;
@@ -91,11 +92,10 @@ class StatisticsIndex extends Component
         if (!$this->period) return;
 
         $range = getPeriodRange($this->period);
-        $expenses = Expense::whereBetween('date', [$range['start'], $range['end']])->get();
         $daysInPeriod = max(1, $range['start']->diffInDays($range['end']));
 
-        $this->totalExpenses = $expenses->sum('amount');
-        $this->expenseCount = $expenses->count();
+        $this->totalExpenses = (float) Expense::whereBetween('date', [$range['start'], $range['end']])->sum('amount');
+        $this->expenseCount = Expense::whereBetween('date', [$range['start'], $range['end']])->count();
         $this->averagePerDay = round($this->totalExpenses / $daysInPeriod, 2);
 
         // Previous period comparison
@@ -114,27 +114,39 @@ class StatisticsIndex extends Component
         }
 
         // Category breakdown
-        $categories = ExpenseCategory::active()->get();
-        $this->expensesByCategory = $categories->map(function ($cat) use ($expenses) {
-            $total = $expenses->where('category_id', $cat->id)->sum('amount');
+        $categories = ExpenseCategory::active()->get()->keyBy('id');
+        $byCategory = Expense::whereBetween('date', [$range['start'], $range['end']])
+            ->selectRaw('category_id, SUM(amount) as total, COUNT(*) as count')
+            ->groupBy('category_id')
+            ->get()
+            ->keyBy('category_id');
+        $this->expensesByCategory = $categories->map(function ($cat) use ($byCategory) {
+            $row = $byCategory->get($cat->id);
+            $total = (float) ($row->total ?? 0);
             return [
                 'label' => $cat->translated_name,
-                'total' => (float) $total,
+                'total' => $total,
                 'pct' => $this->totalExpenses > 0 ? round($total / $this->totalExpenses * 100, 1) : 0,
-                'count' => $expenses->where('category_id', $cat->id)->count(),
+                'count' => (int) ($row->count ?? 0),
                 'color' => $this->categoryColor($cat->id),
             ];
         })->filter(fn($c) => $c['total'] > 0)->sortByDesc('total')->values()->toArray();
 
         // Payment method breakdown
         $methods = PaymentMethod::cases();
-        $this->paymentMethodData = collect($methods)->map(function ($method) use ($expenses) {
-            $total = $expenses->where('payment_method', $method->value)->sum('amount');
+        $byMethod = Expense::whereBetween('date', [$range['start'], $range['end']])
+            ->selectRaw('payment_method, SUM(amount) as total, COUNT(*) as count')
+            ->groupBy('payment_method')
+            ->get()
+            ->keyBy('payment_method');
+        $this->paymentMethodData = collect($methods)->map(function ($method) use ($byMethod) {
+            $row = $byMethod->get($method->value);
+            $total = (float) ($row->total ?? 0);
             return [
                 'label' => __('payment_methods.' . $method->value),
-                'total' => (float) $total,
+                'total' => $total,
                 'pct' => $this->totalExpenses > 0 ? round($total / $this->totalExpenses * 100, 1) : 0,
-                'count' => $expenses->where('payment_method', $method->value)->count(),
+                'count' => (int) ($row->count ?? 0),
             ];
         })->filter(fn($c) => $c['total'] > 0)->values()->toArray();
 
@@ -146,11 +158,22 @@ class StatisticsIndex extends Component
         ]);
         $trendStart = $trendPeriods->min('range.start');
         $trendEnd = $trendPeriods->max('range.end');
-        $allTrendExpenses = Expense::whereBetween('date', [$trendStart, $trendEnd])
-            ->selectRaw('date, amount')
-            ->get();
-        $this->monthlyTrend = $trendPeriods->map(function ($tp) use ($allTrendExpenses) {
-            $total = $allTrendExpenses->filter(fn($e) => $e->date->between($tp['range']['start'], $tp['range']['end']))->sum('amount');
+        $startDay = getMonthPeriodStartDay();
+        $periodTrendTotals = Expense::whereBetween('date', [$trendStart, $trendEnd])
+            ->selectRaw("
+                DATE_FORMAT(
+                    CASE 
+                        WHEN DAY(date) > ? THEN DATE_ADD(date, INTERVAL 1 MONTH)
+                        ELSE date
+                    END, 
+                    '%Y-%m'
+                ) as period, 
+                SUM(amount) as total
+            ", [$startDay])
+            ->groupBy('period')
+            ->pluck('total', 'period');
+        $this->monthlyTrend = $trendPeriods->map(function ($tp) use ($periodTrendTotals) {
+            $total = (float) ($periodTrendTotals[$tp['period']] ?? 0);
             return [
                 'month' => $tp['date']->translatedFormat('M Y'),
                 'total' => (float) $total,
@@ -188,6 +211,15 @@ class StatisticsIndex extends Component
                 'closed_by' => $c->closer?->name ?? '-',
                 'date' => $c->created_at->format('d/m/Y H:i'),
             ])->toArray();
+
+        // Growth trend (Évolution des gains brute)
+        $closures = MonthlyClosure::orderBy('month', 'asc')->get(['month', 'gains']);
+        $this->growthTrend = $closures->map(function ($c) {
+            return [
+                'label' => formatPeriodLabel($c->month),
+                'rate' => (float) $c->gains,
+            ];
+        })->toArray();
     }
 
     private function categoryColor(int $id): string

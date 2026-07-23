@@ -8,6 +8,7 @@ use App\Models\User;
 use App\Services\WhatsAppService;
 use App\Shared\Livewire\WithToast;
 use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\RateLimiter;
 use Livewire\Attributes\Computed;
 use Livewire\Component;
@@ -56,6 +57,8 @@ class Settings extends Component
 
     public function mount(): void
     {
+        Gate::authorize('manage-settings');
+
         $this->threshold = (float) Setting::get('high_expense_threshold', 5000);
         $this->currency = Setting::get('currency', 'MAD');
         $this->locale = auth()->user()->locale;
@@ -254,14 +257,14 @@ class Settings extends Component
             abort(403);
         }
 
-        \DB::statement('SET FOREIGN_KEY_CHECKS=0');
-        \App\Domains\Expenses\Models\Expense::truncate();
-        \App\Domains\Treasury\Models\MonthlyClosure::truncate();
-        \App\Domains\Alerts\Models\Alert::truncate();
-        \App\Domains\Employees\Models\SalaryAdvance::truncate();
-        \App\Domains\Employees\Models\SalaryPayment::truncate();
-        \App\Domains\Employees\Models\Employee::truncate();
-        \DB::statement('SET FOREIGN_KEY_CHECKS=1');
+        \DB::transaction(function () {
+            \App\Domains\Alerts\Models\Alert::query()->delete();
+            \App\Domains\Employees\Models\SalaryAdvance::query()->delete();
+            \App\Domains\Employees\Models\SalaryPayment::query()->delete();
+            \App\Domains\Expenses\Models\Expense::query()->delete();
+            \App\Domains\Employees\Models\Employee::query()->delete();
+            \App\Domains\Treasury\Models\MonthlyClosure::query()->delete();
+        });
 
         $this->notify(__('common.deleted'));
         $this->redirect(route('settings.index'), navigate: false);

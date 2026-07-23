@@ -6,9 +6,9 @@
             </h1>
             <p class="text-slate-500 dark:text-slate-400 text-sm mt-1.5 font-medium">{{ __('employees.list_desc') }}</p>
         </div>
-        <a href="{{ route('employees.create') }}" class="inline-flex items-center justify-center bg-gradient-to-r from-blue-600 to-blue-700 text-white px-6 py-2.5 rounded-xl font-bold shadow-lg shadow-blue-500/20 hover:shadow-blue-500/40 hover:-translate-y-0.5 transition-all duration-200">
-            <svg class="w-5 h-5 me-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
-            {{ __('employees.add') ?? 'Add Employee' }}
+        <a href="{{ route('employees.create') }}" class="inline-flex items-center justify-center bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-6 py-2.5 rounded-2xl font-bold shadow-lg shadow-blue-500/30 hover:shadow-blue-500/50 hover:-translate-y-1 hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 border border-white/10 relative overflow-hidden group">
+            <svg class="w-5 h-5 me-2 relative z-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+            <span class="relative z-10">{{ __('employees.add') ?? 'Add Employee' }}</span>
         </a>
     </div>
 
@@ -18,17 +18,21 @@
         <div class="relative z-10 grid grid-cols-1 md:grid-cols-2 gap-5">
             <div>
                 <label class="block text-xs font-bold text-slate-500 dark:text-slate-400 mb-2 uppercase tracking-wider">{{ __('common.search') ?? 'Search' }}</label>
-                <input type="text" wire:model.live.debounce.300ms="searchName" class="w-full px-4 py-2.5 bg-slate-50/50 dark:bg-slate-950/50 border border-slate-200 dark:border-slate-800 rounded-xl text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all dark:text-slate-100 shadow-inner dark:shadow-none font-medium" placeholder="{{ __('employees.search_name') ?? 'Search by name...' }}">
+                <div class="relative">
+                    <input type="text" wire:model.live.debounce.300ms="searchName" class="w-full pl-10 pr-4 py-2.5 bg-slate-50/50 dark:bg-slate-950/50 border border-slate-200 dark:border-slate-800 rounded-xl text-sm focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 outline-none transition-all dark:text-slate-100 shadow-inner dark:shadow-none font-medium" placeholder="{{ __('employees.search_name') ?? 'Search by name...' }}">
+                    <svg class="w-4 h-4 text-slate-400 absolute left-4 top-3.5 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                </div>
             </div>
             <div>
                 <label class="block text-xs font-bold text-slate-500 dark:text-slate-400 mb-2 uppercase tracking-wider">{{ __('employees.status') ?? 'Status' }}</label>
                 <div class="relative">
-                    <select wire:model.live="searchStatus" class="w-full px-4 py-2.5 bg-slate-50/50 dark:bg-slate-950/50 border border-slate-200 dark:border-slate-800 rounded-xl text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all dark:text-slate-100 appearance-none shadow-inner dark:shadow-none font-semibold">
+                    <select wire:model.live="searchStatus" class="w-full pl-10 pr-10 py-2.5 bg-slate-50/50 dark:bg-slate-950/50 border border-slate-200 dark:border-slate-800 rounded-xl text-sm focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 outline-none transition-all dark:text-slate-100 appearance-none shadow-inner dark:shadow-none font-semibold">
                         <option value="">{{ __('common.all') ?? 'All' }}</option>
                         <option value="active">{{ __('employees.active') ?? 'Active' }}</option>
                         <option value="inactive">{{ __('employees.inactive') ?? 'Inactive' }}</option>
                     </select>
-                    <svg class="w-4 h-4 text-slate-400 dark:text-slate-500 absolute {{ session('locale', 'ar') === 'ar' ? 'left-4' : 'right-4' }} top-3.5 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                    <svg class="w-4 h-4 text-slate-400 absolute left-4 top-3.5 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                    <svg class="w-4 h-4 text-slate-400 absolute right-4 top-3.5 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
                 </div>
             </div>
         </div>

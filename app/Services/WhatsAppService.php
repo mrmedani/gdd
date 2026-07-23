@@ -31,8 +31,6 @@ class WhatsAppService
 
         $result = static::sendMessage($this->workerUrl, $this->chatId, $message);
 
-        static::applyDelay();
-
         return $result;
     }
 
@@ -50,18 +48,7 @@ class WhatsAppService
 
         $result = static::sendMessage($this->workerUrl, $number, $message);
 
-        static::applyDelay();
-
         return $result;
-    }
-
-    public static function applyDelay(): void
-    {
-        $maxDelay = (int) Setting::get('whatsapp_message_delay', 5);
-        if ($maxDelay > 0) {
-            $delay = rand(1, $maxDelay);
-            sleep($delay);
-        }
     }
 
     public static function sendMessage(string $workerUrl, string $chatId, string $text): bool

@@ -4,7 +4,6 @@ namespace App\Domains\Expenses\Livewire;
 
 use App\Domains\Expenses\Models\Expense;
 use App\Domains\Expenses\Models\ExpenseCategory;
-use App\Shared\Enums\PaymentMethod;
 use App\Shared\Livewire\WithToast;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
@@ -23,7 +22,7 @@ class ExpenseList extends Component
     public string $searchCategory = '';
     public string $searchAmountMin = '';
     public string $searchAmountMax = '';
-    public string $searchPaymentMethod = '';
+    public string $searchKeyword = '';
 
     // Bulk actions
     public array $selectedExpenses = [];
@@ -42,7 +41,7 @@ class ExpenseList extends Component
         'searchCategory' => ['except' => ''],
         'searchAmountMin' => ['except' => ''],
         'searchAmountMax' => ['except' => ''],
-        'searchPaymentMethod' => ['except' => ''],
+        'searchKeyword' => ['except' => ''],
     ];
 
     public function updated(string $property, mixed $value): void
@@ -57,8 +56,10 @@ class ExpenseList extends Component
         $expense = Expense::findOrFail($id);
         Gate::authorize('delete', $expense);
 
-        $period = getPeriodFromDate($expense->date);
-        if (\App\Domains\Treasury\Models\MonthlyClosure::where('month', $period)->exists()) {
+        try {
+            Expense::assertPeriodNotClosed($expense->date);
+        } catch (\Exception $e) {
+            $this->notify($e->getMessage(), 'error');
             return;
         }
 
@@ -82,8 +83,10 @@ class ExpenseList extends Component
         $expenses = Expense::whereIn('id', $this->selectedExpenses)->get();
 
         foreach ($expenses as $expense) {
-            $period = getPeriodFromDate($expense->date);
-            if (\App\Domains\Treasury\Models\MonthlyClosure::where('month', $period)->exists()) {
+            try {
+                Expense::assertPeriodNotClosed($expense->date);
+            } catch (\Exception $e) {
+                $this->notify($e->getMessage(), 'error');
                 return;
             }
         }
@@ -113,8 +116,12 @@ class ExpenseList extends Component
         if ($this->searchAmountMax !== '') {
             $query->where('amount', '<=', (float) $this->searchAmountMax);
         }
-        if ($this->searchPaymentMethod) {
-            $query->where('payment_method', $this->searchPaymentMethod);
+        if ($this->searchKeyword) {
+            $keyword = '%' . $this->searchKeyword . '%';
+            $query->where(function ($q) use ($keyword) {
+                $q->where('description', 'like', $keyword)
+                  ->orWhere('notes', 'like', $keyword);
+            });
         }
 
         return $query;
@@ -292,12 +299,10 @@ class ExpenseList extends Component
     {
         $expenses = $this->getFilteredQuery()->latest()->paginate(15);
         $categories = ExpenseCategory::active()->get();
-        $paymentMethods = PaymentMethod::options();
 
         return view('livewire.expense-list', [
             'expenses' => $expenses,
             'categories' => $categories,
-            'paymentMethods' => $paymentMethods,
         ])->layout('layouts.app')->title(__('nav.expenses'));
     }
 }

@@ -130,7 +130,7 @@
                                     </tr>
                                 </thead>
                                 <tbody class="divide-y divide-slate-100 dark:divide-slate-800/50 bg-transparent">
-                                    @forelse($employeeRecord->advances()->latest()->get() as $adv)
+                                    @forelse($employeeRecord->advances->sortByDesc('date') as $adv)
                                         <tr class="hover:bg-slate-50/20 dark:hover:bg-slate-800/30 transition-colors">
                                             <td class="py-4 px-5 font-semibold text-slate-600 dark:text-slate-400 whitespace-nowrap">{{ $adv->date->format('Y-m-d') }}</td>
                                             <td class="py-4 px-5 font-bold text-orange-600 dark:text-orange-400 whitespace-nowrap" dir="ltr">{{ formatMoney($adv->amount) }} {{ getCurrency() }}</td>
@@ -237,7 +237,7 @@
                                     </tr>
                                 </thead>
                                 <tbody class="divide-y divide-slate-100 dark:divide-slate-800/50 bg-transparent">
-                                    @forelse($employeeRecord->payments()->latest('paid_at')->get() as $pay)
+                                    @forelse($employeeRecord->payments->sortByDesc('paid_at') as $pay)
                                         <tr class="hover:bg-slate-50/20 dark:hover:bg-slate-800/30 transition-colors">
                                             <td class="py-4 px-5 font-bold text-slate-700 dark:text-slate-200 whitespace-nowrap" dir="ltr">{{ str_pad($pay->month, 2, '0', STR_PAD_LEFT) }}/{{ $pay->year }}</td>
                                             <td class="py-4 px-5 text-slate-500 dark:text-slate-400 whitespace-nowrap" dir="ltr">{{ formatMoney($pay->base_amount) }}</td>

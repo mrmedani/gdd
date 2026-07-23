@@ -62,7 +62,7 @@
             <div class="absolute -right-6 -top-6 w-24 h-24 bg-green-50 dark:bg-green-500/5 rounded-full blur-2xl group-hover:scale-120 transition-transform duration-500"></div>
             <div class="flex justify-between items-start mb-6">
                 <div class="p-3 bg-green-50 dark:bg-green-500/10 text-green-600 dark:text-green-400 rounded-2xl border border-green-100/50 dark:border-green-500/20 group-hover:bg-green-600 group-hover:text-white transition-colors duration-300">
-                    <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path></svg>
+                    <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg>
                 </div>
                 <span class="text-slate-400 dark:text-slate-500 font-bold text-xs uppercase tracking-wider">{{ __('dashboard.daily_average') }}</span>
             </div>
@@ -111,6 +111,33 @@
         </div>
     @endif
 
+    <!-- Growth Rate -->
+    <div class="relative overflow-hidden bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border border-slate-200/50 dark:border-slate-800/60 rounded-3xl p-6 shadow-premium dark:shadow-premium-dark transition-all duration-300 hover:-translate-y-1 hover:shadow-premium-hover dark:hover:shadow-premium-dark-hover group">
+        <div class="absolute -right-6 -top-6 w-24 h-24 bg-emerald-50 dark:bg-emerald-500/5 rounded-full blur-2xl group-hover:scale-120 transition-transform duration-500"></div>
+        <div class="flex items-center gap-5">
+            <div class="p-4 bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 rounded-2xl border border-emerald-100/50 dark:border-emerald-500/20 shrink-0">
+                <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path></svg>
+            </div>
+            <div class="flex-1">
+                <p class="text-slate-500 dark:text-slate-400 font-bold text-xs uppercase tracking-wider mb-1">{{ __('dashboard.growth') }}</p>
+                @if($growthRate !== null)
+                    <h3 class="text-3xl font-black {{ $growthRate >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-500' }} font-heading">
+                        {{ $growthRate >= 0 ? '+' : '' }}{{ number_format($growthRate, 1) }}%
+                    </h3>
+                    <p class="{{ $growthRate >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-500' }} font-bold mt-1.5 text-xs flex items-center">
+                        <svg class="w-4 h-4 me-1.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="{{ $growthRate >= 0 ? 'M13 7h8m0 0v8m0-8l-8 8-4-4-6 6' : 'M13 17h8m0 0v-8m0 8l-8-8-4 4-6-6' }}"></path>
+                        </svg>
+                        {{ $growthRate >= 0 ? __('dashboard.growth_up') : __('dashboard.growth_down') }}
+                    </p>
+                @else
+                    <h3 class="text-3xl font-black text-slate-300 dark:text-slate-600 font-heading">—</h3>
+                    <p class="text-slate-400 dark:text-slate-500 font-bold mt-1.5 text-xs">{{ __('dashboard.growth_na') }}</p>
+                @endif
+            </div>
+        </div>
+    </div>
+
     <!-- Admin Stats -->
     @if(auth()->user()->isAdmin())
     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -147,11 +174,14 @@
                 {{ __('dashboard.by_category') }}
             </h2>
             @if(count($categoryData) > 0)
-                <div wire:key="category-chart" class="relative h-64 w-full flex items-center justify-center">
-                    <canvas id="categoryChart"></canvas>
+                <div wire:key="category-chart" class="relative w-full" style="height: 320px;">
+                    <!-- Ligne verticale (séparateur) en inline CSS pour éviter les soucis de compilation Tailwind -->
+                    <div style="position: absolute; left: 52%; top: 10%; bottom: 10%; width: 2px; background: linear-gradient(to bottom, transparent, rgba(100, 116, 139, 0.4), transparent); z-index: 0; pointer-events: none;"></div>
+                    
+                    <div id="categoryChart" class="w-full h-full relative z-10"></div>
                 </div>
             @else
-                <div wire:key="category-chart-empty" class="h-64 flex flex-col items-center justify-center border-2 border-dashed border-slate-200 dark:border-slate-800 rounded-2xl">
+                <div wire:key="category-chart-empty" class="flex flex-col items-center justify-center border-2 border-dashed border-slate-200 dark:border-slate-800 rounded-2xl" style="height: 320px;">
                     <p class="text-slate-400 dark:text-slate-500 font-semibold text-sm">{{ __('dashboard.no_data') }}</p>
                 </div>
             @endif
@@ -164,11 +194,11 @@
                     {{ __('dashboard.monthly_trend') }}
                 </h2>
                 @if(count($monthlyTrend) > 0)
-                    <div wire:key="trend-chart" class="relative h-64 w-full">
-                        <canvas id="trendChart"></canvas>
+                    <div wire:key="trend-chart" class="relative w-full" style="height: 320px;">
+                        <div id="trendChart" class="w-full h-full"></div>
                     </div>
                 @else
-                    <div wire:key="trend-chart-empty" class="h-64 flex flex-col items-center justify-center border-2 border-dashed border-slate-200 dark:border-slate-800 rounded-2xl">
+                    <div wire:key="trend-chart-empty" class="flex flex-col items-center justify-center border-2 border-dashed border-slate-200 dark:border-slate-800 rounded-2xl" style="height: 320px;">
                         <p class="text-slate-400 dark:text-slate-500 font-semibold text-sm">{{ __('dashboard.no_data') }}</p>
                     </div>
                 @endif
@@ -360,162 +390,210 @@
 </div>
 
 @push('scripts')
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/echarts@5/dist/echarts.min.js"></script>
 <script>
 let chartInstances = {};
+let darkModeObserver = null;
+
+function isDark() {
+    return document.documentElement.classList.contains('dark');
+}
 
 function destroyCharts() {
-    Object.values(chartInstances).forEach(chart => { if (chart) chart.destroy(); });
+    Object.values(chartInstances).forEach(chart => { if (chart) chart.dispose(); });
     chartInstances = {};
 }
 
 function initCharts() {
     destroyCharts();
-
-    Chart.defaults.font.family = "'Inter', 'Outfit', system-ui, sans-serif";
-    Chart.defaults.color = '#64748b';
+    const dark = isDark();
 
     @if(count($categoryData) > 0)
     const isMobile = window.innerWidth < 640;
-    chartInstances.category = new Chart(document.getElementById('categoryChart'), {
-        type: 'doughnut',
-        data: {
-            labels: {!! json_encode(array_column($categoryData, 'label'), JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) !!},
-            datasets: [{
-                data: {!! json_encode(array_column($categoryData, 'total'), JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) !!},
-                backgroundColor: {!! json_encode(array_column($categoryData, 'color'), JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) !!},
-                borderWidth: 0,
-                hoverOffset: 8
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            cutout: '70%',
-            plugins: {
-                legend: {
-                    position: isMobile ? 'bottom' : 'right',
-                    labels: {
-                        usePointStyle: true,
-                        padding: 20,
-                        font: { size: isMobile ? 10 : 12, weight: '500' },
-                        boxWidth: isMobile ? 10 : 12
-                    }
-                },
-                tooltip: {
-                    backgroundColor: 'rgba(255, 255, 255, 0.9)',
-                    titleColor: '#1e293b',
-                    bodyColor: '#334155',
-                    borderColor: '#e2e8f0',
-                    borderWidth: 1,
-                    padding: 12,
-                    boxPadding: 6,
-                    usePointStyle: true,
-                    callbacks: {
-                        label: function(context) {
-                            let label = context.label || '';
-                            if (label) { label += ': '; }
-                            if (context.parsed !== null) {
-                                label += new Intl.NumberFormat().format(context.parsed) + ' {{ getCurrency() }}';
-                            }
-                            return label;
-                        }
-                    }
-                }
+    chartInstances.category = echarts.init(document.getElementById('categoryChart'));
+    chartInstances.category.setOption({
+        tooltip: {
+            trigger: 'item',
+            backgroundColor: dark ? 'rgba(15, 23, 42, 0.85)' : 'rgba(255, 255, 255, 0.9)',
+            borderColor: dark ? 'rgba(51, 65, 85, 0.5)' : 'rgba(226, 232, 240, 0.8)',
+            borderWidth: 1,
+            padding: [16, 20],
+            textStyle: { color: dark ? '#f8fafc' : '#1e293b', fontSize: 13, fontWeight: 500 },
+            extraCssText: 'border-radius: 16px; backdrop-filter: blur(16px); box-shadow: 0 10px 40px -10px rgba(0,0,0,' + (dark ? '0.5' : '0.15') + ');',
+            formatter: function(params) {
+                return '<div style="font-size:13px;font-weight:600;color:' + (dark ? '#94a3b8' : '#64748b') + ';margin-bottom:8px;text-transform:uppercase;letter-spacing:0.5px">' + params.marker + ' ' + params.name + '</div>' +
+                       '<div style="font-size:20px;font-weight:800;color:' + (dark ? '#fff' : '#0f172a') + '; letter-spacing:-0.5px;">' + new Intl.NumberFormat('fr-FR', { minimumFractionDigits: 2 }).format(params.value) + ' <span style="font-size:14px;font-weight:600">{{ getCurrency() }}</span></div>' +
+                       '<div style="font-size:13px;font-weight:600;color:' + params.color + ';margin-top:4px;">' + params.percent + '% du total</div>';
             }
-        }
+        },
+        legend: {
+            type: 'scroll',
+            orient: isMobile ? 'horizontal' : 'vertical',
+            right: isMobile ? 'center' : '2%',
+            bottom: isMobile ? 0 : 'center',
+            top: isMobile ? 'auto' : 'center',
+            icon: 'circle',
+            itemWidth: 12,
+            itemHeight: 12,
+            itemGap: 16,
+            textStyle: { fontSize: 12, fontWeight: 600, color: dark ? '#cbd5e1' : '#475569' },
+            pageIconColor: '#3b82f6',
+            pageTextStyle: { color: dark ? '#cbd5e1' : '#475569' }
+        },
+        animationDuration: 1500,
+        animationEasing: 'cubicOut',
+        series: [{
+            type: 'pie',
+            radius: ['45%', '75%'],
+            center: isMobile ? ['50%', '40%'] : ['26%', '50%'],
+            avoidLabelOverlap: true,
+            itemStyle: {
+                borderRadius: 12,
+                borderColor: dark ? '#0f172a' : '#ffffff',
+                borderWidth: 4,
+                shadowBlur: 15,
+                shadowColor: 'rgba(0, 0, 0, 0.1)',
+                shadowOffsetX: 0,
+                shadowOffsetY: 5
+            },
+            emphasis: {
+                scale: true,
+                scaleSize: 10,
+                itemStyle: {
+                    shadowBlur: 25,
+                    shadowOffsetX: 0,
+                    shadowOffsetY: 10,
+                    shadowColor: 'rgba(0, 0, 0, 0.3)'
+                }
+            },
+            label: { show: false },
+            data: [
+                @foreach($categoryData as $cat)
+                { value: {{ $cat['total'] }}, name: '{!! addslashes($cat['label']) !!}', itemStyle: { color: '{{ $cat['color'] }}' } },
+                @endforeach
+            ].sort(function (a, b) { return b.value - a.value; })
+        }]
     });
     @endif
 
     @if(count($monthlyTrend) > 0)
-    let ctx = document.getElementById('trendChart').getContext('2d');
-
-    chartInstances.trend = new Chart(ctx, {
-        type: 'bar',
-        data: {
-            labels: {!! json_encode(array_column($monthlyTrend, 'month'), JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) !!},
-            datasets: [
-                {
-                    label: '{{ __('dashboard.monthly_total') }}',
-                    data: {!! json_encode(array_column($monthlyTrend, 'expenses'), JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) !!},
-                    backgroundColor: '#EF4444',
-                    borderRadius: 4,
-                    barPercentage: 0.3,
-                },
-                {
-                    label: '{{ __('common.gains') }}',
-                    data: {!! json_encode(array_column($monthlyTrend, 'gains'), JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) !!},
-                    backgroundColor: '#10B981',
-                    borderRadius: 4,
-                    barPercentage: 0.3,
-                },
-                {
-                    label: '{{ __('common.balance') }}',
-                    data: {!! json_encode(array_column($monthlyTrend, 'balance'), JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) !!},
-                    borderColor: '#6366F1',
-                    borderWidth: 3,
-                    backgroundColor: 'rgba(99, 102, 241, 0.1)',
-                    fill: true,
-                    tension: 0.4,
-                    pointBackgroundColor: '#ffffff',
-                    pointBorderColor: '#6366F1',
-                    pointBorderWidth: 2,
-                    pointRadius: 4,
-                    pointHoverRadius: 6,
-                    type: 'line',
-                    order: 0,
-                }
-            ]
+    chartInstances.trend = echarts.init(document.getElementById('trendChart'));
+    chartInstances.trend.setOption({
+        tooltip: {
+            trigger: 'axis',
+            backgroundColor: dark ? 'rgba(15, 23, 42, 0.92)' : 'rgba(255, 255, 255, 0.96)',
+            borderColor: dark ? 'rgba(51, 65, 85, 0.5)' : 'rgba(226, 232, 240, 0.8)',
+            borderWidth: 1,
+            padding: [12, 16],
+            textStyle: { color: dark ? '#e2e8f0' : '#334155', fontSize: 13, fontWeight: 500 },
+            extraCssText: 'border-radius: 12px; backdrop-filter: blur(12px); box-shadow: 0 8px 32px rgba(0,0,0,' + (dark ? '0.4' : '0.12') + ');',
+            formatter: function(params) {
+                let res = '<div style="font-size:14px;font-weight:700;margin-bottom:6px">' + params[0].axisValueLabel + '</div>';
+                params.forEach(function(p) {
+                    res += '<div style="font-size:13px;margin-top:4px">' + p.marker + ' ' + p.seriesName + ': <strong style="float:right;margin-left:16px;color:' + (dark ? '#f8fafc' : '#0f172a') + '">' + new Intl.NumberFormat().format(p.value) + ' {{ getCurrency() }}</strong></div>';
+                });
+                return res;
+            },
+            axisPointer: {
+                lineStyle: { color: dark ? '#6366f1' : '#818cf8', type: 'dashed' }
+            }
         },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-                legend: {
-                    position: 'bottom',
-                    labels: {
-                        usePointStyle: true,
-                        padding: 16,
-                        font: { size: 11, weight: '500' },
-                        boxWidth: 10
-                    }
-                },
-                tooltip: {
-                    backgroundColor: 'rgba(15, 23, 42, 0.9)',
-                    titleColor: '#fff',
-                    bodyColor: '#cbd5e1',
-                    padding: 12,
-                    callbacks: {
-                        label: function(context) {
-                            return context.dataset.label + ': ' + new Intl.NumberFormat().format(context.parsed.y) + ' {{ getCurrency() }}';
-                        }
-                    }
+        legend: {
+            bottom: 0,
+            icon: 'circle',
+            itemWidth: 10,
+            itemHeight: 10,
+            textStyle: { fontSize: 11, fontWeight: 600, color: dark ? '#94a3b8' : '#64748b' }
+        },
+        grid: { left: '3%', right: '4%', bottom: '18%', top: '8%', containLabel: true },
+        xAxis: {
+            type: 'category',
+            data: {!! json_encode(array_column($monthlyTrend, 'month'), JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) !!},
+            axisLine: { show: false },
+            axisTick: { show: false },
+            axisLabel: { fontSize: 11, color: dark ? '#475569' : '#94a3b8', fontWeight: 600 }
+        },
+        yAxis: {
+            type: 'value',
+            splitLine: { lineStyle: { color: dark ? 'rgba(51, 65, 85, 0.3)' : '#f1f5f9', type: 'dashed' } },
+            axisLabel: {
+                fontSize: 11,
+                color: dark ? '#475569' : '#94a3b8',
+                fontWeight: 500,
+                formatter: function(v) { return new Intl.NumberFormat('en', { notation: 'compact' }).format(v); }
+            }
+        },
+        animationDuration: 1000,
+        animationEasing: 'cubicOut',
+        series: [
+            {
+                name: '{{ __('dashboard.monthly_total') }}',
+                type: 'bar',
+                barWidth: '20%',
+                data: {!! json_encode(array_column($monthlyTrend, 'expenses'), JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) !!},
+                itemStyle: { 
+                    color: {
+                        type: 'linear', x: 0, y: 0, x2: 0, y2: 1,
+                        colorStops: [{ offset: 0, color: 'rgba(239, 68, 68, 0.95)' }, { offset: 1, color: 'rgba(239, 68, 68, 0.65)' }]
+                    },
+                    borderRadius: [4, 4, 0, 0] 
                 }
             },
-            scales: {
-                y: {
-                    beginAtZero: true,
-                    grid: { color: '#f1f5f9', drawBorder: false },
-                    border: { display: false },
-                    ticks: {
-                        callback: function(value) {
-                            return new Intl.NumberFormat().format(value);
-                        }
+            {
+                name: '{{ __('common.gains') }}',
+                type: 'bar',
+                barWidth: '20%',
+                data: {!! json_encode(array_column($monthlyTrend, 'gains'), JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) !!},
+                itemStyle: { 
+                    color: {
+                        type: 'linear', x: 0, y: 0, x2: 0, y2: 1,
+                        colorStops: [{ offset: 0, color: 'rgba(16, 185, 129, 0.95)' }, { offset: 1, color: 'rgba(16, 185, 129, 0.65)' }]
+                    },
+                    borderRadius: [4, 4, 0, 0] 
+                }
+            },
+            {
+                name: '{{ __('common.balance') }}',
+                type: 'line',
+                smooth: true,
+                symbol: 'none',
+                data: {!! json_encode(array_column($monthlyTrend, 'balance'), JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) !!},
+                lineStyle: { color: '#6366F1', width: 3.5, shadowColor: 'rgba(99, 102, 241, 0.5)', shadowBlur: 10 },
+                itemStyle: { color: '#6366F1' },
+                areaStyle: { 
+                    color: {
+                        type: 'linear', x: 0, y: 0, x2: 0, y2: 1,
+                        colorStops: [{ offset: 0, color: 'rgba(99, 102, 241, 0.2)' }, { offset: 1, color: 'rgba(99, 102, 241, 0.01)' }]
                     }
                 },
-                x: {
-                    grid: { display: false },
-                    border: { display: false }
-                }
+                emphasis: { focus: 'series' }
             }
-        }
+        ]
     });
     @endif
+    
+    // Setup dark mode observer if not already done
+    if (!darkModeObserver) {
+        darkModeObserver = new MutationObserver(() => {
+            initCharts();
+        });
+        darkModeObserver.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
+    }
 }
 
 document.addEventListener('DOMContentLoaded', initCharts);
 document.addEventListener('livewire:init', function() {
     Livewire.hook('morph.updated', initCharts);
+});
+
+let resizeTimer;
+window.addEventListener('resize', function() {
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(function() {
+        Object.values(chartInstances).forEach(chart => { 
+            if (chart) chart.resize({ animation: { duration: 300, easing: 'cubicOut' } }); 
+        });
+    }, 150);
 });
 </script>
 @endpush

@@ -11,6 +11,11 @@ class AuditLogs extends Component
 {
     use WithPagination;
 
+    public function mount(): void
+    {
+        Gate::authorize('view-audit-logs');
+    }
+
     public string $searchAction = '';
     public string $searchEntityType = '';
     public string $searchUser = '';

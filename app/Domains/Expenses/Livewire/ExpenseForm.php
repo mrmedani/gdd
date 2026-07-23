@@ -98,8 +98,10 @@ class ExpenseForm extends Component
 
         $this->validate();
 
-        $period = getPeriodFromDate($this->date);
-        if (\App\Domains\Treasury\Models\MonthlyClosure::where('month', $period)->exists()) {
+        try {
+            Expense::assertPeriodNotClosed($this->date);
+        } catch (\Exception $e) {
+            $this->addError('date', $e->getMessage());
             return;
         }
 
@@ -110,7 +112,7 @@ class ExpenseForm extends Component
             'date' => $this->date,
             'amount' => $this->amount,
             'category_id' => $category->id,
-            'category_key' => $category->key ?? $this->getCategoryKey($category->id),
+            'category_key' => $category->key ?? 'other',
             'description' => $this->description,
             'payment_method' => $this->payment_method,
             'notes' => $this->notes,
@@ -217,17 +219,10 @@ class ExpenseForm extends Component
 
     private function isSalaryCategory(): bool
     {
+        if (!$this->category_id) {
+            return false;
+        }
         $category = ExpenseCategory::find($this->category_id);
         return $category && $category->key === 'salaries';
-    }
-
-    private function getCategoryKey(int $id): string
-    {
-        $map = [
-            1 => 'salaries', 2 => 'fuel', 3 => 'rent',
-            4 => 'internet', 5 => 'electricity', 6 => 'vehicle_maintenance',
-            7 => 'supplies', 8 => 'advertising', 9 => 'other',
-        ];
-        return $map[$id] ?? 'other';
     }
 }
