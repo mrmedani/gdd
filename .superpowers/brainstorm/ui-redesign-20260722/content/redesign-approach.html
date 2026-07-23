@@ -1,0 +1,39 @@
+<style>
+  #redesign-approach .cards { display:grid; grid-template-columns:repeat(3, minmax(0, 1fr)); gap:16px; }
+  #redesign-approach .approach-card { cursor:pointer; padding:20px; transition:transform 160ms ease, outline-color 160ms ease; }
+  #redesign-approach .approach-card:hover, #redesign-approach .approach-card.selected { transform:translateY(-2px); outline:3px solid var(--primary); outline-offset:-3px; }
+  #redesign-approach .approach-card h3 { margin:0 0 10px; }
+  #redesign-approach .approach-card p { margin:0 0 15px; }
+  #redesign-approach .steps { display:grid; gap:8px; }
+  #redesign-approach .step { padding:9px 10px; border-radius:8px; background:color-mix(in srgb, var(--primary) 8%, transparent); color:var(--foreground); font-size:13px; }
+  #redesign-approach .recommended { display:inline-block; margin-bottom:12px; padding:4px 8px; border-radius:999px; background:var(--primary); color:var(--primary-foreground); font-size:12px; font-weight:500; }
+  #redesign-approach .choice-mark { display:none; margin-top:15px; color:var(--primary); font-weight:500; }
+  #redesign-approach .selected .choice-mark { display:block; }
+  @media (max-width:760px) { #redesign-approach .cards { grid-template-columns:1fr; } }
+</style>
+
+<section id="redesign-approach" lang="fr">
+  <h2>Choisissez la manière de refaire l’application</h2>
+  <p class="subtitle">Cliquez sur l’option que vous préférez. La première est recommandée.</p>
+  <div class="cards">
+    <article class="card approach-card" data-choice="system-first" onclick="toggleSelect(this)">
+      <span class="recommended">Recommandé</span>
+      <h3>Refaire toute la plateforme avec un même système</h3>
+      <p class="text-muted">Une interface professionnelle et cohérente sur toutes les pages.</p>
+      <div class="steps"><div class="step">Navigation, boutons, formulaires et tableaux</div><div class="step">Ajout de dépense rapide avec photo de reçu</div><div class="step">Toutes les pages suivent le même style</div></div>
+      <span class="choice-mark">✓ Sélectionné</span>
+    </article>
+    <article class="card approach-card" data-choice="expense-first" onclick="toggleSelect(this)">
+      <h3>Commencer uniquement par les dépenses</h3>
+      <p class="text-muted">La page la plus importante est améliorée avant le reste.</p>
+      <div class="steps"><div class="step">Liste des dépenses</div><div class="step">Ajouter une dépense</div><div class="step">Photo de reçu sur téléphone</div></div>
+      <span class="choice-mark">✓ Sélectionné</span>
+    </article>
+    <article class="card approach-card" data-choice="big-bang" onclick="toggleSelect(this)">
+      <h3>Refaire toutes les pages immédiatement</h3>
+      <p class="text-muted">Un changement très visible, mais plus long et plus risqué.</p>
+      <div class="steps"><div class="step">Toutes les pages en même temps</div><div class="step">Plus difficile à tester</div><div class="step">Résultat final seulement à la fin</div></div>
+      <span class="choice-mark">✓ Sélectionné</span>
+    </article>
+  </div>
+</section>

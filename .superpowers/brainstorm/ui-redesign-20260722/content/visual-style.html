@@ -1,0 +1,101 @@
+<style>
+  #chronorex-style-options .style-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 18px;
+  }
+  #chronorex-style-options .style-option {
+    cursor: pointer;
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    overflow: hidden;
+    background: var(--card);
+    color: var(--card-foreground);
+    transition: transform 160ms ease, border-color 160ms ease, box-shadow 160ms ease;
+  }
+  #chronorex-style-options .style-option:hover,
+  #chronorex-style-options .style-option.is-selected {
+    transform: translateY(-2px);
+    border-color: var(--primary);
+    box-shadow: 0 8px 20px color-mix(in srgb, var(--foreground) 12%, transparent);
+  }
+  #chronorex-style-options .style-copy { padding: 14px 16px 16px; }
+  #chronorex-style-options .style-copy h3 { margin: 0 0 6px; }
+  #chronorex-style-options .style-copy p { margin: 0; }
+  #chronorex-style-options .preview { min-height: 245px; padding: 12px; font-family: Inter, ui-sans-serif, system-ui, sans-serif; }
+  #chronorex-style-options .mini-shell { display: grid; grid-template-columns: 57px 1fr; min-height: 221px; border-radius: 9px; overflow: hidden; }
+  #chronorex-style-options .mini-side { padding: 12px 8px; }
+  #chronorex-style-options .mini-mark { width: 21px; height: 21px; border-radius: 6px; margin: 0 auto 20px; }
+  #chronorex-style-options .mini-nav { height: 7px; border-radius: 3px; margin: 11px 3px; }
+  #chronorex-style-options .mini-main { padding: 14px; }
+  #chronorex-style-options .mini-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+  #chronorex-style-options .mini-title { width: 86px; height: 10px; border-radius: 4px; }
+  #chronorex-style-options .mini-user { width: 19px; height: 19px; border-radius: 50%; }
+  #chronorex-style-options .mini-form { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  #chronorex-style-options .field { height: 28px; border-radius: 5px; }
+  #chronorex-style-options .field-wide { grid-column: 1 / -1; height: 36px; }
+  #chronorex-style-options .mini-action { grid-column: 2; height: 27px; border-radius: 5px; margin-top: 5px; }
+  #chronorex-style-options .clean .mini-shell { background: #ffffff; border: 1px solid #d9e0e8; }
+  #chronorex-style-options .clean .mini-side { background: #f4f7fa; }
+  #chronorex-style-options .clean .mini-mark, #chronorex-style-options .clean .mini-action { background: #155eef; }
+  #chronorex-style-options .clean .mini-nav { background: #cbd5e1; }
+  #chronorex-style-options .clean .mini-nav.active { background: #155eef; }
+  #chronorex-style-options .clean .mini-main { background: #ffffff; }
+  #chronorex-style-options .clean .mini-title, #chronorex-style-options .clean .mini-user { background: #25354d; }
+  #chronorex-style-options .clean .field { background: #f4f7fa; border: 1px solid #d9e0e8; }
+  #chronorex-style-options .dark .mini-shell { background: #101826; border: 1px solid #263448; }
+  #chronorex-style-options .dark .mini-side { background: #162135; }
+  #chronorex-style-options .dark .mini-mark, #chronorex-style-options .dark .mini-action { background: #43c59e; }
+  #chronorex-style-options .dark .mini-nav { background: #42536a; }
+  #chronorex-style-options .dark .mini-nav.active { background: #f0b84d; }
+  #chronorex-style-options .dark .mini-main { background: #101826; }
+  #chronorex-style-options .dark .mini-title, #chronorex-style-options .dark .mini-user { background: #e4edf9; }
+  #chronorex-style-options .dark .field { background: #19263a; border: 1px solid #314158; }
+  #chronorex-style-options .warm .mini-shell { background: #f8f6f2; border: 1px solid #ded8cf; }
+  #chronorex-style-options .warm .mini-side { background: #263a34; }
+  #chronorex-style-options .warm .mini-mark, #chronorex-style-options .warm .mini-action { background: #bd5328; }
+  #chronorex-style-options .warm .mini-nav { background: #7ea092; }
+  #chronorex-style-options .warm .mini-nav.active { background: #e7c25d; }
+  #chronorex-style-options .warm .mini-main { background: #f8f6f2; }
+  #chronorex-style-options .warm .mini-title, #chronorex-style-options .warm .mini-user { background: #263a34; }
+  #chronorex-style-options .warm .field { background: #ffffff; border: 1px solid #ded8cf; }
+  #chronorex-style-options .style-tag { display: inline-block; margin-top: 8px; padding: 3px 8px; border-radius: 999px; background: color-mix(in srgb, var(--primary) 12%, transparent); color: var(--foreground); font-size: 12px; }
+  @media (max-width: 760px) { #chronorex-style-options .style-grid { grid-template-columns: 1fr; } }
+</style>
+
+<section id="chronorex-style-options">
+  <h2>Choose the overall look</h2>
+  <p class="subtitle">Each design makes adding an expense clear on computer and easy to use on a phone. Click the one you prefer.</p>
+
+  <div class="style-grid">
+    <article class="style-option clean" data-choice="clean-professional" onclick="toggleSelect(this)">
+      <div class="preview">
+        <div class="mini-shell">
+          <div class="mini-side"><div class="mini-mark"></div><div class="mini-nav active"></div><div class="mini-nav"></div><div class="mini-nav"></div><div class="mini-nav"></div></div>
+          <div class="mini-main"><div class="mini-top"><div class="mini-title"></div><div class="mini-user"></div></div><div class="mini-form"><div class="field"></div><div class="field"></div><div class="field"></div><div class="field"></div><div class="field field-wide"></div><div class="field field-wide"></div><div class="mini-action"></div></div></div>
+        </div>
+      </div>
+      <div class="style-copy"><h3>Clean and professional</h3><p class="text-muted">Bright, calm, and very easy to read. Blue is used only for important actions.</p><span class="style-tag">Recommended</span></div>
+    </article>
+
+    <article class="style-option dark" data-choice="dark-confident" onclick="toggleSelect(this)">
+      <div class="preview">
+        <div class="mini-shell">
+          <div class="mini-side"><div class="mini-mark"></div><div class="mini-nav active"></div><div class="mini-nav"></div><div class="mini-nav"></div><div class="mini-nav"></div></div>
+          <div class="mini-main"><div class="mini-top"><div class="mini-title"></div><div class="mini-user"></div></div><div class="mini-form"><div class="field"></div><div class="field"></div><div class="field"></div><div class="field"></div><div class="field field-wide"></div><div class="field field-wide"></div><div class="mini-action"></div></div></div>
+        </div>
+      </div>
+      <div class="style-copy"><h3>Dark and confident</h3><p class="text-muted">A focused, modern workspace that is comfortable for evening work.</p></div>
+    </article>
+
+    <article class="style-option warm" data-choice="warm-trusted" onclick="toggleSelect(this)">
+      <div class="preview">
+        <div class="mini-shell">
+          <div class="mini-side"><div class="mini-mark"></div><div class="mini-nav active"></div><div class="mini-nav"></div><div class="mini-nav"></div><div class="mini-nav"></div></div>
+          <div class="mini-main"><div class="mini-top"><div class="mini-title"></div><div class="mini-user"></div></div><div class="mini-form"><div class="field"></div><div class="field"></div><div class="field"></div><div class="field"></div><div class="field field-wide"></div><div class="field field-wide"></div><div class="mini-action"></div></div></div>
+        </div>
+      </div>
+      <div class="style-copy"><h3>Warm and trusted</h3><p class="text-muted">A more human, distinctive financial tool with a grounded look.</p></div>
+    </article>
+  </div>
+</section>

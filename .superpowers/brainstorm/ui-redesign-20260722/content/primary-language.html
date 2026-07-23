@@ -1,0 +1,32 @@
+<style>
+  #primary-language-choice .cards { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
+  #primary-language-choice .language-card { cursor: pointer; text-align: center; padding: 26px 18px; transition: transform 160ms ease, outline-color 160ms ease; }
+  #primary-language-choice .language-card:hover, #primary-language-choice .language-card.selected { transform: translateY(-2px); outline: 3px solid var(--primary); outline-offset: -3px; }
+  #primary-language-choice .language-card h3 { margin: 0 0 10px; }
+  #primary-language-choice .language-card p { margin: 0; }
+  #primary-language-choice .choice-mark { display:none; margin-top:14px; color:var(--primary); font-weight:500; }
+  #primary-language-choice .language-card.selected .choice-mark { display:block; }
+  @media (max-width: 640px) { #primary-language-choice .cards { grid-template-columns: 1fr; } }
+</style>
+
+<section id="primary-language-choice">
+  <h2>Choose the main language</h2>
+  <p class="subtitle">The app will keep Arabic, French, and English. Choose the language most people use every day.</p>
+  <div class="cards">
+    <article class="card language-card" data-choice="arabic" onclick="toggleSelect(this)" dir="rtl" lang="ar">
+      <h3>العربية</h3>
+      <p class="text-muted">إضافة مصروف</p>
+      <span class="choice-mark">✓ تم الاختيار</span>
+    </article>
+    <article class="card language-card" data-choice="french" onclick="toggleSelect(this)" lang="fr">
+      <h3>Français</h3>
+      <p class="text-muted">Ajouter une dépense</p>
+      <span class="choice-mark">✓ Sélectionné</span>
+    </article>
+    <article class="card language-card" data-choice="english" onclick="toggleSelect(this)" lang="en">
+      <h3>English</h3>
+      <p class="text-muted">Add an expense</p>
+      <span class="choice-mark">✓ Selected</span>
+    </article>
+  </div>
+</section>

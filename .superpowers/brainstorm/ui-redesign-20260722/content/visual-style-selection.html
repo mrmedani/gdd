@@ -1,0 +1,83 @@
+<style>
+  #chronorex-style-selection .cards {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 18px;
+  }
+  #chronorex-style-selection .design-card {
+    position: relative;
+    min-width: 0;
+    cursor: pointer;
+    overflow: hidden;
+    transition: transform 160ms ease, outline-color 160ms ease, box-shadow 160ms ease;
+  }
+  #chronorex-style-selection .design-card:hover,
+  #chronorex-style-selection .design-card.selected {
+    transform: translateY(-2px);
+    outline: 3px solid var(--primary);
+    outline-offset: -3px;
+    box-shadow: 0 10px 20px color-mix(in srgb, var(--foreground) 14%, transparent);
+  }
+  #chronorex-style-selection .selected-note { display: none; color: var(--primary); font-weight: 500; }
+  #chronorex-style-selection .design-card.selected .selected-note { display: block; }
+  #chronorex-style-selection .preview { min-height: 220px; padding: 13px; font-family: Inter, ui-sans-serif, system-ui, sans-serif; }
+  #chronorex-style-selection .shell { display: grid; grid-template-columns: 54px 1fr; min-height: 194px; overflow: hidden; border-radius: 8px; }
+  #chronorex-style-selection .side { padding: 12px 8px; }
+  #chronorex-style-selection .logo { width: 20px; height: 20px; border-radius: 5px; margin: 0 auto 19px; }
+  #chronorex-style-selection .nav-line { height: 7px; margin: 11px 3px; border-radius: 3px; }
+  #chronorex-style-selection .main { padding: 13px; }
+  #chronorex-style-selection .top { display:flex; justify-content:space-between; align-items:center; margin-bottom:14px; }
+  #chronorex-style-selection .heading { height:10px; width:84px; border-radius:4px; }
+  #chronorex-style-selection .avatar { height:18px; width:18px; border-radius:50%; }
+  #chronorex-style-selection .form { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+  #chronorex-style-selection .input { height:27px; border-radius:5px; }
+  #chronorex-style-selection .wide { grid-column:1 / -1; height:35px; }
+  #chronorex-style-selection .save { grid-column:2; height:27px; border-radius:5px; margin-top:5px; }
+  #chronorex-style-selection .clean .shell { background:#fff; border:1px solid #d9e0e8; }
+  #chronorex-style-selection .clean .side { background:#f4f7fa; }
+  #chronorex-style-selection .clean .logo, #chronorex-style-selection .clean .save, #chronorex-style-selection .clean .active { background:#155eef; }
+  #chronorex-style-selection .clean .nav-line { background:#cbd5e1; }
+  #chronorex-style-selection .clean .main { background:#fff; }
+  #chronorex-style-selection .clean .heading, #chronorex-style-selection .clean .avatar { background:#25354d; }
+  #chronorex-style-selection .clean .input { background:#f4f7fa; border:1px solid #d9e0e8; }
+  #chronorex-style-selection .dark .shell { background:#101826; border:1px solid #263448; }
+  #chronorex-style-selection .dark .side { background:#162135; }
+  #chronorex-style-selection .dark .logo, #chronorex-style-selection .dark .save { background:#43c59e; }
+  #chronorex-style-selection .dark .nav-line { background:#42536a; }
+  #chronorex-style-selection .dark .active { background:#f0b84d; }
+  #chronorex-style-selection .dark .main { background:#101826; }
+  #chronorex-style-selection .dark .heading, #chronorex-style-selection .dark .avatar { background:#e4edf9; }
+  #chronorex-style-selection .dark .input { background:#19263a; border:1px solid #314158; }
+  #chronorex-style-selection .warm .shell { background:#f8f6f2; border:1px solid #ded8cf; }
+  #chronorex-style-selection .warm .side { background:#263a34; }
+  #chronorex-style-selection .warm .logo, #chronorex-style-selection .warm .save { background:#bd5328; }
+  #chronorex-style-selection .warm .nav-line { background:#7ea092; }
+  #chronorex-style-selection .warm .active { background:#e7c25d; }
+  #chronorex-style-selection .warm .main { background:#f8f6f2; }
+  #chronorex-style-selection .warm .heading, #chronorex-style-selection .warm .avatar { background:#263a34; }
+  #chronorex-style-selection .warm .input { background:#fff; border:1px solid #ded8cf; }
+  #chronorex-style-selection .card-copy { padding: 13px 15px 16px; }
+  #chronorex-style-selection .card-copy h3 { margin: 0 0 6px; }
+  #chronorex-style-selection .card-copy p { margin: 0 0 8px; }
+  @media (max-width: 760px) { #chronorex-style-selection .cards { grid-template-columns:1fr; } }
+</style>
+
+<section id="chronorex-style-selection">
+  <h2>Choose the overall look</h2>
+  <p class="subtitle">Click one design. A blue outline and “Selected” will appear on your choice.</p>
+
+  <div class="cards">
+    <article class="card design-card clean" data-choice="clean-professional" onclick="toggleSelect(this)">
+      <div class="preview"><div class="shell"><div class="side"><div class="logo"></div><div class="nav-line active"></div><div class="nav-line"></div><div class="nav-line"></div><div class="nav-line"></div></div><div class="main"><div class="top"><div class="heading"></div><div class="avatar"></div></div><div class="form"><div class="input"></div><div class="input"></div><div class="input"></div><div class="input"></div><div class="input wide"></div><div class="input wide"></div><div class="save"></div></div></div></div></div>
+      <div class="card-copy"><h3>Clean and professional</h3><p class="text-muted">Bright, calm, and easy to read.</p><span class="selected-note">✓ Selected</span></div>
+    </article>
+    <article class="card design-card dark" data-choice="dark-confident" onclick="toggleSelect(this)">
+      <div class="preview"><div class="shell"><div class="side"><div class="logo"></div><div class="nav-line active"></div><div class="nav-line"></div><div class="nav-line"></div><div class="nav-line"></div></div><div class="main"><div class="top"><div class="heading"></div><div class="avatar"></div></div><div class="form"><div class="input"></div><div class="input"></div><div class="input"></div><div class="input"></div><div class="input wide"></div><div class="input wide"></div><div class="save"></div></div></div></div></div>
+      <div class="card-copy"><h3>Dark and confident</h3><p class="text-muted">Focused and comfortable for evening work.</p><span class="selected-note">✓ Selected</span></div>
+    </article>
+    <article class="card design-card warm" data-choice="warm-trusted" onclick="toggleSelect(this)">
+      <div class="preview"><div class="shell"><div class="side"><div class="logo"></div><div class="nav-line active"></div><div class="nav-line"></div><div class="nav-line"></div><div class="nav-line"></div></div><div class="main"><div class="top"><div class="heading"></div><div class="avatar"></div></div><div class="form"><div class="input"></div><div class="input"></div><div class="input"></div><div class="input"></div><div class="input wide"></div><div class="input wide"></div><div class="save"></div></div></div></div></div>
+      <div class="card-copy"><h3>Warm and trusted</h3><p class="text-muted">More human and distinctive.</p><span class="selected-note">✓ Selected</span></div>
+    </article>
+  </div>
+</section>
