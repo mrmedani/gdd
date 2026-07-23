@@ -53,43 +53,27 @@ class WhatsAppService
 
     private static function curlRequest(string $method, string $url, ?string $payload = null, int $timeout = 15): ?string
     {
-        // Try curl_exec first (IPv4 forced)
-        if (function_exists('curl_init')) {
-            $ch = curl_init();
-            curl_setopt_array($ch, [
-                CURLOPT_URL => $url,
-                CURLOPT_RETURNTRANSFER => true,
-                CURLOPT_TIMEOUT => $timeout,
-                CURLOPT_CONNECTTIMEOUT => 5,
-                CURLOPT_IPRESOLVE => CURL_IPRESOLVE_V4,
-                CURLOPT_FAILONERROR => false,
-            ]);
-            if ($method === 'POST') {
-                curl_setopt_array($ch, [
-                    CURLOPT_POST => true,
-                    CURLOPT_POSTFIELDS => $payload ?? '',
-                    CURLOPT_HTTPHEADER => ['Content-Type: application/json'],
-                ]);
-            }
-            $result = curl_exec($ch);
-            $errno = curl_errno($ch);
-            curl_close($ch);
-            if ($result !== false && $errno === 0) {
-                return $result;
-            }
-        }
-
-        // Fallback: system curl via exec
-        $safeUrl = escapeshellarg($url);
-        $cmd = "curl -s --connect-timeout 5 --max-time {$timeout} -4";
+        $ch = curl_init();
+        curl_setopt_array($ch, [
+            CURLOPT_URL => $url,
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_TIMEOUT => $timeout,
+            CURLOPT_CONNECTTIMEOUT => 5,
+            CURLOPT_IPRESOLVE => CURL_IPRESOLVE_V4,
+            CURLOPT_FAILONERROR => false,
+        ]);
         if ($method === 'POST') {
-            $safePayload = escapeshellarg($payload ?? '');
-            $cmd .= " -X POST -H 'Content-Type: application/json' -d {$safePayload}";
+            curl_setopt_array($ch, [
+                CURLOPT_POST => true,
+                CURLOPT_POSTFIELDS => $payload ?? '',
+                CURLOPT_HTTPHEADER => ['Content-Type: application/json'],
+            ]);
         }
-        $cmd .= " {$safeUrl}";
-        $output = @shell_exec($cmd);
-        if ($output !== null && $output !== '') {
-            return $output;
+        $result = curl_exec($ch);
+        $errno = curl_errno($ch);
+        curl_close($ch);
+        if ($result !== false && $errno === 0) {
+            return $result;
         }
 
         return null;
