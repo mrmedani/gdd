@@ -24,9 +24,7 @@ class SalaryReminder extends Command
             return self::SUCCESS;
         }
 
-        $admins = User::whereHas('role', fn($q) => $q->where('name', 'admin'))
-            ->orWhere('notify_whatsapp', true)
-            ->get();
+        $admins = User::whereHas('role', fn($q) => $q->where('name', 'admin'))->get();
 
         if (!Alert::alreadySentToday('salary_reminder')) {
             Alert::create([

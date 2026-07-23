@@ -90,9 +90,7 @@ class TreasuryIndex extends Component
         $this->reset('closeGains');
 
         try {
-            $admins = User::whereHas('role', fn($q) => $q->where('name', 'admin'))
-                ->orWhere('notify_whatsapp', true)
-                ->get();
+            $admins = User::whereHas('role', fn($q) => $q->where('name', 'admin'))->get();
             $closure = MonthlyClosure::where('month', $this->closeMonth)->first();
             if ($closure) {
                 Notification::sendNow($admins, new MonthlyClosureNotification($closure));
