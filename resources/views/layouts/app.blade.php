@@ -36,16 +36,15 @@
         });
     </script>
     <title>@yield('title', config('app.name'))</title>
-    @php $appFavicon = \App\Domains\Settings\Models\Setting::get('app_favicon'); @endphp
-    @if($appFavicon)
-        <link rel="icon" href="{{ asset('storage/' . $appFavicon) }}" type="image/png">
+    @php $faviconUrl = storage_url(\App\Domains\Settings\Models\Setting::get('app_favicon')); @endphp
+    @if($faviconUrl)
+        <link rel="icon" href="{{ $faviconUrl }}" type="image/png">
     @endif
     @php
         $pwaThemeColor = \App\Domains\Settings\Models\Setting::get('pwa_theme_color', '#2563eb');
         $pwaThemeColorDark = \App\Domains\Settings\Models\Setting::get('pwa_theme_color_dark', '#0f172a');
         $pwaShortName = \App\Domains\Settings\Models\Setting::get('pwa_short_name', 'Chronorex');
-        $pwaCustomIcon = \App\Domains\Settings\Models\Setting::get('pwa_icon', null);
-        $pwaIconUrl = $pwaCustomIcon ? asset('storage/' . $pwaCustomIcon) : '/icons/icon-192x192.png';
+        $pwaIconUrl = storage_url(\App\Domains\Settings\Models\Setting::get('pwa_icon', null)) ?? '/icons/icon-192x192.png';
     @endphp
     <script>
         // Store PHP values in JS variables for the script at the top
@@ -144,10 +143,10 @@
                    :class="sidebar ? 'translate-x-0' : 'ltr:-translate-x-full rtl:translate-x-full'">
                 
                 <div class="flex items-center justify-between h-20 px-6 pt-[env(safe-area-inset-top)] bg-blue-700 border-b border-blue-800/10 dark:border-slate-700/20">
-                    @php $appLogo = \App\Domains\Settings\Models\Setting::get('app_logo'); @endphp
+                    @php $logoUrl = storage_url(\App\Domains\Settings\Models\Setting::get('app_logo')); @endphp
                     <a href="{{ route('dashboard') }}" class="flex items-center gap-3">
-                        @if($appLogo)
-                            <img src="{{ asset('storage/' . $appLogo) }}" alt="{{ config('app.name') }}" loading="lazy" class="h-10 max-w-[160px] object-contain drop-shadow-md dark:brightness-0 dark:invert">
+                        @if($logoUrl)
+                            <img src="{{ $logoUrl }}" alt="{{ config('app.name') }}" loading="lazy" class="h-10 max-w-[160px] object-contain drop-shadow-md">
                         @else
                             <span class="text-2xl font-black text-white tracking-wider font-heading drop-shadow-md">{{ config('app.name', 'Chronorex') }}</span>
                         @endif

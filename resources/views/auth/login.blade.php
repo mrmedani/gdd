@@ -19,9 +19,9 @@
 
     <div class="relative bg-white/85 dark:bg-slate-900/80 backdrop-blur-xl rounded-3xl shadow-premium dark:shadow-premium-dark p-8 sm:p-10 border border-slate-200/50 dark:border-slate-800/60 transition-all duration-300">
         <div class="text-center mb-10">
-            @php $appLogo = \App\Domains\Settings\Models\Setting::get('app_logo'); @endphp
-            @if($appLogo)
-                <img src="{{ asset('storage/' . $appLogo) }}" alt="{{ config('app.name') }}" class="h-16 mx-auto mb-4 object-contain drop-shadow-md dark:brightness-0 dark:invert">
+            @php $logoUrl = storage_url(\App\Domains\Settings\Models\Setting::get('app_logo')); @endphp
+            @if($logoUrl)
+                <img src="{{ $logoUrl }}" alt="{{ config('app.name') }}" class="h-16 mx-auto mb-4 object-contain drop-shadow-md">
             @else
                 <h1 class="text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-600 dark:from-blue-400 dark:to-indigo-300 tracking-tight font-heading">{{ config('app.name') }}</h1>
             @endif

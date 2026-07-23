@@ -34,10 +34,10 @@ Route::get('/manifest.json', function () {
         ['src' => '/icons/icon-512x512.png', 'sizes' => '512x512', 'type' => 'image/png', 'purpose' => 'any maskable'],
     ];
 
-    $customIcon = $setting('pwa_icon', null);
-    if ($customIcon) {
+    $customIconUrl = storage_url($setting('pwa_icon', null));
+    if ($customIconUrl) {
         array_unshift($icons, [
-            'src' => '/storage/' . $customIcon,
+            'src' => $customIconUrl,
             'sizes' => '512x512',
             'type' => 'image/png',
             'purpose' => 'any maskable',

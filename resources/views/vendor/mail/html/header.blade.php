@@ -1,7 +1,6 @@
 @props(['url'])
 @php
-    $mailLogo = \App\Domains\Settings\Models\Setting::get('app_logo');
-    $logoSrc = $mailLogo ? asset('storage/' . $mailLogo) : null;
+    $logoSrc = storage_url(\App\Domains\Settings\Models\Setting::get('app_logo'));
 @endphp
 <tr>
 <td class="header">

@@ -171,9 +171,9 @@
                     <!-- Logo -->
                     <form wire:submit="updateLogo" class="bg-slate-50/50 dark:bg-slate-950/40 p-4 rounded-2xl border border-slate-200/40 dark:border-slate-800/60 flex flex-col gap-4">
                         <div class="flex flex-col sm:flex-row gap-4 items-center">
-                            @if($currentLogo = \App\Domains\Settings\Models\Setting::get('app_logo'))
+                            @if($logoPreviewUrl = storage_url(\App\Domains\Settings\Models\Setting::get('app_logo')))
                                 <div class="w-16 h-16 rounded-xl bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 shadow-inner flex items-center justify-center p-1 shrink-0">
-                                    <img src="{{ asset('storage/' . $currentLogo) }}" class="max-w-full max-h-full object-contain drop-shadow-sm">
+                                    <img src="{{ $logoPreviewUrl }}" class="max-w-full max-h-full object-contain drop-shadow-sm">
                                 </div>
                             @endif
                             <div class="flex-1 w-full">
@@ -202,9 +202,9 @@
                     <!-- Favicon -->
                     <form wire:submit="updateFavicon" class="bg-slate-50/50 dark:bg-slate-950/40 p-4 rounded-2xl border border-slate-200/40 dark:border-slate-800/60 flex flex-col gap-4">
                         <div class="flex flex-col sm:flex-row gap-4 items-center">
-                            @if($currentFavicon = \App\Domains\Settings\Models\Setting::get('app_favicon'))
+                            @if($faviconPreviewUrl = storage_url(\App\Domains\Settings\Models\Setting::get('app_favicon')))
                                 <div class="w-10 h-10 rounded-xl bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 shadow-inner flex items-center justify-center p-1 shrink-0">
-                                    <img src="{{ asset('storage/' . $currentFavicon) }}" class="max-w-full max-h-full object-contain">
+                                    <img src="{{ $faviconPreviewUrl }}" class="max-w-full max-h-full object-contain">
                                 </div>
                             @endif
                             <div class="flex-1 w-full">

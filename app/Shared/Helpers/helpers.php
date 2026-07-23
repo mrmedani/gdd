@@ -100,5 +100,25 @@ if (!function_exists('getCurrency')) {
     }
 }
 
+if (!function_exists('storage_url')) {
+    function storage_url(?string $path): ?string
+    {
+        if (!$path) return null;
+        $fullPath = storage_path('app/public/' . $path);
+        if (!file_exists($fullPath)) return null;
+        return asset('storage/' . $path);
+    }
+}
 
+if (!function_exists('clear_stale_setting')) {
+    function clear_stale_setting(string $key): void
+    {
+        $path = Setting::get($key);
+        if (!$path) return;
+        $fullPath = storage_path('app/public/' . $path);
+        if (!file_exists($fullPath)) {
+            Setting::set($key, '');
+        }
+    }
+}
 

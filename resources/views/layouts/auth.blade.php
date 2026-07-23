@@ -5,9 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <script>if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) document.documentElement.classList.add('dark')</script>
     <title>@yield('title', config('app.name'))</title>
-    @php $appFavicon = \App\Domains\Settings\Models\Setting::get('app_favicon'); @endphp
-    @if($appFavicon)
-        <link rel="icon" href="{{ asset('storage/' . $appFavicon) }}" type="image/png">
+    @php $faviconUrl = storage_url(\App\Domains\Settings\Models\Setting::get('app_favicon')); @endphp
+    @if($faviconUrl)
+        <link rel="icon" href="{{ $faviconUrl }}" type="image/png">
     @endif
     <link rel="manifest" href="{{ route('manifest.json') }}">
     <meta name="theme-color" content="#2563eb">
