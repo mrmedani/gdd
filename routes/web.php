@@ -87,8 +87,42 @@ Route::post('/leave-impersonation', function () {
     return redirect()->route('settings.users');
 })->middleware('auth')->name('leave-impersonation');
 
-// Route réservée aux admins pour les opérations de maintenance
-Route::middleware(['auth'])->group(function () {
+    // Route réservée aux admins pour les opérations de maintenance
+    Route::middleware(['auth'])->group(function () {
+        // Diagnostic WhatsApp (à supprimer après debug)
+        Route::get('/wa-diagnostic', function () {
+            $results = [];
+            // 1. curl_exec
+            $ch = curl_init('http://127.0.0.1:9090/status');
+            curl_setopt_array($ch, [
+                CURLOPT_RETURNTRANSFER => true,
+                CURLOPT_TIMEOUT => 5,
+                CURLOPT_CONNECTTIMEOUT => 3,
+                CURLOPT_IPRESOLVE => CURL_IPRESOLVE_V4,
+                CURLOPT_FAILONERROR => false,
+            ]);
+            $r1 = curl_exec($ch);
+            $e1 = curl_error($ch);
+            $i1 = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+            curl_close($ch);
+            $results['curl_exec_result'] = $r1 ?: 'NULL/EMPTY';
+            $results['curl_error'] = $e1 ?: 'none';
+            $results['http_code'] = $i1;
+
+            // 2. shell_exec
+            $r2 = @shell_exec('curl -s --connect-timeout 3 --max-time 5 -4 http://127.0.0.1:9090/status 2>&1');
+            $results['shell_exec'] = $r2 ?: 'NULL/EMPTY';
+
+            // 3. exec
+            @exec('curl -s --connect-timeout 3 --max-time 5 -4 http://127.0.0.1:9090/status 2>&1', $out, $code);
+            $results['exec'] = implode("\n", $out) ?: 'NULL/EMPTY';
+            $results['exec_code'] = $code;
+
+            // 4. WhatsAppService directement
+            $results['WhatsAppService::getStatus'] = \App\Services\WhatsAppService::getStatus('http://127.0.0.1:9090');
+
+            return response()->json($results);
+        });
     Route::get('/fix-env', function () {
         try {
             if (!\Illuminate\Support\Facades\Schema::hasColumn('users', 'photo')) {
