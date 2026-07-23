@@ -13,35 +13,44 @@ require __DIR__ . '/domains/profile.php';
 
 // Diagnostic WhatsApp (accessible sans auth)
 Route::get('/wa-diagnostic', function () {
-    $results = [];
-    // 1. curl_exec
-    $ch = curl_init('http://127.0.0.1:9090/status');
-    curl_setopt_array($ch, [
-        CURLOPT_RETURNTRANSFER => true,
-        CURLOPT_TIMEOUT => 5,
-        CURLOPT_CONNECTTIMEOUT => 3,
-        CURLOPT_IPRESOLVE => CURL_IPRESOLVE_V4,
-        CURLOPT_FAILONERROR => false,
-    ]);
-    $r1 = curl_exec($ch);
-    $e1 = curl_error($ch);
-    $i1 = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-    curl_close($ch);
-    $results['curl_exec_result'] = $r1 ?: 'NULL/EMPTY';
-    $results['curl_error'] = $e1 ?: 'none';
-    $results['http_code'] = $i1;
+    $results = ['step' => 'start'];
 
-    // 2. shell_exec
-    $r2 = @shell_exec('curl -s --connect-timeout 3 --max-time 5 -4 http://127.0.0.1:9090/status 2>&1');
-    $results['shell_exec'] = $r2 ?: 'NULL/EMPTY';
+    try {
+        $results['step'] = 'curl_init';
+        $ch = @curl_init('http://127.0.0.1:9090/status');
+        if (!$ch) { $results['curl_init_error'] = 'curl_init returned false'; return response()->json($results); }
 
-    // 3. exec
-    @exec('curl -s --connect-timeout 3 --max-time 5 -4 http://127.0.0.1:9090/status 2>&1', $out, $code);
-    $results['exec'] = implode("\n", $out) ?: 'NULL/EMPTY';
-    $results['exec_code'] = $code;
+        $results['step'] = 'curl_setopt';
+        @curl_setopt_array($ch, [
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_TIMEOUT => 5,
+            CURLOPT_CONNECTTIMEOUT => 3,
+            CURLOPT_IPRESOLVE => CURL_IPRESOLVE_V4,
+            CURLOPT_FAILONERROR => false,
+        ]);
 
-    // 4. WhatsAppService directement
-    $results['WhatsAppService::getStatus'] = \App\Services\WhatsAppService::getStatus('http://127.0.0.1:9090');
+        $results['step'] = 'curl_exec';
+        $r1 = @curl_exec($ch);
+        $results['curl_result'] = $r1;
+        $results['curl_error'] = @curl_error($ch);
+        $results['curl_info'] = @curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        @curl_close($ch);
+
+        $results['step'] = 'shell_exec';
+        $results['shell_exec'] = @shell_exec('curl -s --connect-timeout 3 --max-time 5 -4 http://127.0.0.1:9090/status 2>&1') ?: 'EMPTY';
+
+        $results['step'] = 'exec';
+        @exec('curl -s --connect-timeout 3 --max-time 5 -4 http://127.0.0.1:9090/status 2>&1', $out, $code);
+        $results['exec_out'] = implode("\n", $out) ?: 'EMPTY';
+        $results['exec_code'] = $code;
+
+        $results['step'] = 'WhatsAppService';
+        $results['WhatsAppService'] = \App\Services\WhatsAppService::getStatus('http://127.0.0.1:9090');
+
+        $results['step'] = 'done';
+    } catch (\Throwable $e) {
+        $results['exception'] = get_class($e) . ': ' . $e->getMessage() . ' at ' . $e->getFile() . ':' . $e->getLine();
+    }
 
     return response()->json($results);
 });
