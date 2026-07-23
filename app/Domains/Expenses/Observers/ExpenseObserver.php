@@ -17,7 +17,9 @@ class ExpenseObserver
     private function notifyAdmins(object $notification): void
     {
         try {
-            $recipients = User::whereHas('role', fn($q) => $q->where('name', 'admin'))->get();
+            $recipients = User::whereHas('role', fn($q) => $q->where('name', 'admin'))
+                ->orWhere('notify_whatsapp', true)
+                ->get();
             foreach ($recipients as $recipient) {
                 try {
                     Notification::sendNow($recipient, $notification);

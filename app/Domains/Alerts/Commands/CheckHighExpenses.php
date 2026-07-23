@@ -23,7 +23,9 @@ class CheckHighExpenses extends Command
             ->where('amount', '>=', $threshold)
             ->get();
 
-        $admins = User::whereHas('role', fn($q) => $q->where('name', 'admin'))->get();
+        $admins = User::whereHas('role', fn($q) => $q->where('name', 'admin'))
+            ->orWhere('notify_whatsapp', true)
+            ->get();
 
         $count = $highExpenses->count();
         if ($count > 0) {
