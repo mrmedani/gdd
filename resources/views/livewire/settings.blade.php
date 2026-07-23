@@ -331,67 +331,7 @@
             <!-- Mail Configuration -->
             <!-- WhatsApp Configuration -->
             <div class="bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl rounded-3xl shadow-premium dark:shadow-premium-dark border border-slate-200/50 dark:border-slate-800/60 p-6 relative overflow-hidden group hover:shadow-premium-hover dark:hover:shadow-premium-dark-hover transition-all duration-300"
-                 x-data="{
-                     waQr: null,
-                     waStatus: 'unknown',
-                     waPhone: null,
-                     waStarting: false,
-                     waManualDisconnect: @json($whatsappManualDisconnect),
-                     workerUrl: '{{ $whatsappWorkerUrl ?: "/wa" }}',
-                     init() {
-                         this.pollStatus();
-                     },
-                     startWorker() {
-                         this.waManualDisconnect = false;
-                         this.waStarting = true;
-                         this.waStatus = 'starting';
-                         fetch(this.workerUrl + '/start', { method: 'POST' })
-                             .catch(() => {})
-                             .finally(() => {
-                                 setTimeout(() => { this.waStarting = false; }, 5000);
-                                 this.pollStatus();
-                             });
-                     },
-                     pollStatus() {
-                         if (this.waManualDisconnect) return;
-                         fetch(this.workerUrl + '/status')
-                             .then(r => r.json())
-                             .then(d => {
-                                 if (this.waManualDisconnect) return;
-                                 this.waStatus = d.status || 'unknown';
-                                 this.waPhone = d.phone || null;
-                                 if (d.status !== 'starting') this.waStarting = false;
-                                 if (this.waStatus === 'qr_ready' && !this.waQr) {
-                                     this.fetchQr();
-                                 }
-                                 if (this.waStatus === 'connected' && this.waPhone) {
-                                     this.$wire.set('whatsappChatId', this.waPhone);
-                                     this.$wire.set('whatsappEnabled', true);
-                                     this.$wire.updateWhatsAppConfig();
-                                 }
-                                 if ((this.waStatus === 'unknown' || this.waStatus === 'error') && !this.waManualDisconnect) {
-                                     this.waStatus = 'starting';
-                                     this.waStarting = true;
-                                     return fetch(this.workerUrl + '/start', { method: 'POST' });
-                                 }
-                             })
-                             .catch(() => {
-                                 if (this.waManualDisconnect) return;
-                                 if (this.waStatus !== 'disconnected') this.waStatus = 'unknown';
-                             })
-                             .finally(() => {
-                                 if (this.waManualDisconnect) return;
-                                 let delay = this.waStatus === 'connected' ? 10000 : 3000;
-                                 setTimeout(() => this.pollStatus(), delay);
-                             });
-                     },
-                     fetchQr() {
-                         fetch(this.workerUrl + '/qr')
-                             .then(r => r.json())
-                             .then(d => { if (d.qr) this.waQr = d.qr; })
-                             .catch(() => {});
-                     }
-                 }">
+                 wire:poll.10s="pollWhatsAppStatus">
                 <div class="absolute top-0 right-0 w-32 h-32 bg-emerald-50/20 dark:bg-emerald-500/5 rounded-full blur-3xl -mr-16 -mt-16 z-0 pointer-events-none"></div>
                 <div class="flex items-center gap-3 mb-6 relative z-10">
                     <div class="w-10 h-10 bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 rounded-xl flex items-center justify-center border border-emerald-200/20 dark:border-emerald-800 shadow-sm">
@@ -407,7 +347,7 @@
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div>
                             <label class="block text-xs font-bold text-slate-500 dark:text-slate-400 mb-2 uppercase tracking-wider">ID du Chat</label>
-                            <input type="text" wire:model="whatsappChatId" class="w-full px-4 py-2.5 bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl text-sm focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 outline-none transition-all text-slate-700 dark:text-slate-200 shadow-sm font-semibold" dir="ltr" placeholder="2126XXXXXXXXX" x-bind:disabled="waStatus === 'connected' && waPhone">
+                            <input type="text" wire:model="whatsappChatId" class="w-full px-4 py-2.5 bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl text-sm focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 outline-none transition-all text-slate-700 dark:text-slate-200 shadow-sm font-semibold" dir="ltr" placeholder="2126XXXXXXXXX" @disabled($waStatus === 'connected' && $waPhone)>
                             @error('whatsappChatId') <span class="text-rose-500 text-xs mt-1 block font-bold">{{ $message }}</span> @enderror
                         </div>
                         <div>
@@ -442,97 +382,104 @@
                     </form>
 
                 <div class="mt-6 space-y-4 relative z-10">
-                    <!-- Status + QR side by side when qr_ready -->
-                    <template x-if="waStatus === 'qr_ready'">
-                        <div class="bg-slate-50/50 dark:bg-slate-950/40 p-5 rounded-2xl border border-emerald-200/40 dark:border-emerald-800/40">
-                            <div class="flex flex-col sm:flex-row items-center gap-6">
-                                <div class="flex-shrink-0">
-                                    <div class="w-56 h-56 rounded-xl border-2 border-emerald-200 dark:border-emerald-800 bg-white dark:bg-slate-950 p-2 shadow-sm flex items-center justify-center">
-                                        <template x-if="waQr">
-                                            <img x-bind:src="waQr" class="w-full h-full object-contain">
-                                        </template>
-                                        <template x-if="!waQr">
-                                            <svg class="animate-spin w-8 h-8 text-emerald-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                                            </svg>
-                                        </template>
-                                    </div>
-                                </div>
-                                <div class="flex-1 text-center sm:text-left">
-                                    <h3 class="text-lg font-bold text-emerald-700 dark:text-emerald-400 mb-2">Scannez le QR Code</h3>
-                                    <p class="text-sm text-slate-500 dark:text-slate-400 leading-relaxed">
-                                        Ouvrez WhatsApp sur votre téléphone et scannez le code QR ci-contre pour connecter votre appareil.
-                                    </p>
-                                    <div class="mt-4 flex items-center gap-2 justify-center sm:justify-start">
-                                        <span class="px-3 py-1 text-xs font-bold rounded-lg bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400">
-                                            QR prêt
-                                        </span>
-                                        <svg class="animate-spin w-4 h-4 text-amber-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                                        </svg>
-                                    </div>
+                    @if($waStatus === 'qr_ready')
+                    <div class="bg-slate-50/50 dark:bg-slate-950/40 p-5 rounded-2xl border border-emerald-200/40 dark:border-emerald-800/40">
+                        <div class="flex flex-col sm:flex-row items-center gap-6">
+                            <div class="flex-shrink-0">
+                                <div class="w-56 h-56 rounded-xl border-2 border-emerald-200 dark:border-emerald-800 bg-white dark:bg-slate-950 p-2 shadow-sm flex items-center justify-center">
+                                    @if($waQr)
+                                    <img src="{{ $waQr }}" class="w-full h-full object-contain">
+                                    @else
+                                    <svg class="animate-spin w-8 h-8 text-emerald-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                    </svg>
+                                    @endif
                                 </div>
                             </div>
-                        </div>
-                    </template>
-
-                    <!-- Status badge when not qr_ready -->
-                    <template x-if="waStatus !== 'qr_ready'">
-                        <div class="bg-slate-50/50 dark:bg-slate-950/40 p-4 rounded-2xl border border-slate-200/40 dark:border-slate-800/60">
-                            <div class="flex items-center justify-between">
-                                <h3 class="font-bold text-slate-800 dark:text-slate-200 text-sm">Statut</h3>
-                                <div class="flex items-center gap-2">
-                                    <span class="px-3 py-1 text-xs font-bold rounded-lg"
-                                        :class="{
-                                            'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400': waStatus === 'connected',
-                                            'bg-rose-100 text-rose-700 dark:bg-rose-900/30 dark:text-rose-400': waStatus === 'auth_failure' || waStatus === 'error',
-                                            'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400': waStatus === 'starting',
-                                            'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400': waStatus === 'disconnected' || waStatus === 'unknown'
-                                        }"
-                                        x-text="waStatus === 'connected' ? 'Connecté' : waStatus === 'auth_failure' ? 'Échec d\'auth' : waStatus === 'starting' ? 'Démarrage...' : waStatus === 'disconnected' ? 'Déconnecté' : 'Inconnu'">
+                            <div class="flex-1 text-center sm:text-left">
+                                <h3 class="text-lg font-bold text-emerald-700 dark:text-emerald-400 mb-2">Scannez le QR Code</h3>
+                                <p class="text-sm text-slate-500 dark:text-slate-400 leading-relaxed">
+                                    Ouvrez WhatsApp sur votre téléphone et scannez le code QR ci-contre pour connecter votre appareil.
+                                </p>
+                                <div class="mt-4 flex items-center gap-2 justify-center sm:justify-start">
+                                    <span class="px-3 py-1 text-xs font-bold rounded-lg bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400">
+                                        QR prêt
                                     </span>
-                                    <template x-if="waStatus === 'starting'">
-                                        <svg class="animate-spin w-4 h-4 text-amber-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                                        </svg>
-                                    </template>
+                                    <svg class="animate-spin w-4 h-4 text-amber-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                    </svg>
                                 </div>
                             </div>
-                            <div x-show="waStatus === 'connected' && waPhone" class="mt-2 text-xs text-slate-500 dark:text-slate-400 font-medium">
-                                Connecté en tant que <span class="font-bold text-emerald-600 dark:text-emerald-400" x-text="waPhone"></span>
-                            </div>
-                            <div x-show="waStatus === 'starting'" class="mt-2 text-xs text-slate-500 dark:text-slate-400 font-medium">
-                                Initialisation du navigateur Chrome...
+                        </div>
+                    </div>
+                    @else
+                    <div class="bg-slate-50/50 dark:bg-slate-950/40 p-4 rounded-2xl border border-slate-200/40 dark:border-slate-800/60">
+                        <div class="flex items-center justify-between">
+                            <h3 class="font-bold text-slate-800 dark:text-slate-200 text-sm">Statut</h3>
+                            <div class="flex items-center gap-2">
+                                <span class="px-3 py-1 text-xs font-bold rounded-lg {{
+                                    match($waStatus) {
+                                        'connected' => 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400',
+                                        'auth_failure', 'error' => 'bg-rose-100 text-rose-700 dark:bg-rose-900/30 dark:text-rose-400',
+                                        'starting' => 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400',
+                                        default => 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400',
+                                    }
+                                }}">
+                                    {{ match($waStatus) {
+                                        'connected' => 'Connecté',
+                                        'auth_failure' => "Échec d'auth",
+                                        'starting' => 'Démarrage...',
+                                        'disconnected' => 'Déconnecté',
+                                        default => 'Inconnu',
+                                    } }}
+                                </span>
+                                @if($waStatus === 'starting')
+                                <svg class="animate-spin w-4 h-4 text-amber-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                </svg>
+                                @endif
                             </div>
                         </div>
-                    </template>
+                        @if($waStatus === 'connected' && $waPhone)
+                        <div class="mt-2 text-xs text-slate-500 dark:text-slate-400 font-medium">
+                            Connecté en tant que <span class="font-bold text-emerald-600 dark:text-emerald-400">{{ $waPhone }}</span>
+                        </div>
+                        @endif
+                        @if($waStatus === 'starting')
+                        <div class="mt-2 text-xs text-slate-500 dark:text-slate-400 font-medium">
+                            Initialisation du navigateur Chrome...
+                        </div>
+                        @endif
+                    </div>
+                    @endif
 
                     <!-- Actions -->
                     <div class="flex flex-wrap gap-3">
                         <button type="button" wire:click="startWhatsAppWorker"
-                            class="px-5 py-2.5 font-bold rounded-xl transition-all shadow-md cursor-pointer"
-                            :class="waStarting ? 'bg-slate-300 text-slate-500 dark:bg-slate-700 dark:text-slate-400 shadow-none cursor-not-allowed' : 'bg-emerald-600 text-white hover:bg-emerald-700 hover:shadow-emerald-500/30 shadow-emerald-500/20'"
-                            :disabled="waStarting"
-                            @click="startWorker()">
-                            <span x-show="!waStarting">Start Worker</span>
-                            <span x-show="waStarting" class="flex items-center gap-2">
+                            class="px-5 py-2.5 font-bold rounded-xl transition-all shadow-md cursor-pointer
+                            {{ $waStarting ? 'bg-slate-300 text-slate-500 dark:bg-slate-700 dark:text-slate-400 shadow-none cursor-not-allowed' : 'bg-emerald-600 text-white hover:bg-emerald-700 hover:shadow-emerald-500/30 shadow-emerald-500/20' }}"
+                            @disabled($waStarting)>
+                            @if($waStarting)
+                            <span class="flex items-center gap-2">
                                 <svg class="animate-spin w-4 h-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                                     <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                                     <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                                 </svg>
                                 Démarrage...
                             </span>
+                            @else
+                            <span>Start Worker</span>
+                            @endif
                         </button>
-                        <button type="button"
-                            @click="waManualDisconnect = false; waQr = null; waStarting = true; waStatus = 'starting'; fetch(workerUrl + '/start', { method: 'POST' }).then(() => { var i = setInterval(() => { fetch(workerUrl + '/qr').then(r => r.json()).then(d => { if (d.qr) { waQr = d.qr; waStatus = 'qr_ready'; clearInterval(i); } }).catch(() => {}); }, 1500); setTimeout(() => clearInterval(i), 20000); }).catch(() => {}).finally(() => { setTimeout(() => waStarting = false, 5000); })"
+                        <button type="button" wire:click="refreshQr"
                             class="px-5 py-2.5 bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 font-bold rounded-xl hover:bg-emerald-200 dark:hover:bg-emerald-900/50 border border-emerald-200/30 dark:border-emerald-800/40 transition-all cursor-pointer">
                             Refresh QR
                         </button>
-                        <button type="button"
-                            @click="if(confirm('Êtes-vous sûr de vouloir déconnecter WhatsApp ?')) { waManualDisconnect = true; waQr = null; waStatus = 'disconnected'; waPhone = null; fetch(workerUrl + '/disconnect', { method: 'POST' }).catch(() => {}); $wire.set('whatsappManualDisconnect', true); }"
+                        <button type="button" wire:click="disconnectWhatsApp"
+                            wire:confirm="Êtes-vous sûr de vouloir déconnecter WhatsApp ?"
                             class="px-5 py-2.5 bg-rose-600 text-white font-bold rounded-xl hover:bg-rose-700 hover:shadow-rose-500/30 transition-all shadow-md shadow-rose-500/20 cursor-pointer">
                             Disconnect
                         </button>

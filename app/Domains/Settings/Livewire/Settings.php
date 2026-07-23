@@ -54,6 +54,10 @@ class Settings extends Component
     public int $whatsappMessageDelay = 5;
     public bool $loginPopupEnabled = false;
     public string $loginPopupContent = '';
+    public ?string $waStatus = 'unknown';
+    public ?string $waPhone = null;
+    public ?string $waQr = null;
+    public bool $waStarting = false;
 
     public function mount(): void
     {
@@ -82,6 +86,7 @@ class Settings extends Component
         $this->whatsappMessageDelay = (int) Setting::get('whatsapp_message_delay', 5);
         $this->loginPopupEnabled = (bool) Setting::get('login_popup_enabled', false);
         $this->loginPopupContent = Setting::get('login_popup_content', '');
+        $this->pollWhatsAppStatus();
     }
 
     public function updateThreshold(): void
@@ -322,6 +327,10 @@ class Settings extends Component
         $url = $this->whatsappWorkerUrl ?: 'http://127.0.0.1:9090';
         WhatsAppService::disconnect($url);
         $this->whatsappManualDisconnect = true;
+        $this->waStatus = 'disconnected';
+        $this->waPhone = null;
+        $this->waQr = null;
+        $this->waStarting = false;
         $this->notify(__('settings.whatsapp_disconnected_alert'));
     }
 
@@ -330,6 +339,9 @@ class Settings extends Component
         $url = $this->whatsappWorkerUrl ?: 'http://127.0.0.1:9090';
         WhatsAppService::startWorker($url);
         $this->whatsappManualDisconnect = false;
+        $this->waStarting = true;
+        $this->waStatus = 'starting';
+        $this->waQr = null;
         $this->notify(__('settings.whatsapp_worker_started'));
     }
 
@@ -346,23 +358,73 @@ class Settings extends Component
         $this->notify(__('common.saved'));
     }
 
+    public function pollWhatsAppStatus(): void
+    {
+        $url = $this->waWorkerUrl();
+        $status = WhatsAppService::getStatus($url);
+        $statusData = $status ?: ['status' => 'unknown', 'phone' => null];
+
+        $this->waStatus = $statusData['status'] ?? 'unknown';
+        $this->waPhone = $statusData['phone'] ?? null;
+
+        if ($this->waStatus === 'starting') {
+            $this->waStarting = true;
+        } elseif ($this->waStarting) {
+            $this->waStarting = false;
+        }
+
+        if ($this->waStatus === 'qr_ready' && !$this->waQr) {
+            $qr = WhatsAppService::getQr($url);
+            if ($qr && isset($qr['qr'])) {
+                $this->waQr = $qr['qr'];
+            }
+        } elseif ($this->waStatus !== 'qr_ready') {
+            $this->waQr = null;
+        }
+
+        if ($this->waStatus === 'connected' && $this->waPhone && !$this->whatsappEnabled) {
+            $this->whatsappChatId = $this->waPhone;
+            $this->whatsappEnabled = true;
+            $this->updateWhatsAppConfig();
+        }
+    }
+
+    public function refreshQr(): void
+    {
+        $url = $this->waWorkerUrl();
+        WhatsAppService::startWorker($url);
+        $this->waQr = null;
+        $this->waStarting = true;
+        $this->waStatus = 'starting';
+        $this->whatsappManualDisconnect = false;
+    }
+
+    private function waWorkerUrl(): string
+    {
+        $url = $this->whatsappWorkerUrl;
+        if (empty($url) || $url === '/wa') {
+            return 'http://127.0.0.1:9090';
+        }
+        return $url;
+    }
+
     public function getWhatsAppQr(): ?string
     {
-        $url = $this->whatsappWorkerUrl ?: 'http://127.0.0.1:9090';
+        $url = $this->waWorkerUrl();
         return WhatsAppService::getQr($url);
     }
 
     #[Computed]
     public function whatsappStatus(): ?string
     {
-        $url = $this->whatsappWorkerUrl ?: 'http://127.0.0.1:9090';
+        $url = $this->waWorkerUrl();
         $status = WhatsAppService::getStatus($url);
         return $status['status'] ?? 'unknown';
     }
 
     public function fetchWhatsAppData(): array
     {
-        $url = $this->whatsappWorkerUrl ?: 'http://127.0.0.1:9090';
+        $url = $this->waWorkerUrl();
         $status = WhatsAppService::getStatus($url);
         $statusData = $status ?: ['status' => 'unknown', 'phone' => null];
         $qr = WhatsAppService::getQr($url);
