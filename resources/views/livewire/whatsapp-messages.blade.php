@@ -29,11 +29,12 @@
                             <h2 class="text-lg font-bold text-slate-800 dark:text-white">{{ $template['label_fr'] }}</h2>
                             <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">{{ $template['label_ar'] }}</p>
                         </div>
-                        <label class="flex items-center gap-2 cursor-pointer">
+                        <div class="flex items-center gap-3">
                             <span class="text-xs font-bold text-slate-500 dark:text-slate-400">Activé</span>
-                            <input type="checkbox" wire:model.live="templates.{{ $index }}.enabled" class="sr-only peer">
-                            <span class="relative w-10 h-5 bg-slate-200 dark:bg-slate-700 rounded-full transition-colors peer-checked:bg-emerald-600 after:content-[''] after:absolute after:top-0.5 after:start-[2px] after:w-4 after:h-4 after:bg-white after:rounded-full after:transition-all peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full"></span>
-                        </label>
+                            <button type="button" wire:click="$toggle('templates.{{ $index }}.enabled')" class="relative w-10 h-5 rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-emerald-500/30 cursor-pointer @if($template['enabled']) bg-emerald-600 @else bg-slate-200 dark:bg-slate-700 @endif">
+                                <span class="absolute top-0.5 start-[2px] w-4 h-4 bg-white border border-slate-300 rounded-full transition-transform duration-200 shadow-sm @if($template['enabled']) translate-x-full rtl:-translate-x-full @else translate-x-0 @endif"></span>
+                            </button>
+                        </div>
                     </div>
 
                     <!-- Variables -->
