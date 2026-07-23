@@ -111,7 +111,9 @@ Route::post('/leave-impersonation', function () {
         }
     });
 
-    // WhatsApp worker proxy (évite CORS / mixed content)
+});
+
+// WhatsApp worker proxy (évite CORS / mixed content)
     Route::prefix('wa')->group(function () {
         Route::get('status', function () {
             return \App\Services\WhatsAppService::getStatus('http://127.0.0.1:9090')
@@ -138,4 +140,3 @@ Route::post('/leave-impersonation', function () {
             return ['ok' => $ok];
         });
     });
-});
