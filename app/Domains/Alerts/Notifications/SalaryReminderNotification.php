@@ -2,6 +2,7 @@
 
 namespace App\Domains\Alerts\Notifications;
 
+use App\Domains\Settings\Models\Setting;
 use App\Domains\Settings\Models\WhatsappMessageTemplate;
 use Illuminate\Bus\Queueable;
 use Illuminate\Notifications\Notification;
@@ -28,6 +29,7 @@ class SalaryReminderNotification extends Notification
                 'total' => number_format($this->totalSalary, 2),
                 'currency' => $currency,
                 'date' => now()->format('d/m/Y'),
+                'company_name' => Setting::get('app_name', config('app.name')),
             ]);
         }
 

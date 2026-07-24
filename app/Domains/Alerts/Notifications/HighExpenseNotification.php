@@ -2,8 +2,9 @@
 
 namespace App\Domains\Alerts\Notifications;
 
-use Illuminate\Bus\Queueable;
+use App\Domains\Settings\Models\Setting;
 use App\Domains\Settings\Models\WhatsappMessageTemplate;
+use Illuminate\Bus\Queueable;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Notifications\Notification;
 
@@ -31,6 +32,8 @@ class HighExpenseNotification extends Notification
                 'currency' => $currency,
                 'count' => $count,
                 'date' => now()->format('d/m/Y'),
+                'threshold' => number_format((float) Setting::get('threshold', 5000), 2),
+                'company_name' => Setting::get('app_name', config('app.name')),
             ]);
         }
 

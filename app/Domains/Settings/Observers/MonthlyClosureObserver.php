@@ -70,6 +70,7 @@ class MonthlyClosureObserver
                 $admins = \App\Models\User::whereHas('role', fn($q) => $q->where('name', 'admin'))->get();
                 foreach ($admins as $admin) {
                     if (! $admin->notify_whatsapp || ! $admin->whatsapp_phone) continue;
+                    $companyName = Setting::get('app_name', config('app.name'));
                     $template = WhatsappMessageTemplate::forType('deficit_increased');
                     $msg = $template
                         ? $template->format([
@@ -77,6 +78,7 @@ class MonthlyClosureObserver
                             'increase' => formatMoney($deficitIncrease),
                             'currency' => $currency,
                             'new_total' => formatMoney($newDeficit),
+                            'company_name' => $companyName,
                         ], $admin->locale ?? 'fr')
                         : "⚠️ Augmentation du manque en caisse\n"
                         . "──────────────\n"
@@ -153,6 +155,7 @@ class MonthlyClosureObserver
                         if (! $admin->notify_whatsapp || ! $admin->whatsapp_phone) continue;
                         $locale = $admin->locale ?? 'fr';
 
+                        $companyName = Setting::get('app_name', config('app.name'));
                         $deductionTemplate = WhatsappMessageTemplate::forType('deficit_deducted');
                         $deductionMsg = $deductionTemplate
                             ? $deductionTemplate->format([
@@ -160,6 +163,7 @@ class MonthlyClosureObserver
                                 'deduction' => formatMoney($deduction),
                                 'currency' => $currency,
                                 'remaining' => formatMoney($newDeficit),
+                                'company_name' => $companyName,
                             ], $locale)
                             : "✅ Réduction du manque en caisse\n"
                             . "──────────────\n"
@@ -173,6 +177,7 @@ class MonthlyClosureObserver
                             $coveredMsg = $coveredTemplate
                                 ? $coveredTemplate->format([
                                     'period' => $closureMonthLabel,
+                                    'company_name' => $companyName,
                                 ], $locale)
                                 : "🎉 Manque en caisse entièrement comblé !\n"
                                 . "──────────────\n"

@@ -2,6 +2,7 @@
 
 namespace App\Domains\Alerts\Notifications;
 
+use App\Domains\Settings\Models\Setting;
 use App\Domains\Settings\Models\WhatsappMessageTemplate;
 use App\Domains\Treasury\Models\MonthlyClosure;
 use Illuminate\Notifications\Notification;
@@ -28,6 +29,7 @@ class MonthlyClosureNotification extends Notification
                 'currency' => $currency,
                 'expenses' => number_format($this->closure->expenses, 2),
                 'balance' => number_format($this->closure->balance, 2),
+                'company_name' => Setting::get('app_name', config('app.name')),
             ]);
         }
 

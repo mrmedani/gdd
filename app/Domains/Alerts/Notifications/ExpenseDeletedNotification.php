@@ -3,6 +3,7 @@
 namespace App\Domains\Alerts\Notifications;
 
 use App\Domains\Expenses\Models\Expense;
+use App\Domains\Settings\Models\Setting;
 use App\Domains\Settings\Models\WhatsappMessageTemplate;
 use Illuminate\Notifications\Notification;
 
@@ -25,6 +26,9 @@ class ExpenseDeletedNotification extends Notification
                 'description' => e($this->expense->description),
                 'amount' => number_format($this->expense->amount, 2),
                 'currency' => $currency,
+                'date' => $this->expense->date,
+                'payment_method' => __('payment_methods.' . $this->expense->payment_method),
+                'company_name' => Setting::get('app_name', config('app.name')),
             ]);
         }
 

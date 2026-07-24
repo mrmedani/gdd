@@ -2,6 +2,7 @@
 
 namespace App\Domains\Alerts\Notifications;
 
+use App\Domains\Settings\Models\Setting;
 use App\Domains\Settings\Models\WhatsappMessageTemplate;
 use Illuminate\Notifications\Notification;
 
@@ -33,6 +34,7 @@ class DailyReportNotification extends Notification
                 'count' => $count,
                 'period_start' => $this->stats['period_start'] ?? '',
                 'period_end' => $this->stats['period_end'] ?? '',
+                'company_name' => Setting::get('app_name', config('app.name')),
             ]);
         }
 
