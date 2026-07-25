@@ -34,12 +34,20 @@ Route::get('/manifest.json', function () {
         ['src' => '/icons/icon-512x512.png', 'sizes' => '512x512', 'type' => 'image/png', 'purpose' => 'any maskable'],
     ];
 
-    $customIconUrl = storage_url($setting('pwa_icon', null));
+    $customIconPath = $setting('pwa_icon', null);
+    $customIconUrl = storage_url($customIconPath);
     if ($customIconUrl) {
+        $ext = strtolower(pathinfo($customIconPath, PATHINFO_EXTENSION));
+        $mimeType = match ($ext) {
+            'webp' => 'image/webp',
+            'ico' => 'image/x-icon',
+            'svg' => 'image/svg+xml',
+            default => 'image/png',
+        };
         array_unshift($icons, [
             'src' => $customIconUrl,
             'sizes' => '512x512',
-            'type' => 'image/png',
+            'type' => $mimeType,
             'purpose' => 'any maskable',
         ]);
     }
@@ -51,7 +59,7 @@ Route::get('/manifest.json', function () {
         'start_url' => '/',
         'display' => $setting('pwa_display', 'standalone'),
         'display_override' => ['window-controls-overlay', 'standalone', 'minimal-ui'],
-        'background_color' => $setting('pwa_bg_color', '#0f172a'),
+        'background_color' => $setting('pwa_bg_color', '#ffffff'),
         'theme_color' => $setting('pwa_theme_color', '#3b82f6'),
         'orientation' => $setting('pwa_orientation', 'portrait-primary'),
         'categories' => ['finance', 'productivity', 'business'],

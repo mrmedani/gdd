@@ -146,7 +146,7 @@
                     @php $logoUrl = storage_url(\App\Domains\Settings\Models\Setting::get('app_logo')); @endphp
                     <a href="{{ route('dashboard') }}" class="flex items-center gap-3">
                         @if($logoUrl)
-                            <img src="{{ $logoUrl }}" alt="{{ config('app.name') }}" loading="lazy" class="h-10 max-w-[160px] object-contain drop-shadow-md">
+                            <img src="{{ $logoUrl }}" alt="{{ config('app.name') }}" loading="lazy" class="h-10 max-w-[160px] object-contain drop-shadow-md brightness-0 invert">
                         @else
                             <span class="text-2xl font-black text-white tracking-wider font-heading drop-shadow-md">{{ config('app.name', 'Chronorex') }}</span>
                         @endif

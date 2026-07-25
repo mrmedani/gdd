@@ -172,8 +172,8 @@
                     <form wire:submit="updateLogo" class="bg-slate-50/50 dark:bg-slate-950/40 p-4 rounded-2xl border border-slate-200/40 dark:border-slate-800/60 flex flex-col gap-4">
                         <div class="flex flex-col sm:flex-row gap-4 items-center">
                             @if($logoPreviewUrl = storage_url(\App\Domains\Settings\Models\Setting::get('app_logo')))
-                                <div class="w-20 h-20 rounded-xl flex items-center justify-center p-1 shrink-0 bg-transparent">
-                                    <img src="{{ $logoPreviewUrl }}" class="max-w-full max-h-full object-contain">
+                                <div class="w-16 h-16 rounded-xl bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 shadow-inner flex items-center justify-center p-1 shrink-0">
+                                    <img src="{{ $logoPreviewUrl }}" class="max-w-full max-h-full object-contain drop-shadow-sm">
                                 </div>
                             @endif
                             <div class="flex-1 w-full">
@@ -203,7 +203,7 @@
                     <form wire:submit="updateFavicon" class="bg-slate-50/50 dark:bg-slate-950/40 p-4 rounded-2xl border border-slate-200/40 dark:border-slate-800/60 flex flex-col gap-4">
                         <div class="flex flex-col sm:flex-row gap-4 items-center">
                             @if($faviconPreviewUrl = storage_url(\App\Domains\Settings\Models\Setting::get('app_favicon')))
-                                <div class="w-10 h-10 rounded-xl flex items-center justify-center p-1 shrink-0 bg-transparent">
+                                <div class="w-10 h-10 rounded-xl bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 shadow-inner flex items-center justify-center p-1 shrink-0">
                                     <img src="{{ $faviconPreviewUrl }}" class="max-w-full max-h-full object-contain">
                                 </div>
                             @endif
@@ -314,11 +314,6 @@
                                 </div>
                                 <div>
                                     <label class="block text-xs font-bold text-slate-500 dark:text-slate-400 mb-2 uppercase tracking-wider">Icon (optionnel / اختياري) <span class="text-xs font-normal text-slate-400 dark:text-slate-500">512×512 PNG</span></label>
-                                    @if($pwaIconPreviewUrl = storage_url(\App\Domains\Settings\Models\Setting::get('app_pwa_icon')))
-                                        <div class="w-16 h-16 rounded-xl flex items-center justify-center p-1 mb-2 bg-transparent border-2 border-dashed border-slate-200 dark:border-slate-700">
-                                            <img src="{{ $pwaIconPreviewUrl }}" class="max-w-full max-h-full object-contain">
-                                        </div>
-                                    @endif
                                     <input type="file" wire:model="pwaIcon" accept="image/png" class="w-full px-4 py-2 bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl text-xs outline-none transition-all text-slate-700 dark:text-slate-200 shadow-sm file:mr-4 file:py-1.5 file:px-3 file:rounded-xl file:border-0 file:text-xs file:font-bold file:bg-indigo-50 dark:file:bg-indigo-900/30 file:text-indigo-700 dark:file:text-indigo-400 hover:file:bg-indigo-100 dark:hover:file:bg-indigo-900/50">
                                     @error('pwaIcon') <span class="text-rose-500 text-xs mt-1 block font-bold">{{ $message }}</span> @enderror
                                 </div>
