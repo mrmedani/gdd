@@ -40,7 +40,7 @@ class Dashboard extends Component
     public string $greeting = '';
     public string $greetingIcon = '';
     public string $greetingColor = '';
-    public string $greetingBg = '';
+    public string $greetingGradient = '';
     public string $serverDate = '';
     public string $serverTime = '';
     public int $serverTimestamp = 0;
@@ -56,22 +56,22 @@ class Dashboard extends Component
             $this->greeting = __('dashboard.greeting_morning');
             $this->greetingIcon = 'sun';
             $this->greetingColor = 'text-amber-400';
-            $this->greetingBg = 'from-amber-400/20 to-orange-500/10';
+            $this->greetingGradient = 'from-amber-400 to-orange-500';
         } elseif ($hour < 17) {
             $this->greeting = __('dashboard.greeting_afternoon');
             $this->greetingIcon = 'cloud-sun';
             $this->greetingColor = 'text-sky-400';
-            $this->greetingBg = 'from-sky-400/20 to-blue-500/10';
+            $this->greetingGradient = 'from-sky-400 to-blue-500';
         } elseif ($hour < 20) {
             $this->greeting = __('dashboard.greeting_evening');
             $this->greetingIcon = 'sunset';
             $this->greetingColor = 'text-purple-400';
-            $this->greetingBg = 'from-purple-500/20 to-pink-500/10';
+            $this->greetingGradient = 'from-purple-500 to-pink-500';
         } else {
             $this->greeting = __('dashboard.greeting_night');
             $this->greetingIcon = 'moon';
             $this->greetingColor = 'text-indigo-400';
-            $this->greetingBg = 'from-indigo-500/20 to-violet-600/10';
+            $this->greetingGradient = 'from-indigo-500 to-violet-600';
         }
 
         $appLocale = app()->getLocale();
