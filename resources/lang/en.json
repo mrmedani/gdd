@@ -592,5 +592,9 @@
     "settings.whatsapp_messages_fr": "French",
     "settings.whatsapp_messages_ar": "Arabic",
     "settings.whatsapp_messages_edit": "Customize WhatsApp messages",
-    "nav.whatsapp_messages": "WhatsApp Messages"
+    "nav.whatsapp_messages": "WhatsApp Messages",
+    "dashboard.greeting_morning": "Good morning",
+    "dashboard.greeting_afternoon": "Good afternoon",
+    "dashboard.greeting_evening": "Good evening",
+    "dashboard.greeting_night": "Good night"
 }

@@ -590,5 +590,9 @@
     "settings.whatsapp_messages_fr": "الفرنسية",
     "settings.whatsapp_messages_ar": "العربية",
     "settings.whatsapp_messages_edit": "تخصيص رسائل واتساب",
-    "nav.whatsapp_messages": "رسائل واتساب"
+    "nav.whatsapp_messages": "رسائل واتساب",
+    "dashboard.greeting_morning": "صباح الخير",
+    "dashboard.greeting_afternoon": "مساء الخير",
+    "dashboard.greeting_evening": "مساء الخير",
+    "dashboard.greeting_night": "تصبح على خير"
 }

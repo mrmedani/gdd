@@ -37,11 +37,39 @@ class Dashboard extends Component
     public string $alertFilterType = '';
     public string $alertFilterSeverity = '';
 
+    public string $greeting = '';
+    public string $greetingIcon = '';
+    public string $greetingColor = '';
+    public string $serverDate = '';
+    public string $serverTime = '';
+
     protected $queryString = ['alertFilterType', 'alertFilterSeverity'];
 
     public function mount(): void
     {
         $now = Carbon::now();
+
+        $hour = (int) $now->format('H');
+        if ($hour < 12) {
+            $this->greeting = __('dashboard.greeting_morning');
+            $this->greetingIcon = 'sun';
+            $this->greetingColor = 'from-amber-400 to-orange-500';
+        } elseif ($hour < 17) {
+            $this->greeting = __('dashboard.greeting_afternoon');
+            $this->greetingIcon = 'cloud-sun';
+            $this->greetingColor = 'from-sky-400 to-blue-500';
+        } elseif ($hour < 20) {
+            $this->greeting = __('dashboard.greeting_evening');
+            $this->greetingIcon = 'sunset';
+            $this->greetingColor = 'from-purple-500 to-pink-500';
+        } else {
+            $this->greeting = __('dashboard.greeting_night');
+            $this->greetingIcon = 'moon';
+            $this->greetingColor = 'from-indigo-500 to-violet-600';
+        }
+
+        $this->serverDate = $now->isoFormat('dddd D MMMM YYYY');
+        $this->serverTime = $now->format('H:i:s');
         $currentPeriod = getPeriodFromDate($now);
         $range = getPeriodRange($currentPeriod);
         $this->remainingDays = max(0, $now->diffInDays($range['end'], false));
@@ -155,6 +183,13 @@ class Dashboard extends Component
         ])
             ->layout('layouts.app')
             ->title(__('nav.dashboard'));
+    }
+
+    public function refreshServerTime(): void
+    {
+        $now = Carbon::now();
+        $this->serverDate = $now->isoFormat('dddd D MMMM YYYY');
+        $this->serverTime = $now->format('H:i:s');
     }
 
     public function loadUnreadCount(): void
