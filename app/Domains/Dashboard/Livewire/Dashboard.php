@@ -40,8 +40,10 @@ class Dashboard extends Component
     public string $greeting = '';
     public string $greetingIcon = '';
     public string $greetingColor = '';
+    public string $greetingBg = '';
     public string $serverDate = '';
     public string $serverTime = '';
+    public int $serverTimestamp = 0;
 
     protected $queryString = ['alertFilterType', 'alertFilterSeverity'];
 
@@ -53,23 +55,29 @@ class Dashboard extends Component
         if ($hour < 12) {
             $this->greeting = __('dashboard.greeting_morning');
             $this->greetingIcon = 'sun';
-            $this->greetingColor = 'from-amber-400 to-orange-500';
+            $this->greetingColor = 'text-amber-400';
+            $this->greetingBg = 'from-amber-400/20 to-orange-500/10';
         } elseif ($hour < 17) {
             $this->greeting = __('dashboard.greeting_afternoon');
             $this->greetingIcon = 'cloud-sun';
-            $this->greetingColor = 'from-sky-400 to-blue-500';
+            $this->greetingColor = 'text-sky-400';
+            $this->greetingBg = 'from-sky-400/20 to-blue-500/10';
         } elseif ($hour < 20) {
             $this->greeting = __('dashboard.greeting_evening');
             $this->greetingIcon = 'sunset';
-            $this->greetingColor = 'from-purple-500 to-pink-500';
+            $this->greetingColor = 'text-purple-400';
+            $this->greetingBg = 'from-purple-500/20 to-pink-500/10';
         } else {
             $this->greeting = __('dashboard.greeting_night');
             $this->greetingIcon = 'moon';
-            $this->greetingColor = 'from-indigo-500 to-violet-600';
+            $this->greetingColor = 'text-indigo-400';
+            $this->greetingBg = 'from-indigo-500/20 to-violet-600/10';
         }
 
-        $this->serverDate = $now->isoFormat('dddd D MMMM YYYY');
+        $appLocale = app()->getLocale();
+        $this->serverDate = $now->locale($appLocale)->translatedFormat('l j F Y');
         $this->serverTime = $now->format('H:i:s');
+        $this->serverTimestamp = $now->timestamp;
         $currentPeriod = getPeriodFromDate($now);
         $range = getPeriodRange($currentPeriod);
         $this->remainingDays = max(0, $now->diffInDays($range['end'], false));
@@ -188,8 +196,10 @@ class Dashboard extends Component
     public function refreshServerTime(): void
     {
         $now = Carbon::now();
-        $this->serverDate = $now->isoFormat('dddd D MMMM YYYY');
+        $appLocale = app()->getLocale();
+        $this->serverDate = $now->locale($appLocale)->translatedFormat('l j F Y');
         $this->serverTime = $now->format('H:i:s');
+        $this->serverTimestamp = $now->timestamp;
     }
 
     public function loadUnreadCount(): void

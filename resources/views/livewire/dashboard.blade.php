@@ -18,43 +18,69 @@
     </div>
 
     <!-- Welcome Card -->
-    <div wire:poll.1s="refreshServerTime" class="relative overflow-hidden bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950 rounded-3xl p-7 shadow-premium dark:shadow-premium-dark border border-slate-700/50 dark:border-slate-800/60">
-        <div class="absolute top-0 right-0 -mr-12 -mt-12 w-64 h-64 rounded-full bg-gradient-to-br {{ $greetingColor }} opacity-10 blur-3xl"></div>
-        <div class="absolute bottom-0 left-0 -ml-12 -mb-12 w-48 h-48 rounded-full bg-gradient-to-tr {{ $greetingColor }} opacity-5 blur-3xl"></div>
-        <div class="absolute inset-0 bg-grid-white/[0.02] [mask-image:radial-gradient(ellipse_at_top,transparent_20%,black_70%)]"></div>
+    <div wire:poll.30s="refreshServerTime"
+         x-data="{
+             time: '{{ $serverTime }}',
+             ts: {{ $serverTimestamp }},
+             init() {
+                 setInterval(() => {
+                     let now = Math.floor(Date.now() / 1000);
+                     let elapsed = now - this.ts;
+                     let h = String(Math.floor(elapsed / 3600) % 24).padStart(2, '0');
+                     let m = String(Math.floor(elapsed / 60) % 60).padStart(2, '0');
+                     let s = String(elapsed % 60).padStart(2, '0');
+                     this.time = h + ':' + m + ':' + s;
+                 }, 1000);
+             }
+         }"
+         class="relative overflow-hidden bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border border-slate-200/50 dark:border-slate-800/60 rounded-3xl p-6 shadow-premium dark:shadow-premium-dark transition-all duration-300 hover:shadow-premium-hover dark:hover:shadow-premium-dark-hover group">
+        <div class="absolute inset-0 bg-gradient-to-br {{ $greetingBg }} opacity-50 dark:opacity-30 rounded-3xl"></div>
+        <div class="absolute -right-10 -top-10 w-40 h-40 rounded-full bg-gradient-to-br {{ $greetingBg }} opacity-40 blur-3xl"></div>
 
-        <div class="relative z-10 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-5">
-            <div class="flex items-center gap-5">
-                <div class="shrink-0 w-16 h-16 rounded-2xl bg-white/10 backdrop-blur-md border border-white/10 flex items-center justify-center">
-                    @if($greetingIcon === 'sun')
-                        <svg class="w-8 h-8 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
-                    @elseif($greetingIcon === 'cloud-sun')
-                        <svg class="w-8 h-8 text-sky-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z"></path></svg>
-                    @elseif($greetingIcon === 'sunset')
-                        <svg class="w-8 h-8 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 18.657A8 8 0 016.343 7.343S7 9 9 10c0-2 .5-5 2.986-7C14 5 16.09 5.777 17.656 7.343A7.975 7.975 0 0120 13a7.975 7.975 0 01-2.343 5.657z"></path></svg>
-                    @else
-                        <svg class="w-8 h-8 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path></svg>
-                    @endif
-                </div>
-                <div>
-                    <h2 class="text-xl sm:text-2xl font-extrabold text-white font-heading tracking-tight">
-                        {{ $greeting }}, <span class="bg-gradient-to-r {{ $greetingColor }} bg-clip-text text-transparent">{{ auth()->user()->name }}</span>
+        <div class="relative z-10 flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-6">
+            <div class="shrink-0 w-14 h-14 rounded-2xl bg-gradient-to-br from-white to-slate-50 dark:from-slate-800 dark:to-slate-900 border border-slate-200/50 dark:border-slate-700/50 shadow-sm flex items-center justify-center {{ $greetingColor }}">
+                @if($greetingIcon === 'sun')
+                    <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
+                @elseif($greetingIcon === 'cloud-sun')
+                    <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z"></path></svg>
+                @elseif($greetingIcon === 'sunset')
+                    <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 18.657A8 8 0 016.343 7.343S7 9 9 10c0-2 .5-5 2.986-7C14 5 16.09 5.777 17.656 7.343A7.975 7.975 0 0120 13a7.975 7.975 0 01-2.343 5.657z"></path></svg>
+                @else
+                    <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path></svg>
+                @endif
+            </div>
+            <div class="flex-1 min-w-0">
+                <div class="flex flex-wrap items-baseline gap-x-2 gap-y-1">
+                    <h2 class="text-lg sm:text-xl font-bold text-slate-800 dark:text-white font-heading">
+                        {{ $greeting }},
                     </h2>
-                    <div class="flex flex-wrap items-center gap-x-4 gap-y-1 mt-2">
-                        <span class="flex items-center gap-1.5 text-slate-400 text-sm font-medium">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
-                            <span x-data="{ time: '{{ $serverTime }}' }" x-init="setInterval(() => { time = new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit', second: '2-digit' }) }, 1000)" x-text="time" class="tabular-nums font-mono font-bold text-white/90"></span>
-                        </span>
-                        <span class="flex items-center gap-1.5 text-slate-400 text-sm font-medium">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 15.546c-.523 0-1.046.151-1.5.454a2.704 2.704 0 01-3 0 2.704 2.704 0 00-3 0 2.704 2.704 0 01-3 0 2.704 2.704 0 00-3 0 2.704 2.704 0 01-3 0A2.701 2.701 0 003 15.546V4.454c0-.697.581-1.272 1.278-1.272C5.154 3.182 6.082 3.5 7 3.5s1.846-.318 2.722-.318c1.185 0 2.11.522 2.722.636.612.114 1.537.636 2.722.636.876 0 1.846-.318 2.722-.318 1.185 0 2.11.522 2.722.636.612.114 1.537.636 2.722.636.876 0 1.846-.318 2.722-.318A1.3 1.3 0 0121 4.454v11.092z"></path></svg>
-                            <span>{{ $serverDate }}</span>
-                        </span>
-                        <span class="flex items-center gap-1.5">
-                            <span class="px-2.5 py-0.5 rounded-lg text-xs font-bold bg-gradient-to-r {{ $greetingColor }} text-white shadow-lg">
-                                {{ $currentPeriodLabel }}
-                            </span>
-                        </span>
-                    </div>
+                    <h2 class="text-lg sm:text-xl font-bold {{ $greetingColor }} font-heading">
+                        {{ auth()->user()->name }}
+                    </h2>
+                </div>
+                <div class="flex flex-wrap items-center gap-x-5 gap-y-1.5 mt-2.5 text-xs sm:text-sm">
+                    <span class="flex items-center gap-1.5 text-slate-500 dark:text-slate-400 font-medium" title="{{ __('dashboard.server_time') }}">
+                        <svg class="w-4 h-4 shrink-0 {{ $greetingColor }}" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                        <span x-text="time" class="tabular-nums font-mono font-semibold text-slate-700 dark:text-slate-200 min-w-[70px]"></span>
+                        <span class="text-slate-400 dark:text-slate-500">UTC{{ now()->format('P') }}</span>
+                    </span>
+                    <span class="flex items-center gap-1.5 text-slate-500 dark:text-slate-400 font-medium">
+                        <svg class="w-4 h-4 shrink-0 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                        <span class="text-slate-600 dark:text-slate-300 font-semibold">{{ $serverDate }}</span>
+                    </span>
+                    <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-gradient-to-r {{ $greetingBg }} border border-slate-200/50 dark:border-slate-700/50 text-slate-700 dark:text-slate-200">
+                        <svg class="w-3.5 h-3.5 {{ $greetingColor }}" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path></svg>
+                        {{ $currentPeriodLabel }}
+                    </span>
+                </div>
+            </div>
+            <div class="hidden sm:flex shrink-0 items-center gap-3 pl-6 border-s border-slate-200 dark:border-slate-700">
+                <div class="text-end">
+                    <p class="text-xs font-medium text-slate-400 dark:text-slate-500">{{ auth()->user()->role?->label_fr ?? auth()->user()->role?->name ?? __('settings.no_role') }}</p>
+                    <p class="text-xs text-slate-400 dark:text-slate-500">{{ auth()->user()->email }}</p>
+                </div>
+                <div class="w-9 h-9 rounded-full bg-gradient-to-br {{ $greetingBg }} border border-slate-200/50 dark:border-slate-700/50 flex items-center justify-center {{ $greetingColor }} font-bold text-sm">
+                    {{ substr(auth()->user()->name, 0, 1) }}
                 </div>
             </div>
         </div>
