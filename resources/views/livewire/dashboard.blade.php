@@ -33,14 +33,12 @@
                  }, 1000);
              }
          }"
-         class="relative overflow-hidden bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950 rounded-3xl p-6 sm:p-7 shadow-premium dark:shadow-premium-dark border border-slate-700/50 dark:border-slate-800/60 transition-all duration-300 hover:shadow-premium-hover dark:hover:shadow-premium-dark-hover group">
-        <div class="absolute top-0 right-0 -mr-12 -mt-12 w-64 h-64 rounded-full opacity-10 blur-3xl bg-gradient-to-br {{ $greetingGradient }}"></div>
-        <div class="absolute bottom-0 left-0 -ml-12 -mb-12 w-48 h-48 rounded-full opacity-5 blur-3xl bg-gradient-to-tr {{ $greetingGradient }}"></div>
-        <div class="absolute inset-0 bg-grid-white/[0.02] [mask-image:radial-gradient(ellipse_at_top,transparent_20%,black_70%)]"></div>
+         class="relative overflow-hidden bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950 rounded-3xl p-6 sm:p-7 shadow-premium dark:shadow-premium-dark border border-slate-700/50 dark:border-slate-800/60">
+        <div class="absolute inset-0 bg-gradient-to-br {{ $greetingGradient }}/10 rounded-3xl"></div>
 
-        <div class="relative z-10 flex flex-col sm:flex-row sm:items-center gap-5 sm:gap-6">
+        <div class="relative flex flex-col sm:flex-row sm:items-center gap-5 sm:gap-6">
             <div class="flex items-center gap-4 sm:gap-5 min-w-0">
-                <div class="shrink-0 w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-white/10 backdrop-blur-md border border-white/10 flex items-center justify-center {{ $greetingColor }}">
+                <div class="shrink-0 w-14 h-14 sm:w-16 sm:h-16 rounded-2xl flex items-center justify-center bg-white/15 {{ $greetingColor }}">
                     @if($greetingIcon === 'sun')
                         <svg class="w-7 h-7 sm:w-8 sm:h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
                     @elseif($greetingIcon === 'cloud-sun')
@@ -52,21 +50,21 @@
                     @endif
                 </div>
                 <div class="min-w-0">
-                    <h2 class="text-lg sm:text-xl lg:text-2xl font-extrabold text-white font-heading tracking-tight leading-tight">
+                    <h2 class="text-lg sm:text-xl lg:text-2xl font-bold text-white font-heading tracking-tight leading-tight">
                         {{ $greeting }},
-                        <span class="bg-gradient-to-r {{ $greetingGradient }} bg-clip-text text-transparent whitespace-nowrap">{{ auth()->user()->name }}</span>
+                        <span class="{{ $greetingColor }} whitespace-nowrap">{{ auth()->user()->name }}</span>
                     </h2>
                     <div class="flex flex-wrap items-center gap-x-4 gap-y-1.5 mt-2">
                         <span class="flex items-center gap-1.5 text-slate-400 text-xs sm:text-sm font-medium">
-                            <svg class="w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0 {{ $greetingColor }}" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                            <span x-text="time" class="tabular-nums font-mono font-bold text-white/90 min-w-[68px]"></span>
+                            <svg class="w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                            <span x-text="time" class="tabular-nums font-mono font-semibold text-white/80 min-w-[68px]"></span>
                             <span class="text-slate-500 text-[10px] sm:text-xs">UTC{{ now()->format('P') }}</span>
                         </span>
                         <span class="flex items-center gap-1.5 text-slate-400 text-xs sm:text-sm font-medium">
                             <svg class="w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
                             <span class="text-slate-300 font-semibold">{{ $serverDate }}</span>
                         </span>
-                        <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] sm:text-xs font-bold bg-white/10 backdrop-blur-sm border border-white/10 {{ $greetingColor }} shadow-lg">
+                        <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md text-[10px] sm:text-xs font-semibold bg-white/15 text-white/80">
                             {{ $currentPeriodLabel }}
                         </span>
                     </div>
@@ -74,10 +72,10 @@
             </div>
             <div class="hidden sm:flex shrink-0 items-center gap-3 pl-5 sm:pl-6 border-s border-white/10">
                 <div class="text-end">
-                    <p class="text-xs font-semibold text-white/80">{{ auth()->user()->role?->label_fr ?? auth()->user()->role?->name ?? '' }}</p>
+                    <p class="text-xs font-semibold text-white/70">{{ auth()->user()->role?->label_fr ?? auth()->user()->role?->name ?? '' }}</p>
                     <p class="text-[11px] text-slate-400">{{ auth()->user()->email }}</p>
                 </div>
-                <div class="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-white/10 backdrop-blur-md border border-white/10 flex items-center justify-center {{ $greetingColor }} font-bold text-sm shrink-0">
+                <div class="w-9 h-9 sm:w-10 sm:h-10 rounded-full flex items-center justify-center bg-white/15 text-white/80 font-semibold text-sm shrink-0">
                     {{ mb_substr(auth()->user()->name, 0, 1) }}
                 </div>
             </div>
