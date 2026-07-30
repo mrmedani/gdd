@@ -58,23 +58,19 @@
                     {{-- Icon --}}
                     <div class="shrink-0 flex items-center justify-center w-14 h-14 sm:w-16 sm:h-16
                                 rounded-2xl bg-white/15 border border-white/20 shadow-inner backdrop-blur-sm
-                                text-white transition-transform duration-300 hover:scale-105">
+                                text-white transition-transform duration-300 hover:scale-105 overflow-hidden">
                         @if($greetingIcon === 'sun')
-                            <svg class="w-7 h-7 sm:w-8 sm:h-8" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/>
-                            </svg>
+                            <img src="{{ asset('images/icon_sun_3d.jpg') }}" alt="Matin"
+                                 class="w-full h-full object-cover scale-110 drop-shadow-lg">
                         @elseif($greetingIcon === 'cloud-sun')
-                            <svg class="w-7 h-7 sm:w-8 sm:h-8" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z"/>
-                            </svg>
+                            <img src="{{ asset('images/icon_afternoon_3d.jpg') }}" alt="Après-midi"
+                                 class="w-full h-full object-cover scale-110 drop-shadow-lg">
                         @elseif($greetingIcon === 'sunset')
-                            <svg class="w-7 h-7 sm:w-8 sm:h-8" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M17.657 18.657A8 8 0 016.343 7.343S7 9 9 10c0-2 .5-5 2.986-7C14 5 16.09 5.777 17.656 7.343A7.975 7.975 0 0120 13a7.975 7.975 0 01-2.343 5.657z"/>
-                            </svg>
+                            <img src="{{ asset('images/icon_sunset_3d.jpg') }}" alt="Soir"
+                                 class="w-full h-full object-cover scale-110 drop-shadow-lg">
                         @else
-                            <svg class="w-7 h-7 sm:w-8 sm:h-8" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/>
-                            </svg>
+                            <img src="{{ asset('images/icon_moon_3d.jpg') }}" alt="Nuit"
+                                 class="w-full h-full object-cover scale-110 drop-shadow-lg">
                         @endif
                     </div>
 
