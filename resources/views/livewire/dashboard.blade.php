@@ -55,22 +55,209 @@
 
                 {{-- Greeting section --}}
                 <div class="flex items-center gap-4 min-w-0">
-                    {{-- Icon --}}
-                    <div class="shrink-0 flex items-center justify-center w-14 h-14 sm:w-16 sm:h-16
-                                rounded-2xl bg-white/15 border border-white/20 shadow-inner backdrop-blur-sm
-                                text-white transition-transform duration-300 hover:scale-105 overflow-hidden">
+                    {{-- Animated 3D Icon (no background) --}}
+                    <div class="shrink-0 flex items-center justify-center w-16 h-16 sm:w-20 sm:h-20
+                                transition-transform duration-300 hover:scale-110 drop-shadow-xl">
                         @if($greetingIcon === 'sun')
-                            <img src="{{ asset('images/icon_sun_3d.jpg') }}" alt="Matin"
-                                 class="w-full h-full object-cover scale-110 drop-shadow-lg">
+                            {{-- ☀️ Morning Sun: rotating rays + pulsing glow --}}
+                            <svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg" class="w-full h-full" style="overflow:visible">
+                                <defs>
+                                    <radialGradient id="sunGlow" cx="50%" cy="50%" r="50%">
+                                        <stop offset="0%" stop-color="#FFF176"/>
+                                        <stop offset="60%" stop-color="#FFD600"/>
+                                        <stop offset="100%" stop-color="#FF8F00"/>
+                                    </radialGradient>
+                                    <radialGradient id="sunHalo" cx="50%" cy="50%" r="50%">
+                                        <stop offset="0%" stop-color="#FFD600" stop-opacity="0.4"/>
+                                        <stop offset="100%" stop-color="#FFD600" stop-opacity="0"/>
+                                    </radialGradient>
+                                    <filter id="sunShadow">
+                                        <feDropShadow dx="0" dy="3" stdDeviation="4" flood-color="#FF8F00" flood-opacity="0.5"/>
+                                    </filter>
+                                    <style>
+                                        @keyframes sun-spin { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }
+                                        @keyframes sun-pulse { 0%,100%{opacity:0.5;transform:scale(1)} 50%{opacity:0.9;transform:scale(1.15)} }
+                                        @keyframes sun-bob { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-2px)} }
+                                        .sun-rays { animation: sun-spin 10s linear infinite; transform-origin: 32px 32px; }
+                                        .sun-halo { animation: sun-pulse 3s ease-in-out infinite; transform-origin: 32px 32px; }
+                                        .sun-body { animation: sun-bob 3s ease-in-out infinite; }
+                                    </style>
+                                </defs>
+                                {{-- Outer halo --}}
+                                <circle class="sun-halo" cx="32" cy="32" r="28" fill="url(#sunHalo)"/>
+                                {{-- Rays --}}
+                                <g class="sun-rays" filter="url(#sunShadow)">
+                                    <rect x="30.5" y="4" width="3" height="8" rx="1.5" fill="#FFD600"/>
+                                    <rect x="30.5" y="52" width="3" height="8" rx="1.5" fill="#FFD600"/>
+                                    <rect x="4" y="30.5" width="8" height="3" rx="1.5" fill="#FFD600"/>
+                                    <rect x="52" y="30.5" width="8" height="3" rx="1.5" fill="#FFD600"/>
+                                    <rect x="11.5" y="9.5" width="3" height="8" rx="1.5" fill="#FFB300" transform="rotate(45 13 13.5)"/>
+                                    <rect x="42.5" y="9.5" width="3" height="8" rx="1.5" fill="#FFB300" transform="rotate(-45 44 13.5)"/>
+                                    <rect x="11.5" y="46.5" width="3" height="8" rx="1.5" fill="#FFB300" transform="rotate(-45 13 50.5)"/>
+                                    <rect x="42.5" y="46.5" width="3" height="8" rx="1.5" fill="#FFB300" transform="rotate(45 44 50.5)"/>
+                                </g>
+                                {{-- Sun body --}}
+                                <circle class="sun-body" cx="32" cy="32" r="14" fill="url(#sunGlow)" filter="url(#sunShadow)"/>
+                                {{-- Gloss --}}
+                                <ellipse class="sun-body" cx="28" cy="27" rx="5" ry="4" fill="white" opacity="0.35"/>
+                            </svg>
+
                         @elseif($greetingIcon === 'cloud-sun')
-                            <img src="{{ asset('images/icon_afternoon_3d.jpg') }}" alt="Après-midi"
-                                 class="w-full h-full object-cover scale-110 drop-shadow-lg">
+                            {{-- 🌤️ Afternoon: floating cloud + sun peeking --}}
+                            <svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg" class="w-full h-full" style="overflow:visible">
+                                <defs>
+                                    <radialGradient id="afSun" cx="50%" cy="50%" r="50%">
+                                        <stop offset="0%" stop-color="#FFF9C4"/>
+                                        <stop offset="60%" stop-color="#FFD600"/>
+                                        <stop offset="100%" stop-color="#FF8F00"/>
+                                    </radialGradient>
+                                    <linearGradient id="cloudGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+                                        <stop offset="0%" stop-color="#FFFFFF"/>
+                                        <stop offset="100%" stop-color="#E3F2FD"/>
+                                    </linearGradient>
+                                    <filter id="cloudShadow">
+                                        <feDropShadow dx="0" dy="4" stdDeviation="4" flood-color="#90CAF9" flood-opacity="0.5"/>
+                                    </filter>
+                                    <filter id="afSunGlow">
+                                        <feDropShadow dx="0" dy="2" stdDeviation="5" flood-color="#FFD600" flood-opacity="0.7"/>
+                                    </filter>
+                                    <style>
+                                        @keyframes cloud-float { 0%,100%{transform:translateX(0)} 50%{transform:translateX(3px)} }
+                                        @keyframes af-sun-pulse { 0%,100%{opacity:1;r:12} 50%{opacity:0.85;r:13} }
+                                        @keyframes af-rays-spin { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }
+                                        .af-cloud { animation: cloud-float 4s ease-in-out infinite; }
+                                        .af-sun { animation: sun-bob 3s ease-in-out infinite; }
+                                        .af-rays { animation: af-rays-spin 12s linear infinite; transform-origin: 24px 26px; }
+                                    </style>
+                                </defs>
+                                {{-- Sun behind cloud --}}
+                                <g class="af-sun">
+                                    <g class="af-rays" filter="url(#afSunGlow)">
+                                        <rect x="22.5" y="10" width="3" height="6" rx="1.5" fill="#FFD600"/>
+                                        <rect x="22.5" y="36" width="3" height="6" rx="1.5" fill="#FFD600"/>
+                                        <rect x="10" y="24" width="6" height="3" rx="1.5" fill="#FFD600"/>
+                                        <rect x="36" y="24" width="6" height="3" rx="1.5" fill="#FFD600"/>
+                                        <rect x="13" y="13" width="3" height="6" rx="1.5" fill="#FFB300" transform="rotate(45 14.5 16)"/>
+                                        <rect x="32" y="13" width="3" height="6" rx="1.5" fill="#FFB300" transform="rotate(-45 33.5 16)"/>
+                                        <rect x="13" y="32" width="3" height="6" rx="1.5" fill="#FFB300" transform="rotate(-45 14.5 35)"/>
+                                    </g>
+                                    <circle cx="24" cy="26" r="11" fill="url(#afSun)" filter="url(#afSunGlow)"/>
+                                    <ellipse cx="20" cy="22" rx="4" ry="3" fill="white" opacity="0.4"/>
+                                </g>
+                                {{-- Cloud front --}}
+                                <g class="af-cloud" filter="url(#cloudShadow)">
+                                    <circle cx="28" cy="42" r="10" fill="url(#cloudGrad)"/>
+                                    <circle cx="41" cy="44" r="8" fill="url(#cloudGrad)"/>
+                                    <circle cx="18" cy="45" r="7" fill="url(#cloudGrad)"/>
+                                    <rect x="11" y="44" width="38" height="10" rx="5" fill="url(#cloudGrad)"/>
+                                    <ellipse cx="26" cy="40" rx="8" ry="3" fill="white" opacity="0.6"/>
+                                </g>
+                            </svg>
+
                         @elseif($greetingIcon === 'sunset')
-                            <img src="{{ asset('images/icon_sunset_3d.jpg') }}" alt="Soir"
-                                 class="w-full h-full object-cover scale-110 drop-shadow-lg">
+                            {{-- 🌇 Evening sunset: horizon glow animation --}}
+                            <svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg" class="w-full h-full" style="overflow:visible">
+                                <defs>
+                                    <radialGradient id="sunsetSun" cx="50%" cy="70%" r="60%">
+                                        <stop offset="0%" stop-color="#FFF9C4"/>
+                                        <stop offset="40%" stop-color="#FF8A65"/>
+                                        <stop offset="100%" stop-color="#E64A19"/>
+                                    </radialGradient>
+                                    <linearGradient id="skyGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+                                        <stop offset="0%" stop-color="#7E57C2"/>
+                                        <stop offset="50%" stop-color="#EF5350"/>
+                                        <stop offset="100%" stop-color="#FF8A65"/>
+                                    </linearGradient>
+                                    <filter id="sunsetGlow">
+                                        <feDropShadow dx="0" dy="0" stdDeviation="6" flood-color="#FF6D00" flood-opacity="0.8"/>
+                                    </filter>
+                                    <clipPath id="skyClip">
+                                        <rect x="4" y="4" width="56" height="56" rx="12"/>
+                                    </clipPath>
+                                    <style>
+                                        @keyframes sunset-pulse { 0%,100%{opacity:0.8;transform:scale(1)} 50%{opacity:1;transform:scale(1.05)} }
+                                        @keyframes horizon-glow { 0%,100%{opacity:0.6} 50%{opacity:1} }
+                                        @keyframes sky-shift { 0%,100%{stop-color:#7E57C2} 50%{stop-color:#5E35B1} }
+                                        .sunset-sun { animation: sunset-pulse 3s ease-in-out infinite; transform-origin: 32px 44px; }
+                                        .horizon-ray { animation: horizon-glow 2.5s ease-in-out infinite; }
+                                    </style>
+                                </defs>
+                                {{-- Sky background --}}
+                                <rect x="4" y="4" width="56" height="56" rx="12" fill="url(#skyGrad)" opacity="0.95"/>
+                                {{-- Horizon rays --}}
+                                <g class="horizon-ray">
+                                    <line x1="32" y1="44" x2="8" y2="28" stroke="#FFCC80" stroke-width="1.5" stroke-opacity="0.5"/>
+                                    <line x1="32" y1="44" x2="56" y2="28" stroke="#FFCC80" stroke-width="1.5" stroke-opacity="0.5"/>
+                                    <line x1="32" y1="44" x2="4" y2="38" stroke="#FFCC80" stroke-width="1" stroke-opacity="0.3"/>
+                                    <line x1="32" y1="44" x2="60" y2="38" stroke="#FFCC80" stroke-width="1" stroke-opacity="0.3"/>
+                                    <line x1="32" y1="44" x2="20" y2="10" stroke="#FFCC80" stroke-width="1" stroke-opacity="0.3"/>
+                                    <line x1="32" y1="44" x2="44" y2="10" stroke="#FFCC80" stroke-width="1" stroke-opacity="0.3"/>
+                                </g>
+                                {{-- Horizon line --}}
+                                <line x1="4" y1="44" x2="60" y2="44" stroke="#FFB74D" stroke-width="1.5" stroke-opacity="0.8"/>
+                                {{-- Sun half --}}
+                                <g class="sunset-sun" filter="url(#sunsetGlow)">
+                                    <path d="M 16 44 A 16 16 0 0 1 48 44 Z" fill="url(#sunsetSun)"/>
+                                    <ellipse cx="32" cy="44" rx="16" ry="3" fill="#FFCC80" opacity="0.4"/>
+                                    <ellipse cx="28" cy="38" rx="5" ry="3" fill="white" opacity="0.25"/>
+                                </g>
+                                {{-- Ground --}}
+                                <rect x="4" y="44" width="56" height="16" rx="0" fill="#BF360C" opacity="0.5"/>
+                                <rect x="4" y="52" width="56" height="8" rx="0" ry="0" fill="#4E342E" opacity="0.6"/>
+                                {{-- Round corners mask --}}
+                                <rect x="4" y="4" width="56" height="56" rx="12" fill="none" stroke="none"/>
+                            </svg>
+
                         @else
-                            <img src="{{ asset('images/icon_moon_3d.jpg') }}" alt="Nuit"
-                                 class="w-full h-full object-cover scale-110 drop-shadow-lg">
+                            {{-- 🌙 Night: glowing moon + twinkling stars --}}
+                            <svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg" class="w-full h-full" style="overflow:visible">
+                                <defs>
+                                    <radialGradient id="moonGrad" cx="35%" cy="30%" r="60%">
+                                        <stop offset="0%" stop-color="#ECEFF1"/>
+                                        <stop offset="60%" stop-color="#B0BEC5"/>
+                                        <stop offset="100%" stop-color="#78909C"/>
+                                    </radialGradient>
+                                    <radialGradient id="moonGlow" cx="50%" cy="50%" r="50%">
+                                        <stop offset="0%" stop-color="#82B1FF" stop-opacity="0.5"/>
+                                        <stop offset="100%" stop-color="#82B1FF" stop-opacity="0"/>
+                                    </radialGradient>
+                                    <filter id="moonShadow">
+                                        <feDropShadow dx="0" dy="3" stdDeviation="5" flood-color="#3D5AFE" flood-opacity="0.5"/>
+                                    </filter>
+                                    <style>
+                                        @keyframes moon-glow { 0%,100%{opacity:0.5;transform:scale(1)} 50%{opacity:0.9;transform:scale(1.1)} }
+                                        @keyframes moon-bob { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-3px)} }
+                                        @keyframes star-twinkle-1 { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.2;transform:scale(0.5)} }
+                                        @keyframes star-twinkle-2 { 0%,100%{opacity:0.3;transform:scale(0.6)} 50%{opacity:1;transform:scale(1.2)} }
+                                        @keyframes star-twinkle-3 { 0%,40%{opacity:1} 60%,100%{opacity:0.1} }
+                                        .moon-halo { animation: moon-glow 4s ease-in-out infinite; transform-origin: 30px 34px; }
+                                        .moon-body { animation: moon-bob 4s ease-in-out infinite; }
+                                        .star-1 { animation: star-twinkle-1 2.1s ease-in-out infinite; transform-origin: 52px 14px; }
+                                        .star-2 { animation: star-twinkle-2 1.7s ease-in-out infinite 0.4s; transform-origin: 14px 20px; }
+                                        .star-3 { animation: star-twinkle-3 2.8s ease-in-out infinite 0.8s; transform-origin: 48px 36px; }
+                                        .star-4 { animation: star-twinkle-1 1.9s ease-in-out infinite 1.2s; transform-origin: 20px 10px; }
+                                        .star-5 { animation: star-twinkle-2 2.4s ease-in-out infinite 0.2s; transform-origin: 56px 26px; }
+                                    </style>
+                                </defs>
+                                {{-- Moon halo --}}
+                                <circle class="moon-halo" cx="30" cy="34" r="22" fill="url(#moonGlow)"/>
+                                {{-- Stars --}}
+                                <g class="star-1"><circle cx="52" cy="14" r="2.5" fill="#E8EAF6"/><circle cx="52" cy="14" r="1.2" fill="white"/></g>
+                                <g class="star-2"><circle cx="14" cy="20" r="2" fill="#C5CAE9"/><circle cx="14" cy="20" r="0.9" fill="white"/></g>
+                                <g class="star-3"><circle cx="48" cy="36" r="1.8" fill="#E8EAF6"/><circle cx="48" cy="36" r="0.8" fill="white"/></g>
+                                <g class="star-4"><circle cx="20" cy="10" r="1.5" fill="#C5CAE9"/><circle cx="20" cy="10" r="0.7" fill="white"/></g>
+                                <g class="star-5"><circle cx="56" cy="26" r="1.2" fill="#E8EAF6"/><circle cx="56" cy="26" r="0.5" fill="white"/></g>
+                                {{-- Moon body --}}
+                                <g class="moon-body" filter="url(#moonShadow)">
+                                    <path d="M 30 14 A 20 20 0 1 0 30 54 A 12 12 0 1 1 30 14 Z" fill="url(#moonGrad)"/>
+                                    {{-- Craters --}}
+                                    <circle cx="24" cy="28" r="3" fill="#90A4AE" opacity="0.4"/>
+                                    <circle cx="22" cy="40" r="2" fill="#90A4AE" opacity="0.3"/>
+                                    <circle cx="32" cy="44" r="1.5" fill="#90A4AE" opacity="0.3"/>
+                                    {{-- Gloss --}}
+                                    <ellipse cx="22" cy="20" rx="5" ry="4" fill="white" opacity="0.4"/>
+                                </g>
+                            </svg>
                         @endif
                     </div>
 
