@@ -17,75 +17,136 @@
         </div>
     </div>
 
-    <!-- Welcome Header (Colorful Modern UI) -->
-    <div x-data="{
-             time: '',
-             init() {
-                 const updateTime = () => {
-                     const now = new Date();
-                     const h = String(now.getHours()).padStart(2, '0');
-                     const m = String(now.getMinutes()).padStart(2, '0');
-                     const s = String(now.getSeconds()).padStart(2, '0');
-                     this.time = h + ':' + m + ':' + s;
-                 };
-                 updateTime();
-                 setInterval(updateTime, 1000);
-             }
-         }"
-         class="mb-6 sm:mb-8 p-5 sm:p-7 lg:p-8 bg-white dark:bg-slate-900 border-2 border-blue-50 dark:border-slate-800/80 rounded-[2rem] shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-[0_8px_30px_rgb(0,0,0,0.1)] flex flex-col xl:flex-row xl:items-center justify-between gap-6 sm:gap-8 relative overflow-hidden transition-colors">
-        
-        <!-- Colorful decorative background -->
-        <div class="absolute -top-24 -right-24 w-64 h-64 bg-gradient-to-br from-blue-400/20 to-indigo-500/20 dark:from-blue-500/10 dark:to-indigo-500/10 rounded-full blur-[80px] pointer-events-none"></div>
-        <div class="absolute -bottom-24 -left-24 w-64 h-64 bg-gradient-to-br from-amber-400/20 to-orange-500/20 dark:from-amber-500/10 dark:to-orange-500/10 rounded-full blur-[80px] pointer-events-none"></div>
+    <!-- ═══ Welcome Card ═══ -->
+    <div
+        x-data="{
+            time: '',
+            date: '',
+            init() {
+                const tick = () => {
+                    const now = new Date();
+                    const hh = String(now.getHours()).padStart(2,'0');
+                    const mm = String(now.getMinutes()).padStart(2,'0');
+                    const ss = String(now.getSeconds()).padStart(2,'0');
+                    this.time = hh + ':' + mm + ':' + ss;
+                };
+                tick();
+                setInterval(tick, 1000);
+            }
+        }"
+        class="relative w-full overflow-hidden rounded-3xl mb-6"
+    >
+        {{-- ── Background layer ── --}}
+        <div class="absolute inset-0 bg-gradient-to-br from-blue-600 via-indigo-600 to-violet-700
+                    dark:from-blue-800 dark:via-indigo-800 dark:to-violet-900"></div>
 
-        <div class="flex flex-col sm:flex-row sm:items-center gap-5 sm:gap-6 relative z-10 w-full xl:w-auto">
-            <!-- Vibrant Icon Box -->
-            <div class="shrink-0 flex items-center justify-center w-16 h-16 sm:w-20 sm:h-20 rounded-[1.25rem] bg-gradient-to-br {{ $greetingGradient }} shadow-lg shadow-[var(--tw-gradient-to)]/30 dark:shadow-[var(--tw-gradient-to)]/20 text-white transition-transform hover:scale-105 duration-300">
-                @if($greetingIcon === 'sun')
-                    <svg class="w-8 h-8 sm:w-10 sm:h-10 drop-shadow-md" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
-                @elseif($greetingIcon === 'cloud-sun')
-                    <svg class="w-8 h-8 sm:w-10 sm:h-10 drop-shadow-md" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z"></path></svg>
-                @elseif($greetingIcon === 'sunset')
-                    <svg class="w-8 h-8 sm:w-10 sm:h-10 drop-shadow-md" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M17.657 18.657A8 8 0 016.343 7.343S7 9 9 10c0-2 .5-5 2.986-7C14 5 16.09 5.777 17.656 7.343A7.975 7.975 0 0120 13a7.975 7.975 0 01-2.343 5.657z"></path></svg>
-                @else
-                    <svg class="w-8 h-8 sm:w-10 sm:h-10 drop-shadow-md" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path></svg>
-                @endif
+        {{-- ── Decorative blobs ── --}}
+        <div class="absolute -top-16 -end-16 h-56 w-56 rounded-full bg-white/10 blur-2xl pointer-events-none"></div>
+        <div class="absolute -bottom-16 -start-8 h-40 w-40 rounded-full bg-indigo-300/20 blur-2xl pointer-events-none"></div>
+
+        {{-- ── Noise texture overlay ── --}}
+        <div class="absolute inset-0 opacity-[0.03] bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMDAiIGhlaWdodD0iMzAwIj48ZmlsdGVyIGlkPSJhIj48ZmVUdXJidWxlbmNlIHR5cGU9ImZyYWN0YWxOb2lzZSIgYmFzZUZyZXF1ZW5jeT0iMC42NSIgbnVtT2N0YXZlcz0iMyIgc3RpdGNoVGlsZXM9InN0aXRjaCIvPjxmZUNvbG9yTWF0cml4IHR5cGU9InNhdHVyYXRlIiB2YWx1ZXM9IjAiLz48L2ZpbHRlcj48cmVjdCB3aWR0aD0iMzAwIiBoZWlnaHQ9IjMwMCIgZmlsdGVyPSJ1cmwoI2EpIiBvcGFjaXR5PSIxIi8+PC9zdmc+')] pointer-events-none"></div>
+
+        {{-- ── Content ── --}}
+        <div class="relative z-10 flex flex-col gap-5 p-6 sm:p-8 lg:p-10">
+
+            {{-- TOP ROW – greeting + profile --}}
+            <div class="flex items-start justify-between gap-4">
+
+                {{-- Greeting section --}}
+                <div class="flex items-center gap-4 min-w-0">
+                    {{-- Icon --}}
+                    <div class="shrink-0 flex items-center justify-center w-14 h-14 sm:w-16 sm:h-16
+                                rounded-2xl bg-white/15 border border-white/20 shadow-inner backdrop-blur-sm
+                                text-white transition-transform duration-300 hover:scale-105">
+                        @if($greetingIcon === 'sun')
+                            <svg class="w-7 h-7 sm:w-8 sm:h-8" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/>
+                            </svg>
+                        @elseif($greetingIcon === 'cloud-sun')
+                            <svg class="w-7 h-7 sm:w-8 sm:h-8" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z"/>
+                            </svg>
+                        @elseif($greetingIcon === 'sunset')
+                            <svg class="w-7 h-7 sm:w-8 sm:h-8" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M17.657 18.657A8 8 0 016.343 7.343S7 9 9 10c0-2 .5-5 2.986-7C14 5 16.09 5.777 17.656 7.343A7.975 7.975 0 0120 13a7.975 7.975 0 01-2.343 5.657z"/>
+                            </svg>
+                        @else
+                            <svg class="w-7 h-7 sm:w-8 sm:h-8" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/>
+                            </svg>
+                        @endif
+                    </div>
+
+                    {{-- Name & greeting --}}
+                    <div class="min-w-0">
+                        <p class="text-white/70 text-xs sm:text-sm font-semibold tracking-widest uppercase mb-0.5">
+                            {{ $greeting }}
+                        </p>
+                        <h2 class="text-xl sm:text-2xl lg:text-3xl font-extrabold text-white tracking-tight truncate font-heading leading-tight">
+                            {{ auth()->user()->name }}
+                        </h2>
+                        @if(auth()->user()->role)
+                            <span class="inline-block mt-1 text-[10px] sm:text-xs font-bold uppercase tracking-wider text-white/60">
+                                {{ auth()->user()->role?->label_fr ?? auth()->user()->role?->name ?? '' }}
+                            </span>
+                        @endif
+                    </div>
+                </div>
+
+                {{-- Profile Avatar (desktop) --}}
+                <div class="hidden sm:flex shrink-0 flex-col items-center gap-1">
+                    <div class="w-12 h-12 sm:w-14 sm:h-14 rounded-full flex items-center justify-center
+                                bg-white/20 border-2 border-white/30 text-white font-black text-lg sm:text-xl
+                                shadow-[0_4px_20px_rgba(0,0,0,0.2)] transition-transform duration-300 hover:scale-105 backdrop-blur-sm">
+                        {{ mb_strtoupper(mb_substr(auth()->user()->name, 0, 1)) }}
+                    </div>
+                    <p class="text-[10px] text-white/50 font-medium max-w-[80px] truncate text-center">{{ auth()->user()->email }}</p>
+                </div>
             </div>
 
-            <div class="min-w-0 flex-1">
-                <h2 class="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white font-heading tracking-tight mb-3">
-                    {{ $greeting }}, <span class="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-600 dark:from-blue-400 dark:to-indigo-400">{{ auth()->user()->name }}</span>
-                </h2>
-                <div class="flex flex-wrap items-center gap-2 sm:gap-3">
-                    <!-- Local Time -->
-                    <div class="inline-flex items-center gap-2 bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300 px-3 py-2 rounded-xl text-xs sm:text-sm font-bold border border-blue-100/50 dark:border-blue-800/30 shadow-sm">
-                        <svg class="w-4 h-4 text-blue-500 dark:text-blue-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                        <span x-text="time" class="tabular-nums font-mono tracking-wider"></span>
-                    </div>
-                    <!-- Date -->
-                    <div class="inline-flex items-center gap-2 bg-indigo-50 dark:bg-indigo-900/20 text-indigo-700 dark:text-indigo-300 px-3 py-2 rounded-xl text-xs sm:text-sm font-bold border border-indigo-100/50 dark:border-indigo-800/30 shadow-sm">
-                        <svg class="w-4 h-4 text-indigo-500 dark:text-indigo-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
-                        <span class="tracking-wide">{{ $serverDate }}</span>
-                    </div>
-                    <!-- Period -->
-                    <div class="inline-flex items-center gap-1 bg-gradient-to-r {{ $greetingGradient }} px-3 py-2 rounded-xl text-[10px] sm:text-xs font-black uppercase tracking-wider text-white shadow-md shadow-[var(--tw-gradient-to)]/30 dark:shadow-none opacity-90 hover:opacity-100 transition-opacity">
-                        {{ $currentPeriodLabel }}
-                    </div>
+            {{-- BOTTOM ROW – time / date / period chips --}}
+            <div class="flex flex-wrap items-center gap-2">
+
+                {{-- Clock chip --}}
+                <div class="flex items-center gap-2 bg-white/10 border border-white/15 backdrop-blur-md
+                            rounded-full px-4 py-2 text-white shadow-sm hover:bg-white/15 transition-colors">
+                    <svg class="w-3.5 h-3.5 text-white/70 shrink-0" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    </svg>
+                    <span x-text="time" class="tabular-nums font-mono font-bold text-sm tracking-widest"></span>
+                </div>
+
+                {{-- Date chip --}}
+                <div class="flex items-center gap-2 bg-white/10 border border-white/15 backdrop-blur-md
+                            rounded-full px-4 py-2 text-white shadow-sm hover:bg-white/15 transition-colors">
+                    <svg class="w-3.5 h-3.5 text-white/70 shrink-0" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                    </svg>
+                    <span class="font-semibold text-sm">{{ $serverDate }}</span>
+                </div>
+
+                {{-- Period chip --}}
+                <div class="flex items-center gap-1.5 bg-white/20 border border-white/30 backdrop-blur-md
+                            rounded-full px-4 py-2 text-white shadow-sm">
+                    <svg class="w-3.5 h-3.5 text-white/80 shrink-0" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+                    </svg>
+                    <span class="font-black text-xs uppercase tracking-wider">{{ $currentPeriodLabel }}</span>
+                </div>
+
+                {{-- Mobile email chip --}}
+                <div class="sm:hidden flex items-center gap-2 bg-white/10 border border-white/15 backdrop-blur-md
+                            rounded-full px-3 py-2 text-white/70 text-xs font-medium max-w-[200px]">
+                    <svg class="w-3 h-3 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+                    </svg>
+                    <span class="truncate">{{ auth()->user()->email }}</span>
                 </div>
             </div>
         </div>
-
-        <!-- Sleek Profile Pill -->
-        <div class="flex items-center gap-3 sm:gap-4 bg-slate-50 dark:bg-slate-800/50 p-2 rounded-[2rem] border border-slate-100 dark:border-slate-700/50 relative z-10 w-full sm:w-max hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer xl:ms-auto sm:pe-6 sm:ps-2 shadow-sm">
-            <div class="w-10 h-10 sm:w-12 sm:h-12 shrink-0 rounded-full flex items-center justify-center bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300 font-black text-base sm:text-lg border border-blue-200/50 dark:border-blue-800/50 shadow-inner group-hover:scale-105 transition-transform">
-                {{ mb_substr(auth()->user()->name, 0, 1) }}
-            </div>
-            <div class="text-start flex flex-col justify-center flex-1 sm:flex-initial overflow-hidden">
-                <p class="text-xs sm:text-sm font-bold text-slate-800 dark:text-white mb-0.5 truncate">{{ auth()->user()->role?->label_fr ?? auth()->user()->role?->name ?? '' }}</p>
-                <p class="text-[10px] sm:text-xs font-semibold text-slate-500 dark:text-slate-400 truncate">{{ auth()->user()->email }}</p>
-            </div>
-        </div>
     </div>
+
 
     <!-- KPIs -->
     <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
