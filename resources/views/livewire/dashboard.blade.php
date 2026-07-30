@@ -17,7 +17,7 @@
         </div>
     </div>
 
-    <!-- Welcome Card (2026 UI) -->
+    <!-- Welcome Header (Ultra-Modern Minimalist UI) -->
     <div wire:poll.30s="refreshServerTime"
          x-data="{
              time: '{{ $serverTime }}',
@@ -33,85 +33,54 @@
                  }, 1000);
              }
          }"
-         class="relative overflow-hidden rounded-[2.5rem] p-1.5 shadow-2xl dark:shadow-premium-dark group mb-8">
+         class="mb-8 p-6 sm:p-8 bg-white dark:bg-slate-900 border border-slate-200/70 dark:border-slate-800/80 rounded-[2rem] shadow-sm flex flex-col xl:flex-row xl:items-center justify-between gap-6 relative overflow-hidden">
         
-        <!-- Animated Mesh Background -->
-        <div class="absolute inset-0 bg-slate-900 dark:bg-slate-950 overflow-hidden rounded-[2.5rem]">
-            <!-- Glowing Orbs -->
-            <div class="absolute -top-[50%] -left-[20%] w-[70%] h-[200%] bg-gradient-to-br {{ $greetingGradient }} opacity-[0.25] dark:opacity-30 blur-[120px] group-hover:opacity-40 transition-opacity duration-1000 animate-pulse"></div>
-            <div class="absolute -bottom-[50%] -right-[20%] w-[60%] h-[180%] bg-gradient-to-tl from-indigo-500 to-purple-500 opacity-20 dark:opacity-30 blur-[100px] group-hover:opacity-40 transition-opacity duration-1000"></div>
-            <div class="absolute inset-0 bg-gradient-to-t from-slate-900/80 to-transparent"></div>
-            <!-- Grid pattern -->
-            <div class="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAiIGhlaWdodD0iMjAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGNpcmNsZSBjeD0iMiIgY3k9IjIiIHI9IjEiIGZpbGw9InJnYmEoMjU1LDI1NSwyNTUsMC4wNSkiLz48L3N2Zz4=')] [mask-image:linear-gradient(to_bottom,white,transparent)] opacity-30"></div>
-        </div>
+        <!-- Subtle decorative background -->
+        <div class="absolute top-0 right-0 -mr-20 -mt-20 w-64 h-64 bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/10 dark:to-indigo-900/10 rounded-full blur-3xl opacity-50 pointer-events-none"></div>
 
-        <!-- Glass Content Container -->
-        <div class="relative bg-white/10 dark:bg-white/5 backdrop-blur-2xl border border-white/20 dark:border-white/10 rounded-[2.25rem] p-6 sm:p-8 lg:p-10 flex flex-col xl:flex-row xl:items-center gap-6 sm:gap-8 overflow-hidden transition-all duration-500 group-hover:bg-white-[0.12] dark:group-hover:bg-white/10 group-hover:border-white/30">
-            
-            <!-- Lighting effect line -->
-            <div class="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-white/50 to-transparent opacity-50"></div>
-            
-            <div class="flex items-center gap-5 sm:gap-7 min-w-0 flex-1">
-                <!-- Icon with Glow -->
-                <div class="relative shrink-0 group/icon">
-                    <div class="absolute inset-0 bg-gradient-to-br {{ $greetingGradient }} opacity-50 blur-xl group-hover/icon:opacity-100 group-hover/icon:blur-2xl transition-all duration-500 rounded-[1.5rem]"></div>
-                    <div class="relative w-16 h-16 sm:w-20 sm:h-20 rounded-[1.75rem] flex items-center justify-center bg-gradient-to-br {{ $greetingGradient }} shadow-[inset_0_2px_4px_rgba(255,255,255,0.4),0_10px_20px_-10px_rgba(0,0,0,0.5)] text-white ring-1 ring-white/30 transition-transform duration-700 ease-out group-hover/icon:scale-110 group-hover/icon:-rotate-6 group-hover/icon:shadow-[inset_0_2px_4px_rgba(255,255,255,0.6),0_15px_30px_-10px_rgba(0,0,0,0.6)]">
-                        @if($greetingIcon === 'sun')
-                            <svg class="w-8 h-8 sm:w-10 sm:h-10 drop-shadow-md" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
-                        @elseif($greetingIcon === 'cloud-sun')
-                            <svg class="w-8 h-8 sm:w-10 sm:h-10 drop-shadow-md" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z"></path></svg>
-                        @elseif($greetingIcon === 'sunset')
-                            <svg class="w-8 h-8 sm:w-10 sm:h-10 drop-shadow-md" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M17.657 18.657A8 8 0 016.343 7.343S7 9 9 10c0-2 .5-5 2.986-7C14 5 16.09 5.777 17.656 7.343A7.975 7.975 0 0120 13a7.975 7.975 0 01-2.343 5.657z"></path></svg>
-                        @else
-                            <svg class="w-8 h-8 sm:w-10 sm:h-10 drop-shadow-md" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path></svg>
-                        @endif
+        <div class="flex flex-col sm:flex-row sm:items-center gap-5 sm:gap-6 relative z-10">
+            <!-- Sleek Icon Box -->
+            <div class="shrink-0 flex items-center justify-center w-16 h-16 sm:w-20 sm:h-20 rounded-2xl sm:rounded-[1.25rem] bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-700/50 shadow-sm transition-transform hover:scale-105 duration-300">
+                @if($greetingIcon === 'sun')
+                    <svg class="w-8 h-8 sm:w-10 sm:h-10 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
+                @elseif($greetingIcon === 'cloud-sun')
+                    <svg class="w-8 h-8 sm:w-10 sm:h-10 text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z"></path></svg>
+                @elseif($greetingIcon === 'sunset')
+                    <svg class="w-8 h-8 sm:w-10 sm:h-10 text-rose-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 18.657A8 8 0 016.343 7.343S7 9 9 10c0-2 .5-5 2.986-7C14 5 16.09 5.777 17.656 7.343A7.975 7.975 0 0120 13a7.975 7.975 0 01-2.343 5.657z"></path></svg>
+                @else
+                    <svg class="w-8 h-8 sm:w-10 sm:h-10 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path></svg>
+                @endif
+            </div>
+
+            <div class="min-w-0">
+                <h2 class="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white font-heading tracking-tight mb-2 sm:mb-3">
+                    {{ $greeting }}, <span class="{{ $greetingColor }}">{{ auth()->user()->name }}</span>
+                </h2>
+                <div class="flex flex-wrap items-center gap-3">
+                    <div class="inline-flex items-center gap-2 bg-slate-50 dark:bg-slate-800/80 text-slate-600 dark:text-slate-300 px-3 py-1.5 rounded-xl text-sm font-bold shadow-sm border border-slate-200/60 dark:border-slate-700/60">
+                        <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                        <span x-text="time" class="tabular-nums font-mono tracking-wider"></span>
+                        <span class="text-[10px] uppercase font-black text-slate-500 dark:text-slate-400 bg-white dark:bg-slate-700 px-1.5 py-0.5 rounded shadow-sm border border-slate-100 dark:border-slate-600">UTC{{ now()->format('P') }}</span>
                     </div>
-                </div>
-                
-                <!-- Welcome Text & Badges -->
-                <div class="min-w-0">
-                    <h2 class="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-white font-heading tracking-tight leading-tight drop-shadow-lg mb-4">
-                        {{ $greeting }},
-                        <span class="bg-clip-text text-transparent bg-gradient-to-r from-white via-white to-white/60 animate-gradient-x">{{ auth()->user()->name }}</span>
-                    </h2>
-                    
-                    <div class="flex flex-wrap items-center gap-3">
-                        <!-- Clock Badge -->
-                        <div class="flex items-center gap-2.5 px-3 py-2 rounded-[1rem] bg-black/30 border border-white/10 shadow-[inset_0_1px_2px_rgba(255,255,255,0.1)] backdrop-blur-md group/badge hover:bg-black/40 hover:border-white/20 transition-all cursor-default">
-                            <div class="p-1.5 rounded-lg bg-white/10 text-white group-hover/badge:rotate-12 transition-transform shadow-inner">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                            </div>
-                            <span x-text="time" class="tabular-nums font-mono font-bold text-white text-sm tracking-wider"></span>
-                            <span class="text-[10px] font-black uppercase text-white/60 tracking-widest bg-white/10 px-1.5 py-0.5 rounded-md border border-white/5">UTC{{ now()->format('P') }}</span>
-                        </div>
-                        
-                        <!-- Date Badge -->
-                        <div class="flex items-center gap-2.5 px-3 py-2 rounded-[1rem] bg-black/30 border border-white/10 shadow-[inset_0_1px_2px_rgba(255,255,255,0.1)] backdrop-blur-md group/badge hover:bg-black/40 hover:border-white/20 transition-all cursor-default">
-                            <div class="p-1.5 rounded-lg bg-white/10 text-white group-hover/badge:-rotate-12 transition-transform shadow-inner">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
-                            </div>
-                            <span class="font-bold text-white/95 text-sm tracking-wide">{{ $serverDate }}</span>
-                        </div>
-
-                        <!-- Period Badge -->
-                        <div class="flex items-center gap-2 px-4 py-2.5 rounded-[1rem] bg-gradient-to-r {{ $greetingGradient }} shadow-[inset_0_1px_2px_rgba(255,255,255,0.4),0_4px_10px_-2px_rgba(0,0,0,0.3)] border border-white/20 opacity-90 hover:opacity-100 hover:scale-[1.02] transition-all cursor-default relative overflow-hidden group/period">
-                            <div class="absolute inset-0 bg-white/20 translate-y-full group-hover/period:translate-y-0 transition-transform duration-300 ease-out"></div>
-                            <span class="relative font-extrabold text-white text-xs tracking-wider uppercase">{{ $currentPeriodLabel }}</span>
-                        </div>
+                    <div class="inline-flex items-center gap-2 bg-slate-50 dark:bg-slate-800/80 text-slate-600 dark:text-slate-300 px-3 py-1.5 rounded-xl text-sm font-bold shadow-sm border border-slate-200/60 dark:border-slate-700/60">
+                        <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                        <span class="tracking-wide">{{ $serverDate }}</span>
+                    </div>
+                    <div class="inline-flex items-center gap-1 bg-gradient-to-r {{ $greetingGradient }} px-3 py-1.5 rounded-xl text-xs font-black uppercase tracking-wider text-white shadow-sm opacity-90 hover:opacity-100 transition-opacity">
+                        {{ $currentPeriodLabel }}
                     </div>
                 </div>
             </div>
+        </div>
 
-            <!-- Profile Info Pill -->
-            <div class="{{ session('locale', 'ar') === 'ar' ? 'xl:ms-auto' : 'xl:ml-auto' }} hidden lg:flex shrink-0 items-center gap-4 bg-black/30 hover:bg-black/50 border border-white/10 hover:border-white/20 p-2.5 pe-6 rounded-[2rem] backdrop-blur-xl transition-all duration-300 shadow-[inset_0_1px_2px_rgba(255,255,255,0.1)] cursor-pointer group/profile">
-                <div class="w-14 h-14 rounded-full flex items-center justify-center bg-gradient-to-br from-slate-100 to-slate-300 dark:from-slate-700 dark:to-slate-900 text-slate-800 dark:text-white font-black text-xl shadow-[0_5px_15px_-3px_rgba(0,0,0,0.4)] ring-2 ring-white/20 group-hover/profile:scale-105 group-hover/profile:ring-white/40 transition-all duration-300 relative overflow-hidden">
-                    <div class="absolute inset-0 bg-white/20 translate-y-full group-hover/profile:translate-y-0 transition-transform duration-300"></div>
-                    <span class="relative">{{ mb_substr(auth()->user()->name, 0, 1) }}</span>
-                </div>
-                <div class="text-start flex flex-col justify-center">
-                    <p class="text-xs font-black text-transparent bg-clip-text bg-gradient-to-r from-white to-white/70 uppercase tracking-widest mb-0.5">{{ auth()->user()->role?->label_fr ?? auth()->user()->role?->name ?? '' }}</p>
-                    <p class="text-[11px] font-semibold text-white/50 group-hover/profile:text-white/90 transition-colors">{{ auth()->user()->email }}</p>
-                </div>
+        <!-- Sleek Profile Pill -->
+        <div class="flex items-center gap-4 bg-slate-50 dark:bg-slate-800/40 p-2 rounded-full border border-slate-100 dark:border-slate-700/50 shadow-sm relative z-10 w-max xl:w-auto hover:bg-slate-100 dark:hover:bg-slate-800/80 transition-colors group cursor-pointer {{ session('locale', 'ar') === 'ar' ? 'xl:ms-auto pl-6' : 'xl:ml-auto pr-6' }}">
+            <div class="w-12 h-12 rounded-full flex items-center justify-center bg-white dark:bg-slate-700 text-slate-800 dark:text-white font-black text-lg shadow-sm border border-slate-200 dark:border-slate-600 group-hover:scale-105 transition-transform">
+                {{ mb_substr(auth()->user()->name, 0, 1) }}
+            </div>
+            <div class="text-start {{ session('locale', 'ar') === 'ar' ? 'ml-2' : '' }}">
+                <p class="text-sm font-bold text-slate-800 dark:text-white mb-0.5">{{ auth()->user()->role?->label_fr ?? auth()->user()->role?->name ?? '' }}</p>
+                <p class="text-[11px] font-semibold text-slate-500 dark:text-slate-400 group-hover:text-slate-700 dark:group-hover:text-slate-300 transition-colors">{{ auth()->user()->email }}</p>
             </div>
         </div>
     </div>
