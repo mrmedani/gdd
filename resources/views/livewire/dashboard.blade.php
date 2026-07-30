@@ -17,56 +17,58 @@
         </div>
     </div>
 
-    <!-- Welcome Header (Ultra-Modern Minimalist UI) -->
-    <div wire:poll.30s="refreshServerTime"
-         x-data="{
-             time: '{{ $serverTime }}',
-             ts: {{ $serverTimestamp }},
+    <!-- Welcome Header (Colorful Modern UI) -->
+    <div x-data="{
+             time: '',
              init() {
-                 setInterval(() => {
-                     let now = Math.floor(Date.now() / 1000);
-                     let elapsed = now - this.ts;
-                     let h = String(Math.floor(elapsed / 3600) % 24).padStart(2, '0');
-                     let m = String(Math.floor(elapsed / 60) % 60).padStart(2, '0');
-                     let s = String(elapsed % 60).padStart(2, '0');
+                 const updateTime = () => {
+                     const now = new Date();
+                     const h = String(now.getHours()).padStart(2, '0');
+                     const m = String(now.getMinutes()).padStart(2, '0');
+                     const s = String(now.getSeconds()).padStart(2, '0');
                      this.time = h + ':' + m + ':' + s;
-                 }, 1000);
+                 };
+                 updateTime();
+                 setInterval(updateTime, 1000);
              }
          }"
-         class="mb-8 p-6 sm:p-8 bg-white dark:bg-slate-900 border border-slate-200/70 dark:border-slate-800/80 rounded-[2rem] shadow-sm flex flex-col xl:flex-row xl:items-center justify-between gap-6 relative overflow-hidden">
+         class="mb-6 sm:mb-8 p-5 sm:p-7 lg:p-8 bg-white dark:bg-slate-900 border-2 border-blue-50 dark:border-slate-800/80 rounded-[2rem] shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-[0_8px_30px_rgb(0,0,0,0.1)] flex flex-col xl:flex-row xl:items-center justify-between gap-6 sm:gap-8 relative overflow-hidden transition-colors">
         
-        <!-- Subtle decorative background -->
-        <div class="absolute top-0 right-0 -mr-20 -mt-20 w-64 h-64 bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/10 dark:to-indigo-900/10 rounded-full blur-3xl opacity-50 pointer-events-none"></div>
+        <!-- Colorful decorative background -->
+        <div class="absolute -top-24 -right-24 w-64 h-64 bg-gradient-to-br from-blue-400/20 to-indigo-500/20 dark:from-blue-500/10 dark:to-indigo-500/10 rounded-full blur-[80px] pointer-events-none"></div>
+        <div class="absolute -bottom-24 -left-24 w-64 h-64 bg-gradient-to-br from-amber-400/20 to-orange-500/20 dark:from-amber-500/10 dark:to-orange-500/10 rounded-full blur-[80px] pointer-events-none"></div>
 
-        <div class="flex flex-col sm:flex-row sm:items-center gap-5 sm:gap-6 relative z-10">
-            <!-- Sleek Icon Box -->
-            <div class="shrink-0 flex items-center justify-center w-16 h-16 sm:w-20 sm:h-20 rounded-2xl sm:rounded-[1.25rem] bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-700/50 shadow-sm transition-transform hover:scale-105 duration-300">
+        <div class="flex flex-col sm:flex-row sm:items-center gap-5 sm:gap-6 relative z-10 w-full xl:w-auto">
+            <!-- Vibrant Icon Box -->
+            <div class="shrink-0 flex items-center justify-center w-16 h-16 sm:w-20 sm:h-20 rounded-[1.25rem] bg-gradient-to-br {{ $greetingGradient }} shadow-lg shadow-[var(--tw-gradient-to)]/30 dark:shadow-[var(--tw-gradient-to)]/20 text-white transition-transform hover:scale-105 duration-300">
                 @if($greetingIcon === 'sun')
-                    <svg class="w-8 h-8 sm:w-10 sm:h-10 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
+                    <svg class="w-8 h-8 sm:w-10 sm:h-10 drop-shadow-md" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
                 @elseif($greetingIcon === 'cloud-sun')
-                    <svg class="w-8 h-8 sm:w-10 sm:h-10 text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z"></path></svg>
+                    <svg class="w-8 h-8 sm:w-10 sm:h-10 drop-shadow-md" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z"></path></svg>
                 @elseif($greetingIcon === 'sunset')
-                    <svg class="w-8 h-8 sm:w-10 sm:h-10 text-rose-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 18.657A8 8 0 016.343 7.343S7 9 9 10c0-2 .5-5 2.986-7C14 5 16.09 5.777 17.656 7.343A7.975 7.975 0 0120 13a7.975 7.975 0 01-2.343 5.657z"></path></svg>
+                    <svg class="w-8 h-8 sm:w-10 sm:h-10 drop-shadow-md" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M17.657 18.657A8 8 0 016.343 7.343S7 9 9 10c0-2 .5-5 2.986-7C14 5 16.09 5.777 17.656 7.343A7.975 7.975 0 0120 13a7.975 7.975 0 01-2.343 5.657z"></path></svg>
                 @else
-                    <svg class="w-8 h-8 sm:w-10 sm:h-10 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path></svg>
+                    <svg class="w-8 h-8 sm:w-10 sm:h-10 drop-shadow-md" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path></svg>
                 @endif
             </div>
 
-            <div class="min-w-0">
-                <h2 class="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white font-heading tracking-tight mb-2 sm:mb-3">
-                    {{ $greeting }}, <span class="{{ $greetingColor }}">{{ auth()->user()->name }}</span>
+            <div class="min-w-0 flex-1">
+                <h2 class="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white font-heading tracking-tight mb-3">
+                    {{ $greeting }}, <span class="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-600 dark:from-blue-400 dark:to-indigo-400">{{ auth()->user()->name }}</span>
                 </h2>
-                <div class="flex flex-wrap items-center gap-3">
-                    <div class="inline-flex items-center gap-2 bg-slate-50 dark:bg-slate-800/80 text-slate-600 dark:text-slate-300 px-3 py-1.5 rounded-xl text-sm font-bold shadow-sm border border-slate-200/60 dark:border-slate-700/60">
-                        <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                <div class="flex flex-wrap items-center gap-2 sm:gap-3">
+                    <!-- Local Time -->
+                    <div class="inline-flex items-center gap-2 bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300 px-3 py-2 rounded-xl text-xs sm:text-sm font-bold border border-blue-100/50 dark:border-blue-800/30 shadow-sm">
+                        <svg class="w-4 h-4 text-blue-500 dark:text-blue-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                         <span x-text="time" class="tabular-nums font-mono tracking-wider"></span>
-                        <span class="text-[10px] uppercase font-black text-slate-500 dark:text-slate-400 bg-white dark:bg-slate-700 px-1.5 py-0.5 rounded shadow-sm border border-slate-100 dark:border-slate-600">UTC{{ now()->format('P') }}</span>
                     </div>
-                    <div class="inline-flex items-center gap-2 bg-slate-50 dark:bg-slate-800/80 text-slate-600 dark:text-slate-300 px-3 py-1.5 rounded-xl text-sm font-bold shadow-sm border border-slate-200/60 dark:border-slate-700/60">
-                        <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                    <!-- Date -->
+                    <div class="inline-flex items-center gap-2 bg-indigo-50 dark:bg-indigo-900/20 text-indigo-700 dark:text-indigo-300 px-3 py-2 rounded-xl text-xs sm:text-sm font-bold border border-indigo-100/50 dark:border-indigo-800/30 shadow-sm">
+                        <svg class="w-4 h-4 text-indigo-500 dark:text-indigo-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
                         <span class="tracking-wide">{{ $serverDate }}</span>
                     </div>
-                    <div class="inline-flex items-center gap-1 bg-gradient-to-r {{ $greetingGradient }} px-3 py-1.5 rounded-xl text-xs font-black uppercase tracking-wider text-white shadow-sm opacity-90 hover:opacity-100 transition-opacity">
+                    <!-- Period -->
+                    <div class="inline-flex items-center gap-1 bg-gradient-to-r {{ $greetingGradient }} px-3 py-2 rounded-xl text-[10px] sm:text-xs font-black uppercase tracking-wider text-white shadow-md shadow-[var(--tw-gradient-to)]/30 dark:shadow-none opacity-90 hover:opacity-100 transition-opacity">
                         {{ $currentPeriodLabel }}
                     </div>
                 </div>
@@ -74,13 +76,13 @@
         </div>
 
         <!-- Sleek Profile Pill -->
-        <div class="flex items-center gap-4 bg-slate-50 dark:bg-slate-800/40 p-2 rounded-full border border-slate-100 dark:border-slate-700/50 shadow-sm relative z-10 w-max xl:w-auto hover:bg-slate-100 dark:hover:bg-slate-800/80 transition-colors group cursor-pointer {{ session('locale', 'ar') === 'ar' ? 'xl:ms-auto pl-6' : 'xl:ml-auto pr-6' }}">
-            <div class="w-12 h-12 rounded-full flex items-center justify-center bg-white dark:bg-slate-700 text-slate-800 dark:text-white font-black text-lg shadow-sm border border-slate-200 dark:border-slate-600 group-hover:scale-105 transition-transform">
+        <div class="flex items-center gap-3 sm:gap-4 bg-slate-50 dark:bg-slate-800/50 p-2 rounded-[2rem] border border-slate-100 dark:border-slate-700/50 relative z-10 w-full sm:w-max hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer xl:ms-auto sm:pe-6 sm:ps-2 shadow-sm">
+            <div class="w-10 h-10 sm:w-12 sm:h-12 shrink-0 rounded-full flex items-center justify-center bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300 font-black text-base sm:text-lg border border-blue-200/50 dark:border-blue-800/50 shadow-inner group-hover:scale-105 transition-transform">
                 {{ mb_substr(auth()->user()->name, 0, 1) }}
             </div>
-            <div class="text-start {{ session('locale', 'ar') === 'ar' ? 'ml-2' : '' }}">
-                <p class="text-sm font-bold text-slate-800 dark:text-white mb-0.5">{{ auth()->user()->role?->label_fr ?? auth()->user()->role?->name ?? '' }}</p>
-                <p class="text-[11px] font-semibold text-slate-500 dark:text-slate-400 group-hover:text-slate-700 dark:group-hover:text-slate-300 transition-colors">{{ auth()->user()->email }}</p>
+            <div class="text-start flex flex-col justify-center flex-1 sm:flex-initial overflow-hidden">
+                <p class="text-xs sm:text-sm font-bold text-slate-800 dark:text-white mb-0.5 truncate">{{ auth()->user()->role?->label_fr ?? auth()->user()->role?->name ?? '' }}</p>
+                <p class="text-[10px] sm:text-xs font-semibold text-slate-500 dark:text-slate-400 truncate">{{ auth()->user()->email }}</p>
             </div>
         </div>
     </div>
