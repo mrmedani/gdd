@@ -596,5 +596,6 @@
     "dashboard.greeting_morning": "Bonjour",
     "dashboard.greeting_afternoon": "Bon après-midi",
     "dashboard.greeting_evening": "Bonsoir",
-    "dashboard.greeting_night": "Bonne nuit"
+    "dashboard.greeting_night": "Bonne nuit",
+    "dashboard.local_time": "Heure locale"
 }

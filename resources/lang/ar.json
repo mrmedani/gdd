@@ -594,5 +594,6 @@
     "dashboard.greeting_morning": "صباح الخير",
     "dashboard.greeting_afternoon": "مساء الخير",
     "dashboard.greeting_evening": "مساء الخير",
-    "dashboard.greeting_night": "تصبح على خير"
+    "dashboard.greeting_night": "تصبح على خير",
+    "dashboard.local_time": "الوقت المحلي"
 }

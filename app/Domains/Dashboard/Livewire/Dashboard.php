@@ -39,11 +39,8 @@ class Dashboard extends Component
 
     public string $greeting = '';
     public string $greetingIcon = '';
-    public string $greetingColor = '';
     public string $greetingGradient = '';
-    public string $serverDate = '';
-    public string $serverTime = '';
-    public int $serverTimestamp = 0;
+    public string $roleLabel = '';
 
     protected $queryString = ['alertFilterType', 'alertFilterSeverity'];
 
@@ -55,29 +52,28 @@ class Dashboard extends Component
         if ($hour < 12) {
             $this->greeting = __('dashboard.greeting_morning');
             $this->greetingIcon = 'sun';
-            $this->greetingColor = 'text-amber-400';
             $this->greetingGradient = 'from-amber-400 to-orange-500';
         } elseif ($hour < 17) {
             $this->greeting = __('dashboard.greeting_afternoon');
             $this->greetingIcon = 'cloud-sun';
-            $this->greetingColor = 'text-sky-400';
             $this->greetingGradient = 'from-sky-400 to-blue-500';
         } elseif ($hour < 20) {
             $this->greeting = __('dashboard.greeting_evening');
             $this->greetingIcon = 'sunset';
-            $this->greetingColor = 'text-purple-400';
             $this->greetingGradient = 'from-purple-500 to-pink-500';
         } else {
             $this->greeting = __('dashboard.greeting_night');
             $this->greetingIcon = 'moon';
-            $this->greetingColor = 'text-indigo-400';
             $this->greetingGradient = 'from-indigo-500 to-violet-600';
         }
 
-        $appLocale = app()->getLocale();
-        $this->serverDate = $now->locale($appLocale)->translatedFormat('l j F Y');
-        $this->serverTime = $now->format('H:i:s');
-        $this->serverTimestamp = $now->timestamp;
+        if ($role = auth()->user()->role) {
+            $this->roleLabel = match (app()->getLocale()) {
+                'ar' => $role->label_ar ?: $role->label_fr ?: $role->name,
+                'fr' => $role->label_fr ?: $role->label_ar ?: $role->name,
+                default => $role->name ?: $role->label_fr,
+            };
+        }
         $currentPeriod = getPeriodFromDate($now);
         $range = getPeriodRange($currentPeriod);
         $this->remainingDays = max(0, $now->diffInDays($range['end'], false));
@@ -191,15 +187,6 @@ class Dashboard extends Component
         ])
             ->layout('layouts.app')
             ->title(__('nav.dashboard'));
-    }
-
-    public function refreshServerTime(): void
-    {
-        $now = Carbon::now();
-        $appLocale = app()->getLocale();
-        $this->serverDate = $now->locale($appLocale)->translatedFormat('l j F Y');
-        $this->serverTime = $now->format('H:i:s');
-        $this->serverTimestamp = $now->timestamp;
     }
 
     public function loadUnreadCount(): void

@@ -596,5 +596,6 @@
     "dashboard.greeting_morning": "Good morning",
     "dashboard.greeting_afternoon": "Good afternoon",
     "dashboard.greeting_evening": "Good evening",
-    "dashboard.greeting_night": "Good night"
+    "dashboard.greeting_night": "Good night",
+    "dashboard.local_time": "Local time"
 }

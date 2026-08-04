@@ -19,13 +19,29 @@
 
     {{-- WELCOME CARD --}}
     <div x-data="{
+            greeting: '{{ $greeting }}',
+            icon: '{{ $greetingIcon }}',
             time: '',
+            date: '',
             init() {
+                const labels = {
+                    'sun': '{{ __('dashboard.greeting_morning') }}',
+                    'cloud-sun': '{{ __('dashboard.greeting_afternoon') }}',
+                    'sunset': '{{ __('dashboard.greeting_evening') }}',
+                    'moon': '{{ __('dashboard.greeting_night') }}'
+                };
                 const tick = () => {
                     const now = new Date();
-                    this.time = String(now.getHours()).padStart(2,'0') + ':'
+                    const h = now.getHours();
+                    this.time = String(h).padStart(2,'0') + ':'
                               + String(now.getMinutes()).padStart(2,'0') + ':'
                               + String(now.getSeconds()).padStart(2,'0');
+                    this.date = now.toLocaleDateString('{{ app()->getLocale() }}', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+                    const next = h < 12 ? 'sun' : (h < 17 ? 'cloud-sun' : (h < 20 ? 'sunset' : 'moon'));
+                    if (this.icon !== next) {
+                        this.icon = next;
+                        this.greeting = labels[next];
+                    }
                 };
                 tick();
                 setInterval(tick, 1000);
@@ -51,8 +67,7 @@
 
                 {{-- Animated SVG icon (transparent) --}}
                 <div class="shrink-0 w-16 h-16 sm:w-[72px] sm:h-[72px] flex items-center justify-center transition-transform duration-500 hover:scale-110 drop-shadow-xl">
-                    @if($greetingIcon === 'sun')
-                        <svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg" class="w-full h-full" style="overflow:visible">
+                    <svg x-show="icon === 'sun'" x-cloak viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg" class="w-full h-full" style="overflow:visible">
                             <defs>
                                 <radialGradient id="sg1" cx="50%" cy="40%" r="55%"><stop offset="0%" stop-color="#FFF59D"/><stop offset="55%" stop-color="#FFD600"/><stop offset="100%" stop-color="#FF8F00"/></radialGradient>
                                 <radialGradient id="sg2" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="#FFD600" stop-opacity=".45"/><stop offset="100%" stop-color="#FFD600" stop-opacity="0"/></radialGradient>
@@ -73,8 +88,7 @@
                             <circle class="sb" cx="32" cy="32" r="13.5" fill="url(#sg1)" filter="url(#sf1)"/>
                             <ellipse class="sb" cx="27.5" cy="26.5" rx="5" ry="3.5" fill="white" opacity=".32"/>
                         </svg>
-                    @elseif($greetingIcon === 'cloud-sun')
-                        <svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg" class="w-full h-full" style="overflow:visible">
+                    <svg x-show="icon === 'cloud-sun'" x-cloak viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg" class="w-full h-full" style="overflow:visible">
                             <defs>
                                 <radialGradient id="as1" cx="50%" cy="45%" r="55%"><stop offset="0%" stop-color="#FFFDE7"/><stop offset="55%" stop-color="#FFD600"/><stop offset="100%" stop-color="#FF8F00"/></radialGradient>
                                 <linearGradient id="cl1" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#fff"/><stop offset="100%" stop-color="#DBEAFE"/></linearGradient>
@@ -99,8 +113,7 @@
                                 <ellipse cx="27" cy="41" rx="8" ry="3" fill="white" opacity=".55"/>
                             </g>
                         </svg>
-                    @elseif($greetingIcon === 'sunset')
-                        <svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg" class="w-full h-full" style="overflow:visible">
+                    <svg x-show="icon === 'sunset'" x-cloak viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg" class="w-full h-full" style="overflow:visible">
                             <defs>
                                 <radialGradient id="ss1" cx="50%" cy="75%" r="65%"><stop offset="0%" stop-color="#FFF9C4"/><stop offset="35%" stop-color="#FF8A65"/><stop offset="100%" stop-color="#D84315"/></radialGradient>
                                 <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#6A1B9A"/><stop offset="45%" stop-color="#E53935"/><stop offset="100%" stop-color="#FF7043"/></linearGradient>
@@ -125,8 +138,7 @@
                                 <rect x="4" y="52" width="56" height="8" fill="#3E2723" opacity=".55"/>
                             </g>
                         </svg>
-                    @else
-                        <svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg" class="w-full h-full" style="overflow:visible">
+                    <svg x-show="icon === 'moon'" x-cloak viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg" class="w-full h-full" style="overflow:visible">
                             <defs>
                                 <radialGradient id="mg1" cx="38%" cy="32%" r="62%"><stop offset="0%" stop-color="#ECEFF1"/><stop offset="55%" stop-color="#B0BEC5"/><stop offset="100%" stop-color="#607D8B"/></radialGradient>
                                 <radialGradient id="mh1" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="#82B1FF" stop-opacity=".5"/><stop offset="100%" stop-color="#82B1FF" stop-opacity="0"/></radialGradient>
@@ -146,16 +158,15 @@
                                 <ellipse cx="22" cy="20" rx="5" ry="3.5" fill="white" opacity=".38"/>
                             </g>
                         </svg>
-                    @endif
                 </div>
 
                 {{-- Identity --}}
                 <div class="min-w-0 flex flex-col gap-1">
-                    <p class="text-[11px] sm:text-xs font-bold uppercase tracking-[0.18em] text-blue-500 dark:text-blue-400 leading-none">{{ $greeting }}</p>
-                    <h2 class="text-lg sm:text-2xl lg:text-[1.7rem] font-extrabold tracking-tight leading-tight text-slate-900 dark:text-white font-heading truncate">{{ auth()->user()->name }}</h2>
-                    @if(auth()->user()->role)
+                    <p class="text-[11px] sm:text-xs font-bold uppercase tracking-[0.18em] text-blue-500 dark:text-blue-400 leading-none"><span x-text="greeting"></span></p>
+                    <p class="text-lg sm:text-2xl lg:text-[1.7rem] font-extrabold tracking-tight leading-tight text-slate-900 dark:text-white font-heading truncate">{{ auth()->user()->name }}</p>
+                    @if($roleLabel)
                         <span class="inline-flex items-center mt-0.5 px-2.5 py-0.5 rounded-full text-[10px] sm:text-[11px] font-bold uppercase tracking-wider bg-blue-50 text-blue-600 border border-blue-100 dark:bg-blue-900/30 dark:text-blue-300 dark:border-blue-800/50 w-fit">
-                            {{ auth()->user()->role?->label_fr ?? auth()->user()->role?->name ?? '' }}
+                            {{ $roleLabel }}
                         </span>
                     @endif
                 </div>
@@ -167,14 +178,14 @@
                 {{-- Info chips --}}
                 <div class="flex flex-wrap items-center gap-2">
                     {{-- Clock --}}
-                    <div class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-bold bg-blue-50 text-blue-700 border border-blue-100 dark:bg-blue-900/25 dark:text-blue-200 dark:border-blue-700/40 shadow-sm">
+                    <div class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-bold bg-blue-50 text-blue-700 border border-blue-100 dark:bg-blue-900/25 dark:text-blue-200 dark:border-blue-700/40 shadow-sm" role="timer" aria-label="{{ __('dashboard.local_time') }}">
                         <svg class="w-3.5 h-3.5 shrink-0 text-blue-400" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                        <span x-text="time" class="font-mono tracking-wider tabular-nums"></span>
+                        <span x-text="time" class="font-mono tracking-wider tabular-nums" aria-hidden="true"></span>
                     </div>
                     {{-- Date --}}
                     <div class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs sm:text-sm font-semibold bg-slate-100 text-slate-700 border border-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:border-slate-700 shadow-sm">
                         <svg class="w-3.5 h-3.5 shrink-0 text-slate-400" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
-                        <span>{{ $serverDate }}</span>
+                        <span x-text="date"></span>
                     </div>
                     {{-- Period --}}
                     <div class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-gradient-to-r {{ $greetingGradient }} text-white shadow-md shadow-blue-500/20 dark:shadow-blue-900/40">
@@ -184,13 +195,13 @@
                 </div>
 
                 {{-- Profile pill --}}
-                <div class="inline-flex items-center gap-2.5 px-3 py-2 rounded-2xl bg-slate-50 border border-slate-200 dark:bg-slate-800/70 dark:border-slate-700 shadow-sm hover:shadow-md transition-shadow cursor-pointer group">
+                <div class="inline-flex items-center gap-2.5 px-3 py-2 rounded-2xl bg-slate-50 border border-slate-200 dark:bg-slate-800/70 dark:border-slate-700 shadow-sm hover:shadow-md transition-shadow group">
                     <div class="w-8 h-8 rounded-full shrink-0 flex items-center justify-center bg-gradient-to-br from-blue-500 to-indigo-600 text-white font-black text-sm ring-2 ring-white dark:ring-slate-800 shadow-md group-hover:scale-105 transition-transform duration-200">
                         {{ mb_strtoupper(mb_substr(auth()->user()->name, 0, 1)) }}
                     </div>
                     <div class="text-start leading-tight min-w-0">
                         <p class="text-xs font-bold text-slate-800 dark:text-slate-100 truncate max-w-[130px]">{{ auth()->user()->name }}</p>
-                        <p class="text-[10px] font-medium text-slate-400 dark:text-slate-500 truncate max-w-[130px]">{{ auth()->user()->email }}</p>
+                        <p class="text-[10px] font-medium text-slate-500 dark:text-slate-400 truncate max-w-[130px]">{{ auth()->user()->email }}</p>
                     </div>
                 </div>
             </div>
