@@ -215,9 +215,19 @@ class EmployeeForm extends Component
         Gate::authorize('manage-employees');
 
         $advance = SalaryAdvance::findOrFail($id);
+
         if ($advance->expense_id) {
-            Expense::find($advance->expense_id)?->delete();
+            $expense = Expense::find($advance->expense_id);
+            if ($expense) {
+                try {
+                    $expense->delete();
+                } catch (\Exception $e) {
+                    $this->addError('advance', __('expenses.month_closed', ['default' => 'Ce mois a été clôturé.']));
+                    return;
+                }
+            }
         }
+
         $advance->delete();
         $this->notify(__('common.deleted'));
     }

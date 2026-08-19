@@ -101,8 +101,6 @@ class ExpenseObserver
             Storage::disk('public')->delete($expense->receipt_path);
         }
 
-        $this->reverseDeductions($expense);
-
         Log::info('Expense deleted', [
             'id' => $expense->id,
             'user_id' => auth()->id(),
@@ -150,17 +148,4 @@ class ExpenseObserver
         }
     }
 
-    private function reverseDeductions(Expense $expense): void
-    {
-        if (
-            ($expense->category_key ?? '') !== 'salaries'
-            || !$expense->employee_id
-        ) {
-            return;
-        }
-
-        SalaryAdvance::where('employee_id', $expense->employee_id)
-            ->where('status', 'deducted')
-            ->update(['status' => 'approved']);
-    }
 }
