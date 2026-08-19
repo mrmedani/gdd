@@ -222,8 +222,8 @@ class EmployeeForm extends Component
                 try {
                     $expense->delete();
                 } catch (\Exception $e) {
-                    $this->addError('advance', __('expenses.month_closed', ['default' => 'Ce mois a été clôturé.']));
-                    return;
+                    $advance->expense_id = null;
+                    $advance->save();
                 }
             }
         }
@@ -244,8 +244,8 @@ class EmployeeForm extends Component
                 try {
                     $expense->delete();
                 } catch (\Exception $e) {
-                    $this->addError('payment', __('expenses.month_closed', ['default' => 'Ce mois a été clôturé.']));
-                    return;
+                    $payment->expense_id = null;
+                    $payment->save();
                 }
             }
         }
