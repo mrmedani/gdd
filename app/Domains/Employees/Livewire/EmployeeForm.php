@@ -237,9 +237,19 @@ class EmployeeForm extends Component
         Gate::authorize('manage-employees');
 
         $payment = SalaryPayment::findOrFail($id);
+
         if ($payment->expense_id) {
-            Expense::find($payment->expense_id)?->delete();
+            $expense = Expense::find($payment->expense_id);
+            if ($expense) {
+                try {
+                    $expense->delete();
+                } catch (\Exception $e) {
+                    $this->addError('payment', __('expenses.month_closed', ['default' => 'Ce mois a été clôturé.']));
+                    return;
+                }
+            }
         }
+
         $payment->delete();
         $this->notify(__('common.deleted'));
     }
