@@ -5,6 +5,7 @@ namespace App\Domains\Expenses\Observers;
 use App\Domains\Alerts\Notifications\ExpenseCreatedNotification;
 use App\Domains\Alerts\Notifications\ExpenseModifiedNotification;
 use App\Domains\Alerts\Notifications\ExpenseDeletedNotification;
+use App\Domains\Employees\Models\SalaryAdvance;
 use App\Domains\Expenses\Models\AuditLog;
 use App\Domains\Expenses\Models\Expense;
 use App\Models\User;
@@ -53,6 +54,8 @@ class ExpenseObserver
             ]);
         }
 
+        $this->deductAdvances($expense);
+
         $this->notifyAdmins(new ExpenseCreatedNotification($expense));
 
         Log::info('Expense created', [
@@ -98,11 +101,66 @@ class ExpenseObserver
             Storage::disk('public')->delete($expense->receipt_path);
         }
 
+        $this->reverseDeductions($expense);
+
         Log::info('Expense deleted', [
             'id' => $expense->id,
             'user_id' => auth()->id(),
         ]);
 
         $this->notifyAdmins(new ExpenseDeletedNotification($expense));
+    }
+
+    private function deductAdvances(Expense $expense): void
+    {
+        if (Expense::$skipSalaryAdvanceDeduction) {
+            return;
+        }
+
+        if (
+            ($expense->category_key ?? '') !== 'salaries'
+            || !$expense->employee_id
+            || $expense->amount <= 0
+        ) {
+            return;
+        }
+
+        $advances = SalaryAdvance::where('employee_id', $expense->employee_id)
+            ->whereIn('status', ['pending', 'approved'])
+            ->orderBy('date', 'asc')
+            ->get();
+
+        $remaining = (float) $expense->amount;
+
+        foreach ($advances as $advance) {
+            if ($remaining <= 0) break;
+
+            $advAmount = (float) $advance->amount;
+
+            if ($advAmount <= $remaining) {
+                $advance->update(['status' => 'deducted']);
+                $remaining -= $advAmount;
+            } else {
+                $advance->update([
+                    'status' => 'deducted',
+                    'amount' => $remaining,
+                ]);
+                $remaining = 0;
+            }
+        }
+    }
+
+    private function reverseDeductions(Expense $expense): void
+    {
+        if (
+            ($expense->category_key ?? '') !== 'salaries'
+            || !$expense->employee_id
+        ) {
+            return;
+        }
+
+        SalaryAdvance::where('employee_id', $expense->employee_id)
+            ->where('status', 'deducted')
+            ->update(['status' => 'approved']);
     }
 }

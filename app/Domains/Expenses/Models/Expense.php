@@ -13,6 +13,8 @@ class Expense extends Model
     use HasFactory;
     use SoftDeletes;
 
+    public static bool $skipSalaryAdvanceDeduction = false;
+
     protected static function newFactory(): \Illuminate\Database\Eloquent\Factories\Factory
     {
         return \Database\Factories\ExpenseFactory::new();

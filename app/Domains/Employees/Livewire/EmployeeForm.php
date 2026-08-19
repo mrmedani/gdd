@@ -114,6 +114,8 @@ class EmployeeForm extends Component
         $employee = Employee::findOrFail($this->employeeId);
 
         $category = ExpenseCategory::where('key', 'salaries')->first();
+
+        Expense::$skipSalaryAdvanceDeduction = true;
         $expense = Expense::create([
             'date' => $this->advanceDate,
             'amount' => $this->advanceAmount,
@@ -125,6 +127,7 @@ class EmployeeForm extends Component
             'employee_id' => $this->employeeId,
             'created_by' => auth()->id(),
         ]);
+        Expense::$skipSalaryAdvanceDeduction = false;
 
         $advance = SalaryAdvance::create([
             'employee_id' => $this->employeeId,
