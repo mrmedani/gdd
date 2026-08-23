@@ -21,3 +21,7 @@ error_log
 whatsapp-worker/error_log
 whatsapp-worker/worker.log
 *.sql
+.chrome.log
+.lh-tmp/
+.chrome-profile/
+lighthouse-report.json

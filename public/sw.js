@@ -1,16 +1,18 @@
-const CACHE_NAME = 'chronorex-v4';
+const CACHE_NAME = 'chronorex-v5';
 
 const PRECACHE_URLS = [
     '/manifest.json',
     '/icons/icon-192x192.png',
     '/icons/icon-512x512.png',
     '/offline.html',
+    '/login',
 ];
 
+// Skip waiting + notify clients of a pending update
 self.addEventListener('install', event => {
     event.waitUntil(
         caches.open(CACHE_NAME).then(cache => {
-            return cache.addAll(PRECACHE_URLS);
+            return cache.addAll(PRECACHE_URLS).catch(() => {});
         })
     );
     self.skipWaiting();
@@ -23,9 +25,19 @@ self.addEventListener('activate', event => {
                 keys.filter(key => key !== CACHE_NAME)
                     .map(key => caches.delete(key))
             );
-        })
+        }).then(() => self.clients.claim())
     );
-    self.clients.claim();
+    // Tell any open client a new SW took control
+    self.clients.matchAll({ includeUncontrolled: true }).then(clients => {
+        clients.forEach(client => client.postMessage({ type: 'SW_UPDATED' }));
+    });
+});
+
+// Listen for "skip waiting" command from the page (update prompt)
+self.addEventListener('message', event => {
+    if (event.data && event.data.type === 'SKIP_WAITING') {
+        self.skipWaiting();
+    }
 });
 
 self.addEventListener('fetch', event => {
@@ -33,7 +45,7 @@ self.addEventListener('fetch', event => {
     const url = new URL(request.url);
 
     // CDN cache-first: Google Fonts, Chart.js, SweetAlert2
-    if (url.origin === 'https://fonts.googleapis.com' || url.origin === 'https://fonts.gstatic.com' || url.href.includes('cdn.jsdelivr.net/npm/chart.js') || url.href.includes('cdn.jsdelivr.net/npm/sweetalert2')) {
+    if (url.origin === 'https://fonts.googleapis.com' || url.origin === 'https://fonts.gstatic.com' || url.href.includes('cdn.jsdelivr.net/npm/chart.js') || url.href.includes('cdn.jsdelivr.net/npm/sweetalert2') || url.href.includes('cdn.jsdelivr.net/npm/echarts')) {
         event.respondWith(
             caches.match(request).then(cached => {
                 if (cached) return cached;
@@ -83,13 +95,14 @@ self.addEventListener('fetch', event => {
                 caches.open(CACHE_NAME).then(cache => cache.put(request, clone));
                 return response;
             }).catch(() => {
-                return caches.match(request).then(cached => {
-                    if (cached) return cached;
+                // For protected routes, show offline page with a clear message
+                if (url.pathname !== '/login' && url.pathname !== '/offline.html') {
                     return caches.match('/offline.html');
-                });
+                }
+                return caches.match(request).then(cached => cached || caches.match('/offline.html'));
             })
         );
-        return;
+ return;
     }
 
     // For other requests (images, etc.), stale-while-revalidate

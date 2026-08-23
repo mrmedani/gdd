@@ -70,6 +70,7 @@ class DatabaseSeeder extends Seeder
         Setting::set('threshold', 10000);
 
         $this->call(WhatsappMessageTemplateSeeder::class);
+        $this->call(DemoDataSeeder::class);
 
         $descriptions = [
             'salaries' => ['رواتب الموظفين', 'Salaires du personnel'],

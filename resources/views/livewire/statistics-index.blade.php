@@ -190,13 +190,15 @@
                         </div>
                         <div class="space-y-2 max-h-64 overflow-y-auto w-full md:w-1/2">
                             @foreach($expensesByCategory as $i => $cat)
-                            <div class="flex items-center justify-between p-2.5 bg-slate-50/50 dark:bg-slate-950/30 rounded-xl border border-slate-100/50 dark:border-slate-800/40 hover:bg-slate-100 dark:hover:bg-slate-800/50 transition-colors">
+                            <div wire:click="openCategory({{ $cat['id'] }})"
+                                 class="flex items-center justify-between p-2.5 bg-slate-50/50 dark:bg-slate-950/30 rounded-xl border border-slate-100/50 dark:border-slate-800/40 hover:bg-slate-100 dark:hover:bg-slate-800/50 transition-colors cursor-pointer group">
                                 <div class="flex items-center gap-2.5 min-w-0">
-                                    <span class="flex items-center justify-center w-5 h-5 rounded-full text-[10px] font-extrabold {{ $i === 0 ? 'bg-yellow-400 text-yellow-900' : ($i === 1 ? 'bg-slate-300 text-slate-700' : ($i === 2 ? 'bg-amber-700 text-amber-100' : 'bg-slate-200 dark:bg-slate-700 text-slate-500 dark:text-slate-400')) }}" style="{{ $i >= 3 ? '' : '' }}">
+                                    <span class="flex items-center justify-center w-5 h-5 rounded-full text-[10px] font-extrabold {{ $i === 0 ? 'bg-yellow-400 text-yellow-900' : ($i === 1 ? 'bg-slate-300 text-slate-700' : ($i === 2 ? 'bg-amber-700 text-amber-100' : 'bg-slate-200 dark:bg-slate-700 text-slate-500 dark:text-slate-400')) }}">
                                         {{ $i + 1 }}
                                     </span>
                                     <span class="w-2.5 h-2.5 rounded-full shrink-0" style="background: {{ $cat['color'] }}"></span>
                                     <span class="text-xs font-semibold text-slate-700 dark:text-slate-300 truncate">{{ $cat['label'] }}</span>
+                                    <svg class="w-3.5 h-3.5 text-slate-300 dark:text-slate-600 opacity-0 group-hover:opacity-100 transition-opacity shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
                                 </div>
                                 <div class="text-right shrink-0 ml-3">
                                     <span class="text-xs font-bold text-slate-800 dark:text-slate-100 block">{{ formatMoney($cat['total']) }}</span>
@@ -262,7 +264,7 @@
                     </thead>
                     <tbody class="divide-y divide-slate-100 dark:divide-slate-800/50">
                         @foreach($expensesByCategory as $cat)
-                        <tr class="hover:bg-slate-50/30 dark:hover:bg-slate-800/30 transition-colors">
+                        <tr wire:click="openCategory({{ $cat['id'] }})" class="hover:bg-slate-50/30 dark:hover:bg-slate-800/30 transition-colors cursor-pointer group">
                             <td class="py-3 px-6">
                                 <div class="flex items-center gap-2">
                                     <span class="w-2.5 h-2.5 rounded-full shrink-0" style="background: {{ $cat['color'] }}"></span>
@@ -388,6 +390,97 @@
     </div>
 
 
+
+    <!-- Category Detail Modal -->
+    @if(count($expensesByCategory) > 0)
+    <div x-show="$wire.categoryModalOpen" x-cloak
+         x-transition:enter="transition-all duration-300 ease-out"
+         x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100"
+         x-transition:leave="transition-all duration-200 ease-in" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0"
+         class="fixed inset-0 z-[100] flex items-end sm:items-center justify-center p-0 sm:p-4">
+        <div x-show="$wire.categoryModalOpen" x-transition.opacity class="absolute inset-0 bg-slate-900/60" wire:click="closeCategory"></div>
+        <div x-show="$wire.categoryModalOpen"
+             x-transition:enter="transition-all duration-300 ease-out" x-transition:enter-start="opacity-0 translate-y-8 sm:translate-y-0 sm:scale-95" x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100"
+             x-transition:leave="transition-all duration-200 ease-in" x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100" x-transition:leave-end="opacity-0 translate-y-8 sm:scale-95"
+             class="relative bg-white dark:bg-slate-900 rounded-t-3xl sm:rounded-3xl shadow-2xl w-full sm:w-auto sm:min-w-[460px] sm:max-w-lg border border-slate-200/50 dark:border-slate-800/60 overflow-hidden max-h-[90vh] sm:max-h-[75vh] flex flex-col">
+            @if($categoryModalData)
+            <div class="shrink-0 p-5 border-b border-slate-100 dark:border-slate-800/60 flex items-center justify-between" style="background: linear-gradient(135deg, {{ $categoryModalData['color'] }}22, transparent)">
+                <div class="flex items-center gap-3 min-w-0">
+                    <span class="w-3.5 h-3.5 rounded-full shrink-0" style="background: {{ $categoryModalData['color'] }}"></span>
+                    <div class="min-w-0">
+                        <h3 class="text-lg font-bold text-slate-800 dark:text-white truncate">{{ $categoryModalData['label'] }}</h3>
+                        <p class="text-xs text-slate-500 dark:text-slate-400 font-semibold">{{ $categoryModalData['count'] }} {{ __('statistics.operations') }} &bull; {{ $categoryModalData['pct'] }}%</p>
+                    </div>
+                </div>
+                <button wire:click="closeCategory" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors cursor-pointer shrink-0">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                </button>
+            </div>
+            <div class="p-5 overflow-y-auto space-y-5">
+                <!-- Key stats -->
+                <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                    <div class="bg-slate-50 dark:bg-slate-950/30 rounded-xl p-3 text-center">
+                        <p class="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1">{{ __('expenses.amount') }}</p>
+                        <p class="text-sm font-black text-slate-800 dark:text-white">{{ formatMoney($categoryModalData['total']) }}</p>
+                    </div>
+                    <div class="bg-slate-50 dark:bg-slate-950/30 rounded-xl p-3 text-center">
+                        <p class="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1">{{ __('statistics.avg') }}</p>
+                        <p class="text-sm font-black text-slate-800 dark:text-white">{{ formatMoney($categoryModalData['avg']) }}</p>
+                    </div>
+                    <div class="bg-slate-50 dark:bg-slate-950/30 rounded-xl p-3 text-center">
+                        <p class="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1">{{ __('statistics.max') }}</p>
+                        <p class="text-sm font-black text-rose-600 dark:text-rose-400">{{ formatMoney($categoryModalData['max']) }}</p>
+                    </div>
+                    <div class="bg-slate-50 dark:bg-slate-950/30 rounded-xl p-3 text-center">
+                        <p class="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1">{{ __('statistics.min') }}</p>
+                        <p class="text-sm font-black text-emerald-600 dark:text-emerald-400">{{ formatMoney($categoryModalData['min']) }}</p>
+                    </div>
+                </div>
+
+                <!-- Top 3 expenses -->
+                <div>
+                    <h4 class="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-2 flex items-center gap-2">
+                        <span class="w-1.5 h-4 rounded-full bg-blue-500"></span>{{ __('statistics.top3') }}
+                    </h4>
+                    <div class="space-y-2">
+                        @forelse($categoryModalData['top3'] as $e)
+                        <div class="flex items-center justify-between p-2.5 bg-slate-50/60 dark:bg-slate-950/30 rounded-xl border border-slate-100/50 dark:border-slate-800/40">
+                            <div class="min-w-0">
+                                <p class="text-xs font-semibold text-slate-700 dark:text-slate-300 truncate">{{ $e['description'] }}</p>
+                                <p class="text-[10px] text-slate-400 dark:text-slate-500 font-medium">{{ $e['date'] }}</p>
+                            </div>
+                            <span class="text-xs font-bold text-slate-800 dark:text-slate-100 shrink-0 ml-3">{{ formatMoney($e['amount']) }}</span>
+                        </div>
+                        @empty
+                        <p class="text-xs text-slate-400 dark:text-slate-500">{{ __('statistics.no_data') }}</p>
+                        @endforelse
+                    </div>
+                </div>
+
+                <!-- Repetitive expenses -->
+                @if(count($categoryModalData['repetitive']) > 0)
+                <div>
+                    <h4 class="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-2 flex items-center gap-2">
+                        <span class="w-1.5 h-4 rounded-full bg-amber-500"></span>{{ __('statistics.repetitive') }}
+                    </h4>
+                    <div class="space-y-2">
+                        @foreach($categoryModalData['repetitive'] as $r)
+                        <div class="flex items-center justify-between p-2.5 bg-amber-50/50 dark:bg-amber-950/20 rounded-xl border border-amber-100/50 dark:border-amber-800/40">
+                            <div class="min-w-0">
+                                <p class="text-xs font-semibold text-slate-700 dark:text-slate-300 truncate">{{ $r['description'] }}</p>
+                                <p class="text-[10px] text-amber-600 dark:text-amber-400 font-bold">{{ $r['count'] }} × &bull; {{ formatMoney($r['total']) }}</p>
+                            </div>
+                            <span class="text-[10px] font-black text-amber-700 dark:text-amber-300 bg-amber-100 dark:bg-amber-900/40 px-2 py-0.5 rounded-full shrink-0 ml-3">{{ $r['count'] }}</span>
+                        </div>
+                        @endforeach
+                    </div>
+                </div>
+                @endif
+            </div>
+            @endif
+        </div>
+    </div>
+    @endif
 
     <!-- Closure History -->
     <div class="bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl rounded-3xl shadow-premium dark:shadow-premium-dark border border-slate-200/50 dark:border-slate-800/60 overflow-hidden hover:shadow-premium-hover dark:hover:shadow-premium-dark-hover transition-all duration-300">
@@ -521,6 +614,7 @@
 <script src="https://cdn.jsdelivr.net/npm/echarts@5/dist/echarts.min.js"></script>
 
 <script>
+const currency = '{{ getCurrency() }}';
 document.addEventListener('alpine:init', () => {
     function createObserver(component) {
         return new MutationObserver(() => { 
@@ -564,7 +658,7 @@ document.addEventListener('alpine:init', () => {
                     formatter: function(params) {
                         const pct = total > 0 ? ((params.value / total) * 100).toFixed(1) : 0;
                         return '<div style="font-size:14px;font-weight:700;margin-bottom:4px">' + params.marker + ' ' + params.name + '</div>' +
-                               '<div style="font-size:13px;color:' + (dark ? '#94a3b8' : '#64748b') + '">' + new Intl.NumberFormat().format(params.value) + ' DZD <span style="float:right;font-weight:700;color:' + (dark ? '#e2e8f0' : '#1e293b') + ';margin-left:12px">' + pct + '%</span></div>';
+                               '<div style="font-size:13px;color:' + (dark ? '#94a3b8' : '#64748b') + '">' + new Intl.NumberFormat().format(params.value) + ' ' + currency + ' <span style="float:right;font-weight:700;color:' + (dark ? '#e2e8f0' : '#1e293b') + ';margin-left:12px">' + pct + '%</span></div>';
                     }
                 },
                 legend: { show: false },
@@ -584,7 +678,7 @@ document.addEventListener('alpine:init', () => {
                     left: 'center',
                     top: '54%',
                     style: {
-                        text: 'DZD',
+                        text: currency,
                         fontSize: 11,
                         fontWeight: 600,
                         fill: dark ? '#64748b' : '#94a3b8',
@@ -652,7 +746,7 @@ document.addEventListener('alpine:init', () => {
                     extraCssText: 'border-radius: 12px; backdrop-filter: blur(12px); box-shadow: 0 8px 32px rgba(0,0,0,' + (dark ? '0.4' : '0.12') + ');',
                     formatter: function(params) {
                         return '<div style="font-size:14px;font-weight:700;margin-bottom:6px">' + params[0].axisValueLabel + '</div>' +
-                               '<div style="font-size:22px;font-weight:800;color:#6366F1">' + new Intl.NumberFormat().format(params[0].value) + ' <span style="font-size:12px;font-weight:600;color:' + (dark ? '#64748b' : '#94a3b8') + '">DZD</span></div>';
+                               '<div style="font-size:22px;font-weight:800;color:#6366F1">' + new Intl.NumberFormat().format(params[0].value) + ' <span style="font-size:12px;font-weight:600;color:' + (dark ? '#64748b' : '#94a3b8') + '">' + currency + '</span></div>';
                     },
                     axisPointer: {
                         type: 'line',

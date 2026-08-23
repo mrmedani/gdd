@@ -481,7 +481,46 @@
         // Service Worker registration
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
-                navigator.serviceWorker.register('/sw.js');
+                navigator.serviceWorker.register('/sw.js').then(reg => {
+                    // Detect a new SW waiting to activate → offer reload
+                    if (reg.waiting) {
+                        showUpdateAvailable();
+                    }
+                    reg.addEventListener('updatefound', () => {
+                        const installing = reg.installing;
+                        if (installing) {
+                            installing.addEventListener('statechange', () => {
+                                if (installing.state === 'installed' && navigator.serviceWorker.controller) {
+                                    showUpdateAvailable();
+                                }
+                            });
+                        }
+                    });
+                }).catch(() => {});
+
+                // New SW activated (from skipWaiting) → reload to get new assets
+                navigator.serviceWorker.addEventListener('controllerchange', () => {
+                    if (sessionStorage.getItem('sw_update_reload')) return;
+                    sessionStorage.setItem('sw_update_reload', '1');
+                    window.location.reload();
+                });
+
+                // SW posts SW_UPDATED after skipWaiting
+                navigator.serviceWorker.addEventListener('message', (e) => {
+                    if (e.data && e.data.type === 'SW_UPDATED') {
+                        // ignore; handled by controllerchange
+                    }
+                });
+
+                function showUpdateAvailable() {
+                    if (document.getElementById('sw-update-toast')) return;
+                    const toast = document.createElement('div');
+                    toast.id = 'sw-update-toast';
+                    toast.className = 'fixed bottom-4 start-4 z-[300] bg-blue-600 text-white text-sm font-semibold px-4 py-3 rounded-2xl shadow-2xl flex items-center gap-3 max-w-[90vw]';
+                    toast.innerHTML = '<span>📦 {{ __("pwa.update_available", ["default" => "Une nouvelle version est disponible"]) }}</span>' +
+                        '<button onclick="navigator.serviceWorker.controller && navigator.serviceWorker.controller.postMessage({type:\'SKIP_WAITING\'}); sessionStorage.setItem(\'sw_update_reload\',\'1\');" class="bg-white/20 hover:bg-white/30 px-3 py-1 rounded-xl">{{ __("pwa.reload", ["default" => "Actualiser"]) }}</button>';
+                    document.body.appendChild(toast);
+                }
             });
         }
 

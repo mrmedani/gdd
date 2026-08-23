@@ -34,6 +34,12 @@ class StatisticsIndex extends Component
     public array $monthlyTrend = [];
     public array $growthTrend = [];
 
+    // Category detail popup
+    public array $repetitiveByCategory = [];
+    public ?int $selectedCategoryId = null;
+    public bool $categoryModalOpen = false;
+    public array $categoryModalData = [];
+
     // Deficit
     public float $dailyTotal = 0;
     public float $cashDeficit = 0;
@@ -51,6 +57,56 @@ class StatisticsIndex extends Component
     public function updatedPeriod(): void
     {
         $this->resetPage();
+        $this->categoryModalOpen = false;
+        $this->selectedCategoryId = null;
+        $this->categoryModalData = [];
+    }
+
+    public function openCategory(int $categoryId): void
+    {
+        $range = getPeriodRange($this->period);
+        $cat = ExpenseCategory::find($categoryId);
+        if (!$cat) return;
+
+        $expenses = Expense::whereBetween('date', [$range['start'], $range['end']])
+            ->where('category_id', $categoryId)
+            ->orderByDesc('amount')
+            ->get();
+
+        $total = (float) $expenses->sum('amount');
+        $count = $expenses->count();
+        $top3 = $expenses->take(10)->map(fn($e) => [
+            'date' => $e->date->format('d/m/Y'),
+            'description' => $e->description,
+            'amount' => (float) $e->amount,
+        ])->toArray();
+
+        $repetitive = collect($this->repetitiveByCategory[$categoryId] ?? [])
+            ->filter(fn($r) => $r['count'] > 1)
+            ->values()
+            ->toArray();
+
+        $this->categoryModalData = [
+            'id' => $cat->id,
+            'label' => $cat->translated_name,
+            'color' => $this->categoryColor($cat->id),
+            'total' => $total,
+            'count' => $count,
+            'pct' => $this->totalExpenses > 0 ? round($total / $this->totalExpenses * 100, 1) : 0,
+            'avg' => $count > 0 ? round($total / $count, 2) : 0,
+            'max' => $count > 0 ? (float) $expenses->max('amount') : 0,
+            'min' => $count > 0 ? (float) $expenses->min('amount') : 0,
+            'top3' => $top3,
+            'repetitive' => $repetitive,
+        ];
+        $this->selectedCategoryId = $categoryId;
+        $this->categoryModalOpen = true;
+    }
+
+    public function closeCategory(): void
+    {
+        $this->categoryModalOpen = false;
+        $this->selectedCategoryId = null;
     }
 
     public function render()
@@ -124,6 +180,7 @@ class StatisticsIndex extends Component
             $row = $byCategory->get($cat->id);
             $total = (float) ($row->total ?? 0);
             return [
+                'id' => $cat->id,
                 'label' => $cat->translated_name,
                 'total' => $total,
                 'pct' => $this->totalExpenses > 0 ? round($total / $this->totalExpenses * 100, 1) : 0,
@@ -131,6 +188,22 @@ class StatisticsIndex extends Component
                 'color' => $this->categoryColor($cat->id),
             ];
         })->filter(fn($c) => $c['total'] > 0)->sortByDesc('total')->values()->toArray();
+
+        // Pre-load repetitive descriptions per category for the popup
+        $repById = [];
+        foreach ($categories as $cat) {
+            $repById[$cat->id] = Expense::whereBetween('date', [$range['start'], $range['end']])
+                ->where('category_id', $cat->id)
+                ->whereNotNull('description')
+                ->selectRaw('description, COUNT(*) as cnt, SUM(amount) as sum')
+                ->groupBy('description')
+                ->orderByDesc('cnt')
+                ->limit(5)
+                ->get()
+                ->map(fn($r) => ['description' => $r->description, 'count' => (int) $r->cnt, 'total' => (float) $r->sum])
+                ->toArray();
+        }
+        $this->repetitiveByCategory = $repById;
 
         // Payment method breakdown
         $methods = PaymentMethod::cases();

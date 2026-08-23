@@ -34,6 +34,11 @@ class Dashboard extends Component
     public string $periodEndDate = '';
     public ?float $growthRate = null;
 
+    // Category detail popup
+    public ?int $selectedCategoryId = null;
+    public bool $categoryModalOpen = false;
+    public array $categoryModalData = [];
+
     public string $alertFilterType = '';
     public string $alertFilterSeverity = '';
 
@@ -49,19 +54,19 @@ class Dashboard extends Component
         $now = Carbon::now();
 
         $hour = (int) $now->format('H');
-        if ($hour < 12) {
+        if ($hour >= 5 && $hour < 12) {
             $this->greeting = __('dashboard.greeting_morning');
             $this->greetingIcon = 'sun';
             $this->greetingGradient = 'from-amber-400 to-orange-500';
-        } elseif ($hour < 17) {
+        } elseif ($hour >= 12 && $hour < 17) {
             $this->greeting = __('dashboard.greeting_afternoon');
             $this->greetingIcon = 'cloud-sun';
             $this->greetingGradient = 'from-sky-400 to-blue-500';
-        } elseif ($hour < 20) {
+        } elseif ($hour >= 17 && $hour < 20) {
             $this->greeting = __('dashboard.greeting_evening');
             $this->greetingIcon = 'sunset';
             $this->greetingGradient = 'from-purple-500 to-pink-500';
-        } else {
+        } else { // 20h00 -> 04h59 = nuit
             $this->greeting = __('dashboard.greeting_night');
             $this->greetingIcon = 'moon';
             $this->greetingGradient = 'from-indigo-500 to-violet-600';
@@ -96,6 +101,7 @@ class Dashboard extends Component
         $this->categoryData = $categories->map(function ($cat) use ($categoryTotals) {
             $total = (float) ($categoryTotals[$cat->id] ?? 0);
             return [
+                'id' => $cat->id,
                 'label' => $cat->translated_name,
                 'total' => $total,
                 'color' => $this->categoryColor($cat->id),
@@ -259,6 +265,62 @@ class Dashboard extends Component
     {
         Alert::unread()->update(['is_read' => true, 'read_at' => now()]);
         $this->loadUnreadCount();
+    }
+
+    public function openCategory(int $categoryId): void
+    {
+        $now = Carbon::now();
+        $currentPeriod = getPeriodFromDate($now);
+        $range = getPeriodRange($currentPeriod);
+
+        $cat = \App\Domains\Expenses\Models\ExpenseCategory::find($categoryId);
+        if (!$cat) return;
+
+        $expenses = \App\Domains\Expenses\Models\Expense::whereBetween('date', [$range['start'], $range['end']])
+            ->where('category_id', $categoryId)
+            ->orderByDesc('amount')
+            ->get();
+
+        $total = (float) $expenses->sum('amount');
+        $count = $expenses->count();
+
+        $repetitive = \App\Domains\Expenses\Models\Expense::whereBetween('date', [$range['start'], $range['end']])
+            ->where('category_id', $categoryId)
+            ->whereNotNull('description')
+            ->selectRaw('description, COUNT(*) as cnt, SUM(amount) as sum')
+            ->groupBy('description')
+            ->orderByDesc('cnt')
+            ->get()
+            ->map(fn($r) => ['description' => $r->description, 'count' => (int) $r->cnt, 'total' => (float) $r->sum])
+            ->filter(fn($r) => $r['count'] > 1)
+            ->values()
+            ->toArray();
+
+        $this->categoryModalData = [
+            'id' => $cat->id,
+            'label' => $cat->translated_name,
+            'color' => $this->categoryColor($cat->id),
+            'total' => $total,
+            'count' => $count,
+            'pct' => 0,
+            'avg' => $count > 0 ? round($total / $count, 2) : 0,
+            'max' => $count > 0 ? (float) $expenses->max('amount') : 0,
+            'min' => $count > 0 ? (float) $expenses->min('amount') : 0,
+            'top3' => $expenses->take(10)->map(fn($e) => [
+                'date' => $e->date->format('d/m/Y'),
+                'description' => $e->description,
+                'amount' => (float) $e->amount,
+            ])->toArray(),
+            'repetitive' => $repetitive,
+        ];
+        $this->selectedCategoryId = $categoryId;
+        $this->categoryModalOpen = true;
+    }
+
+    public function closeCategory(): void
+    {
+        $this->categoryModalOpen = false;
+        $this->selectedCategoryId = null;
     }
 
     private function categoryColor(int $id): string

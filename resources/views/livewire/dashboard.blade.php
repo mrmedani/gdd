@@ -37,7 +37,7 @@
                               + String(now.getMinutes()).padStart(2,'0') + ':'
                               + String(now.getSeconds()).padStart(2,'0');
                     this.date = now.toLocaleDateString('{{ app()->getLocale() }}', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
-                    const next = h < 12 ? 'sun' : (h < 17 ? 'cloud-sun' : (h < 20 ? 'sunset' : 'moon'));
+                    const next = (h >= 5 && h < 12) ? 'sun' : (h >= 12 && h < 17 ? 'cloud-sun' : (h >= 17 && h < 20 ? 'sunset' : 'moon'));
                     if (this.icon !== next) {
                         this.icon = next;
                         this.greeting = labels[next];
@@ -65,99 +65,126 @@
             {{-- LEFT: Icon + Identity --}}
             <div class="flex items-center gap-4 sm:gap-5 min-w-0">
 
-                {{-- Animated SVG icon (transparent) --}}
-                <div class="shrink-0 w-16 h-16 sm:w-[72px] sm:h-[72px] flex items-center justify-center transition-transform duration-500 hover:scale-110 drop-shadow-xl">
-                    <svg x-show="icon === 'sun'" x-cloak viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg" class="w-full h-full" style="overflow:visible">
-                            <defs>
-                                <radialGradient id="sg1" cx="50%" cy="40%" r="55%"><stop offset="0%" stop-color="#FFF59D"/><stop offset="55%" stop-color="#FFD600"/><stop offset="100%" stop-color="#FF8F00"/></radialGradient>
-                                <radialGradient id="sg2" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="#FFD600" stop-opacity=".45"/><stop offset="100%" stop-color="#FFD600" stop-opacity="0"/></radialGradient>
-                                <filter id="sf1" x="-30%" y="-30%" width="160%" height="160%"><feDropShadow dx="0" dy="2" stdDeviation="3" flood-color="#FF8F00" flood-opacity=".55"/></filter>
-                                <style>.sr{animation:sr-spin 9s linear infinite;transform-origin:32px 32px}.sh{animation:sh-pulse 2.8s ease-in-out infinite;transform-origin:32px 32px}.sb{animation:sb-bob 2.8s ease-in-out infinite}@keyframes sr-spin{to{transform:rotate(360deg)}}@keyframes sh-pulse{0%,100%{opacity:.45;transform:scale(1)}50%{opacity:.85;transform:scale(1.18)}}@keyframes sb-bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-2.5px)}}</style>
-                            </defs>
-                            <circle class="sh" cx="32" cy="32" r="27" fill="url(#sg2)"/>
-                            <g class="sr" filter="url(#sf1)">
-                                <rect x="30.5" y="3" width="3" height="8" rx="1.5" fill="#FFD600"/>
-                                <rect x="30.5" y="53" width="3" height="8" rx="1.5" fill="#FFD600"/>
-                                <rect x="3" y="30.5" width="8" height="3" rx="1.5" fill="#FFD600"/>
-                                <rect x="53" y="30.5" width="8" height="3" rx="1.5" fill="#FFD600"/>
-                                <rect x="10" y="8.5" width="3" height="7" rx="1.5" fill="#FFB300" transform="rotate(45 11.5 12)"/>
-                                <rect x="44" y="8.5" width="3" height="7" rx="1.5" fill="#FFB300" transform="rotate(-45 45.5 12)"/>
-                                <rect x="10" y="48.5" width="3" height="7" rx="1.5" fill="#FFB300" transform="rotate(-45 11.5 52)"/>
-                                <rect x="44" y="48.5" width="3" height="7" rx="1.5" fill="#FFB300" transform="rotate(45 45.5 52)"/>
+                {{-- 3D animated icons (sun / cloud-sun / sunset / moon) --}}
+                <div class="shrink-0 w-16 h-16 sm:w-[72px] sm:h-[72px] flex items-center justify-center transition-transform duration-500 hover:-rotate-6 hover:scale-105" style="filter: drop-shadow(0 6px 10px rgba(15,23,42,.18));">
+                    {{-- SUN --}}
+                    <svg x-show="icon === 'sun'" x-cloak viewBox="0 0 64 64" class="w-full h-full" style="overflow:visible">
+                        <defs>
+                            <radialGradient id="g-sun-halo" cx="50%" cy="50%" r="50%">
+                                <stop offset="0%" stop-color="#FFD54F" stop-opacity="0.55"/>
+                                <stop offset="55%" stop-color="#FFB300" stop-opacity="0.18"/>
+                                <stop offset="100%" stop-color="#FFB300" stop-opacity="0"/>
+                            </radialGradient>
+                            <radialGradient id="g-sun-body" cx="38%" cy="34%" r="68%">
+                                <stop offset="0%" stop-color="#FFF8E1"/>
+                                <stop offset="35%" stop-color="#FFD54F"/>
+                                <stop offset="75%" stop-color="#FFA000"/>
+                                <stop offset="100%" stop-color="#FB8C00"/>
+                            </radialGradient>
+                            <linearGradient id="g-sun-ray" x1="0" y1="0" x2="0" y2="1">
+                                <stop offset="0%" stop-color="#FFE082"/><stop offset="100%" stop-color="#F57F17"/>
+                            </linearGradient>
+                        </defs>
+                        <circle cx="32" cy="32" r="22" fill="url(#g-sun-halo)"/>
+                        <g>
+                            <animateTransform attributeName="transform" type="rotate" from="0 32 32" to="360 32 32" dur="22s" repeatCount="indefinite"/>
+                            <g fill="url(#g-sun-ray)">
+                                <rect x="30.5" y="2" width="3" height="10" rx="1.5"/><rect x="30.5" y="52" width="3" height="10" rx="1.5"/>
+                                <rect x="2" y="30.5" width="10" height="3" rx="1.5"/><rect x="52" y="30.5" width="10" height="3" rx="1.5"/>
+                                <rect x="8.5" y="8.5" width="9" height="3" rx="1.5" transform="rotate(45 13 10)"/><rect x="46.5" y="8.5" width="9" height="3" rx="1.5" transform="rotate(-45 51 10)"/>
+                                <rect x="8.5" y="52.5" width="9" height="3" rx="1.5" transform="rotate(-45 13 54)"/><rect x="46.5" y="52.5" width="9" height="3" rx="1.5" transform="rotate(45 51 54)"/>
                             </g>
-                            <circle class="sb" cx="32" cy="32" r="13.5" fill="url(#sg1)" filter="url(#sf1)"/>
-                            <ellipse class="sb" cx="27.5" cy="26.5" rx="5" ry="3.5" fill="white" opacity=".32"/>
-                        </svg>
-                    <svg x-show="icon === 'cloud-sun'" x-cloak viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg" class="w-full h-full" style="overflow:visible">
-                            <defs>
-                                <radialGradient id="as1" cx="50%" cy="45%" r="55%"><stop offset="0%" stop-color="#FFFDE7"/><stop offset="55%" stop-color="#FFD600"/><stop offset="100%" stop-color="#FF8F00"/></radialGradient>
-                                <linearGradient id="cl1" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#fff"/><stop offset="100%" stop-color="#DBEAFE"/></linearGradient>
-                                <filter id="csf" x="-20%" y="-20%" width="140%" height="140%"><feDropShadow dx="0" dy="3" stdDeviation="3.5" flood-color="#93C5FD" flood-opacity=".5"/></filter>
-                                <filter id="asg" x="-40%" y="-40%" width="180%" height="180%"><feDropShadow dx="0" dy="1" stdDeviation="4" flood-color="#FFD600" flood-opacity=".65"/></filter>
-                                <style>.acf{animation:acf 4s ease-in-out infinite}.asr{animation:sr-spin 11s linear infinite;transform-origin:23px 25px}.asb2{animation:sb-bob 3.2s ease-in-out infinite}@keyframes acf{0%,100%{transform:translateX(0)}50%{transform:translateX(3.5px)}}</style>
-                            </defs>
-                            <g class="asb2">
-                                <g class="asr" filter="url(#asg)">
-                                    <rect x="21.5" y="10" width="3" height="6" rx="1.5" fill="#FFD600"/><rect x="21.5" y="34" width="3" height="6" rx="1.5" fill="#FFD600"/>
-                                    <rect x="9" y="23.5" width="6" height="3" rx="1.5" fill="#FFD600"/><rect x="33" y="23.5" width="6" height="3" rx="1.5" fill="#FFD600"/>
-                                    <rect x="12.5" y="13" width="3" height="5.5" rx="1.5" fill="#FFB300" transform="rotate(45 14 15.5)"/>
-                                    <rect x="30.5" y="13" width="3" height="5.5" rx="1.5" fill="#FFB300" transform="rotate(-45 32 15.5)"/>
-                                    <rect x="12.5" y="31" width="3" height="5.5" rx="1.5" fill="#FFB300" transform="rotate(-45 14 33.5)"/>
-                                </g>
-                                <circle cx="23" cy="25" r="11" fill="url(#as1)" filter="url(#asg)"/>
-                                <ellipse cx="19" cy="21" rx="4" ry="3" fill="white" opacity=".38"/>
-                            </g>
-                            <g class="acf" filter="url(#csf)">
-                                <circle cx="28" cy="43" r="10" fill="url(#cl1)"/><circle cx="41" cy="45" r="8" fill="url(#cl1)"/>
-                                <circle cx="18" cy="46" r="7" fill="url(#cl1)"/><rect x="11" y="45" width="38" height="10" rx="5" fill="url(#cl1)"/>
-                                <ellipse cx="27" cy="41" rx="8" ry="3" fill="white" opacity=".55"/>
-                            </g>
-                        </svg>
-                    <svg x-show="icon === 'sunset'" x-cloak viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg" class="w-full h-full" style="overflow:visible">
-                            <defs>
-                                <radialGradient id="ss1" cx="50%" cy="75%" r="65%"><stop offset="0%" stop-color="#FFF9C4"/><stop offset="35%" stop-color="#FF8A65"/><stop offset="100%" stop-color="#D84315"/></radialGradient>
-                                <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#6A1B9A"/><stop offset="45%" stop-color="#E53935"/><stop offset="100%" stop-color="#FF7043"/></linearGradient>
-                                <filter id="ssf" x="-20%" y="-20%" width="140%" height="140%"><feDropShadow dx="0" dy="0" stdDeviation="5" flood-color="#FF6D00" flood-opacity=".8"/></filter>
-                                <clipPath id="ssc"><rect x="4" y="4" width="56" height="56" rx="14"/></clipPath>
-                                <style>.ssp{animation:ssp 2.8s ease-in-out infinite;transform-origin:32px 44px}.ssr{animation:ssr 2.2s ease-in-out infinite}@keyframes ssp{0%,100%{transform:scale(1);opacity:.85}50%{transform:scale(1.06);opacity:1}}@keyframes ssr{0%,100%{opacity:.55}50%{opacity:1}}</style>
-                            </defs>
-                            <g clip-path="url(#ssc)">
-                                <rect x="4" y="4" width="56" height="56" fill="url(#sky)"/>
-                                <g class="ssr">
-                                    <line x1="32" y1="44" x2="6" y2="26" stroke="#FFCC80" stroke-width="1.5" stroke-opacity=".5"/>
-                                    <line x1="32" y1="44" x2="58" y2="26" stroke="#FFCC80" stroke-width="1.5" stroke-opacity=".5"/>
-                                    <line x1="32" y1="44" x2="4" y2="36" stroke="#FFCC80" stroke-width="1" stroke-opacity=".3"/>
-                                    <line x1="32" y1="44" x2="60" y2="36" stroke="#FFCC80" stroke-width="1" stroke-opacity=".3"/>
-                                </g>
-                                <line x1="4" y1="44" x2="60" y2="44" stroke="#FFB74D" stroke-width="1.5" stroke-opacity=".9"/>
-                                <g class="ssp" filter="url(#ssf)">
-                                    <path d="M14 44 A18 18 0 0 1 50 44Z" fill="url(#ss1)"/>
-                                    <ellipse cx="32" cy="44" rx="18" ry="3.5" fill="#FFCC80" opacity=".35"/>
-                                </g>
-                                <rect x="4" y="44" width="56" height="16" fill="#BF360C" opacity=".45"/>
-                                <rect x="4" y="52" width="56" height="8" fill="#3E2723" opacity=".55"/>
-                            </g>
-                        </svg>
-                    <svg x-show="icon === 'moon'" x-cloak viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg" class="w-full h-full" style="overflow:visible">
-                            <defs>
-                                <radialGradient id="mg1" cx="38%" cy="32%" r="62%"><stop offset="0%" stop-color="#ECEFF1"/><stop offset="55%" stop-color="#B0BEC5"/><stop offset="100%" stop-color="#607D8B"/></radialGradient>
-                                <radialGradient id="mh1" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="#82B1FF" stop-opacity=".5"/><stop offset="100%" stop-color="#82B1FF" stop-opacity="0"/></radialGradient>
-                                <filter id="mf1" x="-25%" y="-25%" width="150%" height="150%"><feDropShadow dx="0" dy="2" stdDeviation="4.5" flood-color="#3D5AFE" flood-opacity=".55"/></filter>
-                                <style>.mh{animation:mh-glow 4s ease-in-out infinite;transform-origin:30px 34px}.mb{animation:sb-bob 4s ease-in-out infinite}.s1{animation:st1 2s ease-in-out infinite}.s2{animation:st1 1.6s ease-in-out infinite .5s}.s3{animation:st2 2.6s ease-in-out infinite .9s}.s4{animation:st1 1.9s ease-in-out infinite 1.3s}.s5{animation:st2 2.3s ease-in-out infinite .2s}@keyframes mh-glow{0%,100%{opacity:.45;transform:scale(1)}50%{opacity:.85;transform:scale(1.1)}}@keyframes st1{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.15;transform:scale(.4)}}@keyframes st2{0%,100%{opacity:.25;transform:scale(.55)}50%{opacity:1;transform:scale(1.15)}}</style>
-                            </defs>
-                            <circle class="mh" cx="30" cy="34" r="22" fill="url(#mh1)"/>
-                            <g class="s1"><circle cx="53" cy="13" r="2.2" fill="#E8EAF6"/><circle cx="53" cy="13" r=".9" fill="white"/></g>
-                            <g class="s2"><circle cx="13" cy="19" r="1.8" fill="#C5CAE9"/><circle cx="13" cy="19" r=".7" fill="white"/></g>
-                            <g class="s3"><circle cx="49" cy="35" r="1.5" fill="#E8EAF6"/><circle cx="49" cy="35" r=".6" fill="white"/></g>
-                            <g class="s4"><circle cx="20" cy="9" r="1.4" fill="#C5CAE9"/><circle cx="20" cy="9" r=".55" fill="white"/></g>
-                            <g class="s5"><circle cx="57" cy="25" r="1.1" fill="#E8EAF6"/><circle cx="57" cy="25" r=".45" fill="white"/></g>
-                            <g class="mb" filter="url(#mf1)">
-                                <path d="M30 13 A21 21 0 1 0 30 55 A13 13 0 1 1 30 13Z" fill="url(#mg1)"/>
-                                <circle cx="24" cy="29" r="2.8" fill="#90A4AE" opacity=".38"/>
-                                <circle cx="22" cy="41" r="1.8" fill="#90A4AE" opacity=".28"/>
-                                <ellipse cx="22" cy="20" rx="5" ry="3.5" fill="white" opacity=".38"/>
-                            </g>
-                        </svg>
+                        </g>
+                        <circle cx="32" cy="32" r="15" fill="url(#g-sun-body)"/>
+                        <ellipse cx="27" cy="27" rx="5.5" ry="4" fill="#FFFDE7" opacity="0.5"/>
+                    </svg>
+                    {{-- CLOUD-SUN --}}
+                    <svg x-show="icon === 'cloud-sun'" x-cloak viewBox="0 0 64 64" class="w-full h-full" style="overflow:visible">
+                        <defs>
+                            <radialGradient id="g-cs-halo" cx="50%" cy="50%" r="50%">
+                                <stop offset="0%" stop-color="#FFE082" stop-opacity="0.5"/><stop offset="100%" stop-color="#FFE082" stop-opacity="0"/>
+                            </radialGradient>
+                            <radialGradient id="g-cs-sun" cx="38%" cy="34%" r="68%">
+                                <stop offset="0%" stop-color="#FFF8E1"/><stop offset="50%" stop-color="#FFD54F"/><stop offset="100%" stop-color="#FB8C00"/>
+                            </radialGradient>
+                            <linearGradient id="g-cs-cloud-top" x1="0" y1="0" x2="0" y2="1">
+                                <stop offset="0%" stop-color="#FFFFFF"/><stop offset="100%" stop-color="#E2E8F0"/>
+                            </linearGradient>
+                            <linearGradient id="g-cs-cloud" x1="0" y1="0" x2="0" y2="1">
+                                <stop offset="0%" stop-color="#F8FAFC"/><stop offset="100%" stop-color="#CBD5E1"/>
+                            </linearGradient>
+                        </defs>
+                        <circle cx="22" cy="23" r="16" fill="url(#g-cs-halo)"/>
+                        <circle cx="22" cy="23" r="10" fill="url(#g-cs-sun)"/>
+                        <ellipse cx="18" cy="19" rx="3.5" ry="2.4" fill="#FFFDE7" opacity="0.5"/>
+                        <g>
+                            <animateTransform attributeName="transform" type="translate" values="0 0; 0 -2.5; 0 0" dur="4s" repeatCount="indefinite"/>
+                            <ellipse cx="33" cy="45" rx="20" ry="11" fill="#94A3B8" opacity="0.25"/>
+                            <circle cx="24" cy="44" r="10" fill="url(#g-cs-cloud)"/>
+                            <circle cx="36" cy="41" r="12" fill="url(#g-cs-cloud)"/>
+                            <circle cx="46" cy="45" r="9" fill="url(#g-cs-cloud)"/>
+                            <rect x="24" y="43" width="24" height="12" rx="6" fill="url(#g-cs-cloud)"/>
+                            <ellipse cx="33" cy="39" rx="16" ry="5" fill="url(#g-cs-cloud-top)" opacity="0.7"/>
+                            <ellipse cx="30" cy="38" rx="6" ry="3" fill="#FFFFFF" opacity="0.6"/>
+                        </g>
+                    </svg>
+                    {{-- SUNSET --}}
+                    <svg x-show="icon === 'sunset'" x-cloak viewBox="0 0 64 64" class="w-full h-full" style="overflow:visible">
+                        <defs>
+                            <linearGradient id="g-ss-sky" x1="0" y1="0" x2="0" y2="1">
+                                <stop offset="0%" stop-color="#FFD194"/><stop offset="45%" stop-color="#FF9A56"/><stop offset="100%" stop-color="#FF6F61"/>
+                            </linearGradient>
+                            <radialGradient id="g-ss-sun" cx="50%" cy="55%" r="60%">
+                                <stop offset="0%" stop-color="#FFE082"/><stop offset="55%" stop-color="#FF9800"/><stop offset="100%" stop-color="#E65100"/>
+                            </radialGradient>
+                            <linearGradient id="g-ss-horizon" x1="0" y1="0" x2="0" y2="1">
+                                <stop offset="0%" stop-color="#5D4037"/><stop offset="100%" stop-color="#3E2723"/>
+                            </linearGradient>
+                        </defs>
+                        <circle cx="32" cy="34" r="20" fill="url(#g-ss-sky)" opacity="0.25"/>
+                        <g>
+                            <animateTransform attributeName="transform" type="translate" values="0 0; 0 -2; 0 0" dur="5s" repeatCount="indefinite"/>
+                            <path d="M10 44 A22 22 0 0 1 54 44 Z" fill="url(#g-ss-sun)"/>
+                        </g>
+                        <g stroke="#FFE0B2" stroke-width="2.5" stroke-linecap="round">
+                            <line x1="32" y1="8" x2="32" y2="16"><animate attributeName="opacity" values="0.3;1;0.3" dur="2.5s" repeatCount="indefinite"/></line>
+                            <line x1="20" y1="12" x2="23" y2="18"><animate attributeName="opacity" values="0.3;1;0.3" dur="2.5s" begin="0.5s" repeatCount="indefinite"/></line>
+                            <line x1="44" y1="12" x2="41" y2="18"><animate attributeName="opacity" values="0.3;1;0.3" dur="2.5s" begin="1s" repeatCount="indefinite"/></line>
+                        </g>
+                        <rect x="6" y="43" width="52" height="4" rx="2" fill="url(#g-ss-horizon)"/>
+                        <rect x="6" y="46" width="52" height="9" rx="3" fill="#2E1A14" opacity="0.6"/>
+                    </svg>
+                    {{-- MOON --}}
+                    <svg x-show="icon === 'moon'" x-cloak viewBox="0 0 64 64" class="w-full h-full" style="overflow:visible">
+                        <defs>
+                            <radialGradient id="g-moon" cx="34%" cy="30%" r="75%">
+                                <stop offset="0%" stop-color="#FFFFFF"/>
+                                <stop offset="40%" stop-color="#ECEFF1"/>
+                                <stop offset="78%" stop-color="#B0BEC5"/>
+                                <stop offset="100%" stop-color="#78909C"/>
+                            </radialGradient>
+                            <radialGradient id="g-moon-shade" cx="68%" cy="66%" r="65%">
+                                <stop offset="0%" stop-color="#455A64" stop-opacity="0.5"/>
+                                <stop offset="100%" stop-color="#455A64" stop-opacity="0"/>
+                            </radialGradient>
+                            <radialGradient id="g-crater" cx="40%" cy="35%" r="70%">
+                                <stop offset="0%" stop-color="#CFD8DC"/><stop offset="100%" stop-color="#90A4AE"/>
+                            </radialGradient>
+                        </defs>
+                        <!-- sphere with soft shading (3D volume) -->
+                        <circle cx="32" cy="32" r="17" fill="url(#g-moon)"/>
+                        <circle cx="32" cy="32" r="17" fill="url(#g-moon-shade)"/>
+                        <!-- detailed craters with inner shadow -->
+                        <circle cx="26" cy="26" r="3" fill="url(#g-crater)"/><circle cx="26.4" cy="26.4" r="2.2" fill="#78909C" opacity="0.35"/>
+                        <circle cx="37" cy="35" r="4.2" fill="url(#g-crater)"/><circle cx="37.5" cy="35.6" r="3" fill="#78909C" opacity="0.35"/>
+                        <circle cx="39" cy="23" r="2" fill="url(#g-crater)"/>
+                        <circle cx="24" cy="38" r="2.4" fill="url(#g-crater)"/>
+                        <!-- twinkling stars -->
+                        <circle cx="12" cy="16" r="2.2" fill="#FFf" opacity="0.85"><animate attributeName="opacity" values="0.2;1;0.2" dur="2.4s" repeatCount="indefinite"/></circle>
+                        <circle cx="52" cy="14" r="1.6" fill="#FFf" opacity="0.8"><animate attributeName="opacity" values="0.2;1;0.2" dur="3s" begin="0.8s" repeatCount="indefinite"/></circle>
+                        <circle cx="50" cy="48" r="1.8" fill="#FFf" opacity="0.8"><animate attributeName="opacity" values="0.2;1;0.2" dur="2.8s" begin="1.4s" repeatCount="indefinite"/></circle>
+                        <circle cx="14" cy="48" r="1.4" fill="#FFf" opacity="0.7"><animate attributeName="opacity" values="0.2;1;0.2" dur="2.6s" begin="0.4s" repeatCount="indefinite"/></circle>
+                    </svg>
                 </div>
 
                 {{-- Identity --}}
@@ -194,16 +221,6 @@
                     </div>
                 </div>
 
-                {{-- Profile pill --}}
-                <div class="inline-flex items-center gap-2.5 px-3 py-2 rounded-2xl bg-slate-50 border border-slate-200 dark:bg-slate-800/70 dark:border-slate-700 shadow-sm hover:shadow-md transition-shadow group">
-                    <div class="w-8 h-8 rounded-full shrink-0 flex items-center justify-center bg-gradient-to-br from-blue-500 to-indigo-600 text-white font-black text-sm ring-2 ring-white dark:ring-slate-800 shadow-md group-hover:scale-105 transition-transform duration-200">
-                        {{ mb_strtoupper(mb_substr(auth()->user()->name, 0, 1)) }}
-                    </div>
-                    <div class="text-start leading-tight min-w-0">
-                        <p class="text-xs font-bold text-slate-800 dark:text-slate-100 truncate max-w-[130px]">{{ auth()->user()->name }}</p>
-                        <p class="text-[10px] font-medium text-slate-500 dark:text-slate-400 truncate max-w-[130px]">{{ auth()->user()->email }}</p>
-                    </div>
-                </div>
             </div>
         </div>
     </div>
@@ -366,14 +383,14 @@
                 {{ __('dashboard.by_category') }}
             </h2>
             @if(count($categoryData) > 0)
-                <div wire:key="category-chart" class="relative w-full" style="height: 320px;">
+                <div wire:key="category-chart" class="relative w-full h-[260px] sm:h-[320px]">
                     <!-- Ligne verticale (séparateur) en inline CSS pour éviter les soucis de compilation Tailwind -->
                     <div style="position: absolute; left: 52%; top: 10%; bottom: 10%; width: 2px; background: linear-gradient(to bottom, transparent, rgba(100, 116, 139, 0.4), transparent); z-index: 0; pointer-events: none;"></div>
                     
                     <div id="categoryChart" class="w-full h-full relative z-10"></div>
                 </div>
             @else
-                <div wire:key="category-chart-empty" class="flex flex-col items-center justify-center border-2 border-dashed border-slate-200 dark:border-slate-800 rounded-2xl" style="height: 320px;">
+                <div wire:key="category-chart-empty" class="flex flex-col items-center justify-center border-2 border-dashed border-slate-200 dark:border-slate-800 rounded-2xl h-[260px] sm:h-[320px]">
                     <p class="text-slate-400 dark:text-slate-500 font-semibold text-sm">{{ __('dashboard.no_data') }}</p>
                 </div>
             @endif
@@ -386,11 +403,11 @@
                     {{ __('dashboard.monthly_trend') }}
                 </h2>
                 @if(count($monthlyTrend) > 0)
-                    <div wire:key="trend-chart" class="relative w-full" style="height: 320px;">
+                    <div wire:key="trend-chart" class="relative w-full h-[260px] sm:h-[320px]">
                         <div id="trendChart" class="w-full h-full"></div>
                     </div>
                 @else
-                    <div wire:key="trend-chart-empty" class="flex flex-col items-center justify-center border-2 border-dashed border-slate-200 dark:border-slate-800 rounded-2xl" style="height: 320px;">
+                    <div wire:key="trend-chart-empty" class="flex flex-col items-center justify-center border-2 border-dashed border-slate-200 dark:border-slate-800 rounded-2xl h-[260px] sm:h-[320px]">
                         <p class="text-slate-400 dark:text-slate-500 font-semibold text-sm">{{ __('dashboard.no_data') }}</p>
                     </div>
                 @endif
@@ -582,6 +599,92 @@
 </div>
 
 @push('scripts')
+<!-- Category Detail Modal -->
+@if(count($categoryData) > 0)
+<div x-show="$wire.categoryModalOpen" x-cloak
+     x-transition:enter="transition-all duration-300 ease-out"
+     x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100"
+     x-transition:leave="transition-all duration-200 ease-in" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0"
+     class="fixed inset-0 z-[100] flex items-end sm:items-center justify-center p-0 sm:p-4">
+    <div x-show="$wire.categoryModalOpen" x-transition.opacity class="absolute inset-0 bg-slate-900/60" wire:click="closeCategory"></div>
+    <div x-show="$wire.categoryModalOpen"
+         x-transition:enter="transition-all duration-300 ease-out" x-transition:enter-start="opacity-0 translate-y-8 sm:translate-y-0 sm:scale-95" x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100"
+         x-transition:leave="transition-all duration-200 ease-in" x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100" x-transition:leave-end="opacity-0 translate-y-8 sm:scale-95"
+         class="relative bg-white dark:bg-slate-900 rounded-t-3xl sm:rounded-3xl shadow-2xl w-full sm:w-auto sm:min-w-[460px] sm:max-w-lg border border-slate-200/50 dark:border-slate-800/60 overflow-hidden max-h-[90vh] sm:max-h-[75vh] flex flex-col">
+        @if($categoryModalData)
+        <div class="shrink-0 p-5 border-b border-slate-100 dark:border-slate-800/60 flex items-center justify-between" style="background: linear-gradient(135deg, {{ $categoryModalData['color'] }}22, transparent)">
+            <div class="flex items-center gap-3 min-w-0">
+                <span class="w-3.5 h-3.5 rounded-full shrink-0" style="background: {{ $categoryModalData['color'] }}"></span>
+                <div class="min-w-0">
+                    <h3 class="text-lg font-bold text-slate-800 dark:text-white truncate">{{ $categoryModalData['label'] }}</h3>
+                    <p class="text-xs text-slate-500 dark:text-slate-400 font-semibold">{{ $categoryModalData['count'] }} {{ __('statistics.operations') }}</p>
+                </div>
+            </div>
+            <button wire:click="closeCategory" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors cursor-pointer shrink-0">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+            </button>
+        </div>
+        <div class="p-5 overflow-y-auto space-y-5">
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                <div class="bg-slate-50 dark:bg-slate-950/30 rounded-xl p-3 text-center">
+                    <p class="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1">{{ __('expenses.amount') }}</p>
+                    <p class="text-sm font-black text-slate-800 dark:text-white">{{ formatMoney($categoryModalData['total']) }}</p>
+                </div>
+                <div class="bg-slate-50 dark:bg-slate-950/30 rounded-xl p-3 text-center">
+                    <p class="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1">{{ __('statistics.avg') }}</p>
+                    <p class="text-sm font-black text-slate-800 dark:text-white">{{ formatMoney($categoryModalData['avg']) }}</p>
+                </div>
+                <div class="bg-slate-50 dark:bg-slate-950/30 rounded-xl p-3 text-center">
+                    <p class="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1">{{ __('statistics.max') }}</p>
+                    <p class="text-sm font-black text-rose-600 dark:text-rose-400">{{ formatMoney($categoryModalData['max']) }}</p>
+                </div>
+                <div class="bg-slate-50 dark:bg-slate-950/30 rounded-xl p-3 text-center">
+                    <p class="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1">{{ __('statistics.min') }}</p>
+                    <p class="text-sm font-black text-emerald-600 dark:text-emerald-400">{{ formatMoney($categoryModalData['min']) }}</p>
+                </div>
+            </div>
+            <div>
+                <h4 class="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-2 flex items-center gap-2">
+                    <span class="w-1.5 h-4 rounded-full bg-blue-500"></span>{{ __('statistics.top3') }}
+                </h4>
+                <div class="space-y-2">
+                    @forelse($categoryModalData['top3'] as $e)
+                    <div class="flex items-center justify-between p-2.5 bg-slate-50/60 dark:bg-slate-950/30 rounded-xl border border-slate-100/50 dark:border-slate-800/40">
+                        <div class="min-w-0">
+                            <p class="text-xs font-semibold text-slate-700 dark:text-slate-300 truncate">{{ $e['description'] }}</p>
+                            <p class="text-[10px] text-slate-400 dark:text-slate-500 font-medium">{{ $e['date'] }}</p>
+                        </div>
+                        <span class="text-xs font-bold text-slate-800 dark:text-slate-100 shrink-0 ml-3">{{ formatMoney($e['amount']) }}</span>
+                    </div>
+                    @empty
+                    <p class="text-xs text-slate-400 dark:text-slate-500">{{ __('statistics.no_data') }}</p>
+                    @endforelse
+                </div>
+            </div>
+            @if(count($categoryModalData['repetitive']) > 0)
+            <div>
+                <h4 class="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-2 flex items-center gap-2">
+                    <span class="w-1.5 h-4 rounded-full bg-amber-500"></span>{{ __('statistics.repetitive') }}
+                </h4>
+                <div class="space-y-2">
+                    @foreach($categoryModalData['repetitive'] as $r)
+                    <div class="flex items-center justify-between p-2.5 bg-amber-50/50 dark:bg-amber-950/20 rounded-xl border border-amber-100/50 dark:border-amber-800/40">
+                        <div class="min-w-0">
+                            <p class="text-xs font-semibold text-slate-700 dark:text-slate-300 truncate">{{ $r['description'] }}</p>
+                            <p class="text-[10px] text-amber-600 dark:text-amber-400 font-bold">{{ $r['count'] }} × &bull; {{ formatMoney($r['total']) }}</p>
+                        </div>
+                        <span class="text-[10px] font-black text-amber-700 dark:text-amber-300 bg-amber-100 dark:bg-amber-900/40 px-2 py-0.5 rounded-full shrink-0 ml-3">{{ $r['count'] }}</span>
+                    </div>
+                    @endforeach
+                </div>
+            </div>
+            @endif
+        </div>
+        @endif
+    </div>
+</div>
+@endif
+
 <script src="https://cdn.jsdelivr.net/npm/echarts@5/dist/echarts.min.js"></script>
 <script>
 let chartInstances = {};
@@ -661,10 +764,15 @@ function initCharts() {
             label: { show: false },
             data: [
                 @foreach($categoryData as $cat)
-                { value: {{ $cat['total'] }}, name: '{!! addslashes($cat['label']) !!}', itemStyle: { color: '{{ $cat['color'] }}' } },
+                { value: {{ $cat['total'] }}, name: '{!! addslashes($cat['label']) !!}', id: {{ $cat['id'] }}, itemStyle: { color: '{{ $cat['color'] }}' } },
                 @endforeach
             ].sort(function (a, b) { return b.value - a.value; })
         }]
+    });
+    chartInstances.category.on('click', function(params) {
+        if (params && params.data && params.data.id) {
+            @this.openCategory(params.data.id);
+        }
     });
     @endif
 
