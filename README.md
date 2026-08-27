@@ -37,12 +37,22 @@
 - **Filtres avancés** : par date, catégorie, montant, employé, type de paiement
 - **Sélection multiple** : suppression groupée avec confirmation
 
+### 💵 Entrées d'argent (Incomes)
+- **CRUD complet** : enregistrement des flux d'argent entrants (investissements, droits de franchise, autres)
+- **Types de source** : `investment` (Investissement), `franchise_fee` (Droits de franchise), `other` (Autre)
+- **Sous-type conditionnel** : champ `sub_type` affiné selon le type de source
+- **Nom de la source** : investisseur / franchisé / bénéficiaire
+- **Cartes KPI** : total de la période, total par type de source
+- **Visibilité par rôle** : page `/incomes` masquée aux rôles sans la permission `incomes` (toggle dans `/settings/roles`)
+- **Intégration trésorerie** : le total des entrées est automatiquement inclus dans la clôture mensuelle (`calculatedIncomes`)
+
 ### 🏦 Trésorerie (Caisse)
 - **Suivi du solde** : dépenses quotidiennes, gains, balance mensuelle
 - **Clôture mensuelle** : génération automatique du bilan mensuel
 - **Période comptable personnalisée** : configurable (ex: du 21 au 20)
 - **Déficit / Surplus** : détection automatique et alertes
 - **Historique complet** : suivi de toutes les clôtures mensuelles
+- **Calcul automatique du solde** : `Solde = Gains du mois (saisi) + Total entrées (auto, depuis /incomes) − Total des charges (auto)`. Le champ "Gains du mois (Revenus)" est saisi manuellement ; les entrées et charges sont calculées automatiquement depuis leurs tables respectives.
 
 ### 👥 Employés & Salaires
 - **Gestion des employés** : fiche complète (coordonnées, salaire de base, date d'embauche)
@@ -55,6 +65,7 @@
 - **Rapports Excel** : export via Laravel Excel (barre verte)
 - **Période au choix** : sélecteur des 12 dernières périodes avec labels formatés
 - **Statistiques détaillées** : graphiques, tendances, répartition par catégorie
+- **Section « Entrées d'argent » combinée** : sur `/statistics`, une seule section regroupe les cartes KPI + le camembert de répartition par type de source + la courbe de tendance (12 mois) des entrées `/incomes`
 - **Aperçu instantané** : gains, dépenses, solde, répartition avant téléchargement
 
 ### 📊 Tableau de Bord
@@ -74,7 +85,9 @@
 
 ### 🔐 Sécurité & Administration
 - **Authentification** : email/mot de passe avec rate limiting (3 tentatives/min)
-- **Rôles & Permissions** : Admin, Comptable — permissions granulaires par module
+- **Rôles & Permissions** : Admin, Comptable, et rôles personnalisés — permissions granulaires par module
+- **Permissions d'accès aux pages** : la page `/incomes` (et toutes les pages) est masquée aux rôles sans la permission correspondante (toggle dans `/settings/roles`, section « Permissions d'accès aux pages »)
+- **Permissions d'actions** : toggles séparés pour les actions sensibles (vue déficit, suppression de clôture, connexion en tant que…)
 - **Journal d'audit** : traçabilité complète de toutes les actions (création, modification, suppression, connexion)
 - **Gestion des utilisateurs** : CRUD avec attribution de rôles
 - **Pop-up de connexion** : message personnalisable affiché après login
@@ -131,15 +144,15 @@ app/
 │   ├── Alerts/          # Notifications & canaux
 │   │   ├── Channels/    # WhatsAppChannel
 │   │   ├── Models/      # Alert (Eloquent)
-│   │   └── Notifications/ # 7 classes de notification
+│   │   ├── Notifications/ # 10 classes de notification
 │   ├── Auth/            # Login, Forgot/Reset password
 │   ├── Dashboard/       # KPI cards, alertes
 │   ├── Employees/       # Employés, salaires, avances
-│   ├── Expenses/        # CRUD dépenses, catégories
+│   ├── Expenses/        # CRUD dépenses, catégories, observers
 │   ├── Reports/         # Rapports PDF/Excel
-│   ├── Settings/        # Paramètres, utilisateurs, rôles
-│   ├── Statistics/      # Graphiques & tendances
-│   └── Treasury/        # Caisse, clôtures mensuelles
+│   ├── Settings/        # Paramètres, utilisateurs, rôles, templates WhatsApp
+│   ├── Statistics/      # Graphiques & tendances (dépenses + entrées)
+│   └── Treasury/        # Caisse, clôtures mensuelles, observers (IncomeObserver)
 ├── Services/
 │   └── WhatsAppService.php   # Client worker Node.js
 └── Shared/
@@ -155,16 +168,21 @@ app/
 
 ## 🔔 Notifications
 
-### 7 Types d'alertes
+### 10 Types d'alertes
 | Notification | Déclencheur |
 |---|---|
 | `📝 Dépense créée` | Nouvelle dépense enregistrée |
 | `✏️ Dépense modifiée` | Modification d'une dépense |
 | `🗑️ Dépense supprimée` | Suppression d'une dépense |
+| `💰 Entrée créée` | Nouvelle entrée d'argent (`/incomes`) enregistrée |
+| `✏️ Entrée modifiée` | Modification d'une entrée d'argent |
+| `🗑️ Entrée supprimée` | Suppression d'une entrée d'argent |
 | `⚠️ Dépense élevée` | Seuil de montant dépassé |
 | `💼 Rappel de paie` | Échéance de salaire |
 | `📊 Rapport journalier` | Résumé périodique (journalier/hebdo/mensuel) |
 | `📦 Clôture mensuelle` | Bilan de fin de période |
+
+> **Cible des notifications WhatsApp pour `/incomes`** : seuls les utilisateurs appartenant à un **rôle ayant la permission `incomes`** ET ayant activé `notify_whatsapp` (avec un n° de téléphone renseigné) reçoivent ces alertes. Les rôles sans accès à `/incomes` ne sont jamais notifiés.
 
 ### Canaux de notification
 - **💾 Base de données** — Stocké dans la table `alerts`, interface dédiée
@@ -268,6 +286,7 @@ php artisan optimize:clear
 | `/` | Dashboard | auth |
 | `/expenses` | Liste des dépenses | auth |
 | `/expenses/create` | Nouvelle dépense | auth |
+| `/incomes` | Entrées d'argent | incomes |
 | `/reports` | Rapports PDF/Excel | reports |
 | `/statistics` | Statistiques | statistics |
 | `/treasury` | Trésorerie / Caisse | treasury |
@@ -322,6 +341,7 @@ php artisan optimize:clear
 - **User** — Utilisateurs (rôle, locale, téléphone WhatsApp, préférences)
 - **Role** — Rôles + permissions personnalisées
 - **Expense** — Dépenses (date, description, montant, catégorie, paiement, reçu)
+- **Income** — Entrées d'argent (date, montant, type de source, nom de la source, sous-type)
 - **ExpenseCategory** — Catégories (multilingue, hiérarchique)
 - **Employee** — Employés (coordonnées, salaire, statut)
 - **SalaryAdvance** — Avances sur salaire
@@ -340,6 +360,8 @@ php artisan optimize:clear
 - **Notifications WhatsApp** : chaque utilisateur reçoit les notifications sur son propre téléphone via `sendTo()`
 - **Le canal WhatsApp** utilise les flags anti-detach Chrome, heartbeat 30s et auto-recovery pour la stabilité du worker
 - **Graphiques ECharts** : remplacement de Chart.js par ECharts 5 sur le dashboard et la page statistiques (meilleure performance, rendu side-by-side)
+- **Section statistiques combinée** : `/statistics` regroupe dans une seule section les KPI + camembert (répartition par type d'entrée) + courbe de tendance des entrées `/incomes`
+- **Saisie de montants** : tous les champs monétaires acceptent les séparateurs de milliers (espace **et** virgule) — `87 104` ou `87,104` sont normalisés avant conversion (corrige un bug où `87 104` était lu comme `87`)
 - **UI Design** : toutes les pages suivent le registre produit (`reference/product.md`) — pas de glassmorphism, dégradés, orbes, ou animations décoratives
 - **Stockage des uploads** : le `storage:link` est requis pour servir le logo, favicon et photos de profil ; sans lui, les images retournent 404
 
