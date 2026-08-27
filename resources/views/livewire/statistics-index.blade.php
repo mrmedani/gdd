@@ -127,6 +127,72 @@
         </div>
     </div>
 
+    <!-- Entrées d'argent -->
+    <div class="mt-8">
+        <div class="flex items-center gap-3 mb-5">
+            <div class="w-10 h-10 rounded-xl bg-emerald-500/10 dark:bg-emerald-500/15 flex items-center justify-center">
+                <svg class="w-5 h-5 text-emerald-600 dark:text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19V5m0 14l-4-4m4 4l4-4M5 12h14m-7-7l-4 4m4-4l4 4"/></svg>
+            </div>
+            <div>
+                <h2 class="text-xl font-extrabold text-slate-900 dark:text-white">{{ __('statistics.incomes_title') }}</h2>
+                <p class="text-xs text-slate-400 dark:text-slate-500">{{ __('statistics.incomes_subtitle') }}</p>
+            </div>
+        </div>
+
+        <!-- Cartes par type -->
+        <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+            <div class="relative overflow-hidden bg-gradient-to-br from-emerald-600 to-teal-600 rounded-2xl p-5 text-white shadow-lg">
+                <div class="absolute top-0 right-0 -mr-6 -mt-6 w-20 h-20 rounded-full bg-white opacity-10 blur-2xl"></div>
+                <p class="text-emerald-100 text-xs font-bold uppercase tracking-wider mb-1">{{ __('statistics.incomes_total') }}</p>
+                <h3 class="text-2xl font-black">+ {{ formatMoney($incomeTotal) }}</h3>
+                <div class="mt-2"><span class="text-[11px] text-emerald-200 font-semibold">{{ __('statistics.period_label') }}: {{ formatPeriodLabel($period) }}</span></div>
+            </div>
+
+            @php
+                $incomeCards = [
+                    ['label' => 'Investissement'],
+                    ['label' => 'Droits de franchise'],
+                    ['label' => 'Autre'],
+                ];
+            @endphp
+            @foreach($incomeCards as $ic)
+                @php
+                    $idx = array_search($ic['label'], $incomeByTypeLabels, true);
+                    $val = $idx !== false ? ($incomeByTypeValues[$idx] ?? 0) : 0;
+                @endphp
+                <div class="bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border border-slate-200/50 dark:border-slate-800/60 rounded-2xl p-5 shadow-lg">
+                    <p class="text-slate-400 dark:text-slate-500 text-xs font-bold uppercase tracking-wider mb-1">{{ $ic['label'] }}</p>
+                    <h3 class="text-2xl font-black text-slate-800 dark:text-white">+ {{ formatMoney($val) }}</h3>
+                </div>
+            @endforeach
+        </div>
+
+        <!-- Graphiques -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div class="bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border border-slate-200/50 dark:border-slate-800/60 rounded-2xl p-6 shadow-lg">
+                <h4 class="text-sm font-bold text-slate-700 dark:text-slate-200 mb-4">{{ __('statistics.incomes_by_type') }}</h4>
+                @if(count($incomeByTypeLabels) > 0)
+                    <div x-data="incomeTypeChart(@js($incomeByTypeLabels), @js($incomeByTypeValues), @js($incomeByTypeColors))" wire:ignore class="h-72">
+                        <div x-ref="container" class="w-full h-full"></div>
+                    </div>
+                @else
+                    <div class="h-72 flex items-center justify-center text-slate-400 dark:text-slate-500 text-sm">{{ __('incomes.no_data') }}</div>
+                @endif
+            </div>
+
+            <div class="bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border border-slate-200/50 dark:border-slate-800/60 rounded-2xl p-6 shadow-lg">
+                <h4 class="text-sm font-bold text-slate-700 dark:text-slate-200 mb-4">{{ __('statistics.incomes_trend') }}</h4>
+                @if(count($incomeTrend) > 0)
+                    <div x-data="incomeTrendChart(@js(array_column($incomeTrend, 'month')), @js(array_column($incomeTrend, 'total')))" wire:ignore class="h-72">
+                        <div x-ref="container" class="w-full h-full"></div>
+                    </div>
+                @else
+                    <div class="h-72 flex items-center justify-center text-slate-400 dark:text-slate-500 text-sm">{{ __('incomes.no_data') }}</div>
+                @endif
+            </div>
+        </div>
+    </div>
+
     <!-- Today's Expenses -->
     <a href="{{ route('expenses.index', ['searchDateFrom' => today()->format('Y-m-d'), 'searchDateTo' => today()->format('Y-m-d')]) }}" class="relative overflow-hidden block bg-gradient-to-br from-amber-500 to-orange-600 rounded-3xl p-6 shadow-premium dark:shadow-premium-dark text-white transition-all duration-300 hover:-translate-y-0.5 hover:shadow-premium-hover dark:hover:shadow-premium-dark-hover group cursor-pointer">
         <div class="absolute top-0 right-0 -mr-8 -mt-8 w-32 h-32 rounded-full bg-white opacity-10 blur-2xl group-hover:scale-110 transition-transform duration-500"></div>
@@ -939,6 +1005,195 @@ document.addEventListener('alpine:init', () => {
                             borderWidth: 4,
                             symbolSize: 12 
                         } 
+                    }
+                }]
+            });
+        }
+    }));
+
+    Alpine.data('incomeTypeChart', (labels, values, colors) => ({
+        chart: null,
+        labels: labels,
+        values: values,
+        colors: colors,
+        isDark() { return document.documentElement.classList.contains('dark'); },
+        init() {
+            this.$watch('labels', () => { if(this.chart) this.renderChart(); });
+            let check = () => {
+                if (typeof echarts !== 'undefined') {
+                    this.chart = echarts.init(this.$refs.container);
+                    this.renderChart();
+                    createObserver(this).observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
+                } else { setTimeout(check, 100); }
+            };
+            check();
+        },
+        renderChart() {
+            const dark = this.isDark();
+            const total = this.values.reduce((a, b) => a + b, 0);
+            this.chart.setOption({
+                tooltip: {
+                    trigger: 'item',
+                    backgroundColor: dark ? 'rgba(15, 23, 42, 0.92)' : 'rgba(255, 255, 255, 0.96)',
+                    borderColor: dark ? 'rgba(51, 65, 85, 0.5)' : 'rgba(226, 232, 240, 0.8)',
+                    borderWidth: 1,
+                    padding: [12, 16],
+                    textStyle: { color: dark ? '#e2e8f0' : '#334155', fontSize: 13, fontWeight: 500 },
+                    extraCssText: 'border-radius: 12px; backdrop-filter: blur(12px); box-shadow: 0 8px 32px rgba(0,0,0,' + (dark ? '0.4' : '0.12') + ');',
+                    formatter: function(params) {
+                        const pct = total > 0 ? ((params.value / total) * 100).toFixed(1) : 0;
+                        return '<div style="font-size:14px;font-weight:700;margin-bottom:4px">' + params.marker + ' ' + params.name + '</div>' +
+                               '<div style="font-size:13px;color:' + (dark ? '#94a3b8' : '#64748b') + '">' + new Intl.NumberFormat().format(params.value) + ' ' + currency + ' <span style="float:right;font-weight:700;color:' + (dark ? '#e2e8f0' : '#1e293b') + ';margin-left:12px">' + pct + '%</span></div>';
+                    }
+                },
+                legend: { show: false },
+                graphic: [{
+                    type: 'text', left: 'center', top: '42%',
+                    style: { text: new Intl.NumberFormat().format(total), fontSize: 18, fontWeight: 800, fill: dark ? '#f1f5f9' : '#1e293b', fontFamily: 'Instrument Sans, system-ui, sans-serif' }
+                }, {
+                    type: 'text', left: 'center', top: '54%',
+                    style: { text: currency, fontSize: 11, fontWeight: 600, fill: dark ? '#64748b' : '#94a3b8', fontFamily: 'Instrument Sans, system-ui, sans-serif' }
+                }],
+                animationDuration: 1200, animationEasing: 'cubicInOut',
+                series: [{
+                    type: 'pie', radius: ['52%', '78%'], center: ['50%', '50%'], avoidLabelOverlap: true,
+                    label: { show: false },
+                    emphasis: { scale: true, scaleSize: 8, itemStyle: { shadowBlur: 20, shadowOffsetX: 0, shadowColor: 'rgba(0, 0, 0, 0.25)' } },
+                    itemStyle: { borderRadius: 8, borderColor: dark ? '#0f172a' : '#ffffff', borderWidth: 3 },
+                    data: this.labels.map((label, i) => ({ value: this.values[i], name: label, itemStyle: { color: this.colors[i] } }))
+                }]
+            });
+        }
+    }));
+
+    Alpine.data('incomeTrendChart', (labels, values) => ({
+        chart: null,
+        labels: labels,
+        values: values,
+        isDark() { return document.documentElement.classList.contains('dark'); },
+        init() {
+            this.$watch('labels', () => { if(this.chart) this.renderChart(); });
+            let check = () => {
+                if (typeof echarts !== 'undefined') {
+                    this.chart = echarts.init(this.$refs.container);
+                    this.renderChart();
+                    createObserver(this).observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
+
+                    window.addEventListener('resize', () => {
+                        if(this.chart) this.chart.resize();
+                    });
+                } else { setTimeout(check, 100); }
+            };
+            check();
+        },
+        renderChart() {
+            const dark = this.isDark();
+
+            const colorPrimary = '#10B981';
+            const colorSecondary = '#34D399';
+            const colorGlow = 'rgba(16, 185, 129, 0.5)';
+
+            // Format number with spaces (e.g. 1 000 000.00)
+            const formatMoney = (val) => {
+                return '+ ' + new Intl.NumberFormat('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(val) + ' ' + currency;
+            };
+
+            this.chart.setOption({
+                tooltip: {
+                    trigger: 'axis',
+                    backgroundColor: dark ? 'rgba(15, 23, 42, 0.85)' : 'rgba(255, 255, 255, 0.9)',
+                    borderColor: dark ? 'rgba(51, 65, 85, 0.5)' : 'rgba(226, 232, 240, 0.8)',
+                    borderWidth: 1,
+                    padding: [16, 20],
+                    textStyle: { color: dark ? '#f8fafc' : '#1e293b', fontSize: 13, fontWeight: 500 },
+                    extraCssText: 'border-radius: 16px; backdrop-filter: blur(16px); box-shadow: 0 10px 40px -10px rgba(16, 185, 129, 0.3);',
+                    formatter: function(params) {
+                        const v = params[0].value;
+                        return '<div style="font-size:13px;font-weight:600;color:' + (dark ? '#94a3b8' : '#64748b') + ';margin-bottom:8px;text-transform:uppercase;letter-spacing:0.5px">' + params[0].axisValueLabel + '</div>' +
+                               '<div style="display:flex;align-items:center;gap:8px;">' +
+                                 '<div style="font-size:24px;font-weight:800;color:' + (dark ? '#fff' : '#0f172a') + '; letter-spacing:-0.5px;">' + formatMoney(v) + '</div>' +
+                               '</div>';
+                    },
+                    axisPointer: {
+                        type: 'line',
+                        lineStyle: {
+                            color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [{offset: 0, color: 'rgba(16, 185, 129, 0)'}, {offset: 0.5, color: 'rgba(16, 185, 129, 0.5)'}, {offset: 1, color: 'rgba(16, 185, 129, 0)'}]),
+                            width: 2,
+                            type: 'solid'
+                        }
+                    }
+                },
+                grid: { left: '2%', right: '3%', bottom: '2%', top: '10%', containLabel: true },
+                xAxis: {
+                    type: 'category',
+                    data: this.labels,
+                    axisLine: { lineStyle: { color: dark ? '#334155' : '#e2e8f0', width: 2 } },
+                    axisTick: { show: false },
+                    axisLabel: { fontSize: 12, color: dark ? '#94a3b8' : '#64748b', fontWeight: 600, margin: 16 },
+                    boundaryGap: false
+                },
+                yAxis: {
+                    type: 'value',
+                    splitLine: {
+                        lineStyle: {
+                            color: dark ? 'rgba(51, 65, 85, 0.4)' : 'rgba(226, 232, 240, 0.6)',
+                            type: 'dashed',
+                            width: 1
+                        }
+                    },
+                    axisLabel: {
+                        fontSize: 12,
+                        color: dark ? '#94a3b8' : '#64748b',
+                        fontWeight: 600,
+                        formatter: function(v) {
+                            if(v >= 1000000) return (v / 1000000).toFixed(1) + 'M DA';
+                            if(v >= 1000) return (v / 1000).toFixed(1) + 'K DA';
+                            return v + ' DA';
+                        },
+                        margin: 16
+                    }
+                },
+                animationDuration: 2000,
+                animationEasing: 'cubicOut',
+                series: [{
+                    type: 'line',
+                    smooth: true,
+                    symbol: 'circle',
+                    symbolSize: 0,
+                    showSymbol: false,
+                    data: this.values,
+                    lineStyle: {
+                        width: 4,
+                        color: new echarts.graphic.LinearGradient(0, 0, 1, 0, [
+                            { offset: 0, color: colorPrimary },
+                            { offset: 1, color: colorSecondary }
+                        ]),
+                        shadowColor: colorGlow,
+                        shadowBlur: 20,
+                        shadowOffsetY: 8
+                    },
+                    itemStyle: {
+                        color: '#fff',
+                        borderColor: colorPrimary,
+                        borderWidth: 3,
+                        shadowColor: colorGlow,
+                        shadowBlur: 15
+                    },
+                    areaStyle: {
+                        color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+                            { offset: 0, color: 'rgba(52, 211, 153, 0.4)' },
+                            { offset: 0.5, color: 'rgba(16, 185, 129, 0.1)' },
+                            { offset: 1, color: 'rgba(16, 185, 129, 0)' }
+                        ])
+                    },
+                    emphasis: {
+                        focus: 'series',
+                        itemStyle: {
+                            color: colorPrimary,
+                            borderColor: '#fff',
+                            borderWidth: 4,
+                            symbolSize: 12
+                        }
                     }
                 }]
             });

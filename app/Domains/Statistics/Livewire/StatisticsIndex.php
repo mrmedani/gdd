@@ -48,6 +48,13 @@ class StatisticsIndex extends Component
     // History
     public array $closureHistory = [];
 
+    // Entrées d'argent (module Treasury/Incomes)
+    public float $incomeTotal = 0;
+    public array $incomeByTypeLabels = [];
+    public array $incomeByTypeValues = [];
+    public array $incomeByTypeColors = [];
+    public array $incomeTrend = [];
+
     public function mount(): void
     {
         Gate::authorize('manage-statistics');
@@ -293,6 +300,53 @@ class StatisticsIndex extends Component
                 'rate' => (float) $c->gains,
             ];
         })->toArray();
+
+        // Entrées d'argent (module Treasury/Incomes)
+        $incomeTotals = \App\Domains\Treasury\Models\Income::whereBetween('date', [$range['start'], $range['end']])
+            ->selectRaw('source_type, SUM(amount) as total')
+            ->groupBy('source_type')
+            ->get()
+            ->keyBy('source_type');
+
+        $incomeTypeLabels = [
+            'investment' => 'Investissement',
+            'franchise_fee' => 'Droits de franchise',
+            'sale' => 'Vente',
+            'other' => 'Autre',
+        ];
+        $incomeTypeOrder = ['investment', 'franchise_fee', 'other'];
+        $incomeColors = ['#10b981', '#3b82f6', '#64748b'];
+        $this->incomeTotal = (float) \App\Domains\Treasury\Models\Income::whereBetween('date', [$range['start'], $range['end']])->sum('amount');
+        $this->incomeByTypeLabels = [];
+        $this->incomeByTypeValues = [];
+        $this->incomeByTypeColors = [];
+        foreach ($incomeTypeOrder as $i => $key) {
+            $total = (float) ($incomeTotals->get($key)->total ?? 0);
+            if ($total <= 0) continue;
+            $this->incomeByTypeLabels[] = $incomeTypeLabels[$key];
+            $this->incomeByTypeValues[] = $total;
+            $this->incomeByTypeColors[] = $incomeColors[$i];
+        }
+
+        // Tendance 12 mois des entrées
+        $trendPeriods = collect(range(0, 11))->map(function ($i) {
+            $p = getPeriodFromDate(now()->subMonths($i));
+            $r = getPeriodRange($p);
+            return ['key' => $p, 'start' => $r['start'], 'end' => $r['end'], 'date' => \Carbon\Carbon::createFromFormat('Y-m', $p)];
+        });
+        $trendStart = $trendPeriods->min('start');
+        $trendEnd = $trendPeriods->max('end');
+        $incomeTrendTotals = \App\Domains\Treasury\Models\Income::whereBetween('date', [$trendStart, $trendEnd])
+            ->selectRaw('DATE_FORMAT(date, ?) as period, SUM(amount) as total', [$startDay])
+            ->groupBy('period')
+            ->pluck('total', 'period');
+        $this->incomeTrend = $trendPeriods->map(function ($tp) use ($incomeTrendTotals) {
+            $periodKey = $tp['date']->format('Y-m');
+            return [
+                'month' => $tp['date']->translatedFormat('M Y'),
+                'total' => (float) ($incomeTrendTotals[$periodKey] ?? 0),
+            ];
+        })->reverse()->values()->toArray();
     }
 
     private function categoryColor(int $id): string

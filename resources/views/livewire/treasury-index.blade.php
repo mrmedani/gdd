@@ -271,9 +271,6 @@
                     <div class="text-2xl font-black text-emerald-600 dark:text-emerald-500 leading-none flex items-baseline gap-1">
                         <span dir="ltr">+ {{ number_format((float)$calculatedIncomes, 2, ',', ' ') }}</span> <span class="text-sm font-bold">{{ getCurrency() }}</span>
                     </div>
-                    @if((float)$calculatedIncomes > 0)
-                    <button type="button" wire:click="useIncomesAsGains" class="mt-3 text-xs font-bold text-blue-600 dark:text-blue-400 hover:underline cursor-pointer">{{ __('caisse.use_incomes_as_gains') }}</button>
-                    @endif
                 </div>
 
                 <!-- Gains Input -->
@@ -288,7 +285,7 @@
 
                 <!-- Live Balance Preview -->
                 @if($closeGains !== '')
-                @php $previewBalance = (float)str_replace(',', '.', $closeGains) - (float)$calculatedExpenses; @endphp
+                @php $previewBalance = (float)str_replace([' ', ','], ['', '.'], $closeGains) + (float)$calculatedIncomes - (float)$calculatedExpenses; @endphp
                 <div class="pt-4 border-t border-slate-100 dark:border-slate-800/60">
                     <p class="text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1">{{ __('caisse.preview_balance') }}</p>
                     <div class="text-3xl font-black flex items-baseline gap-1 {{ $previewBalance >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-500' }}">

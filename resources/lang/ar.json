@@ -270,7 +270,12 @@
     "statistics.period_label": "الفترة",
     "statistics.by_category": "حسب التصنيف",
     "statistics.trend": "اتجاه 12 شهر",
-    "statistics.growth_trend": "تطور الإيرادات",
+    "statistics.growth_title": "تطور الأرباح",
+    "statistics.incomes_title": "التدفقات النقدية الداخلة",
+    "statistics.incomes_subtitle": "استثمارات، حقوق امتياز وغيرها",
+    "statistics.incomes_total": "إجمالي التدفقات",
+    "statistics.incomes_by_type": "التوزيع حسب النوع",
+    "statistics.incomes_trend": "الاتجاه (12 شهر)",
     "statistics.closures": "سجل الإغلاقات",
     "statistics.period": "الفترة",
     "statistics.operations": "عملية",
@@ -619,5 +624,7 @@
     "incomes.no_data": "لا توجد تدفقات مسجلة لهذه الفترة",
     "incomes.confirm_delete": "حذف هذا التدفق؟",
     "caisse.total_incomes_auto": "إجمالي التدفقات (تلقائي)",
-    "caisse.use_incomes_as_gains": "استخدام كأرباح الشهر"
+    "caisse.use_incomes_as_gains": "استخدام كأرباح الشهر",
+    "settings.page_access_permissions": "صلاحيات الوصول للصفحات",
+    "settings.action_permissions": "صلاحيات الإجراءات"
 }

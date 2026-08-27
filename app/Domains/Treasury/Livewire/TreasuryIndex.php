@@ -52,15 +52,10 @@ class TreasuryIndex extends Component
         $this->calculatedIncomes = \App\Domains\Treasury\Models\Income::whereBetween('date', [$range['start'], $range['end']])->sum('amount');
     }
 
-    public function useIncomesAsGains(): void
-    {
-        $this->closeGains = number_format((float) $this->calculatedIncomes, 2, '.', '');
-    }
-
     public function closeMonthSubmit()
     {
         if (is_string($this->closeGains)) {
-            $this->closeGains = str_replace(',', '.', $this->closeGains);
+            $this->closeGains = str_replace([' ', ','], ['', '.'], $this->closeGains);
         }
 
         $this->validate([
@@ -75,7 +70,7 @@ class TreasuryIndex extends Component
 
         $this->calculateExpensesForMonth();
         
-        $balance = (float) $this->closeGains - (float) $this->calculatedExpenses;
+        $balance = (float) $this->closeGains + (float) $this->calculatedIncomes - (float) $this->calculatedExpenses;
 
         try {
             MonthlyClosure::create([

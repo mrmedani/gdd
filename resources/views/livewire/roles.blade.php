@@ -45,7 +45,9 @@
 
                 <div class="pt-6 border-t border-slate-100 dark:border-slate-800/60">
                     <h3 class="text-sm font-bold text-slate-700 dark:text-slate-300 mb-4">{{ __('settings.permissions') }}</h3>
-                    <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+
+                    <p class="text-xs font-semibold uppercase tracking-wider text-purple-600 dark:text-purple-400 mb-3">{{ __('settings.page_access_permissions') }}</p>
+                    <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 mb-6">
                         @foreach([
                             'dashboard' => __('nav.dashboard'),
                             'expenses' => __('nav.expenses'),
@@ -59,10 +61,26 @@
                             'roles' => __('settings.roles'),
                             'audit-logs' => __('settings.audit_logs'),
                             'whatsapp-messages' => 'Messages WhatsApp',
+                            'incomes' => __('incomes.title'),
+                        ] as $key => $label)
+                            @php $checked = $permValues[$key] ?? false; @endphp
+                            <button type="button" wire:click="togglePermission('{{ $key }}')"
+                                    class="flex items-center gap-2.5 p-3 rounded-xl border cursor-pointer transition-all duration-200 text-start w-full {{ $checked ? 'bg-purple-50 dark:bg-purple-900/20 border-purple-200 dark:border-purple-700/50 shadow-sm' : 'bg-slate-50/50 dark:bg-slate-950/30 border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800/50' }}">
+                                <span class="relative shrink-0">
+                                    <span class="block w-10 h-6 rounded-full transition-colors {{ $checked ? 'bg-purple-500 dark:bg-purple-600' : 'bg-slate-300 dark:bg-slate-700' }}"></span>
+                                    <span class="dot absolute left-0.5 top-0.5 bg-white w-5 h-5 rounded-full transition-transform shadow-sm {{ $checked ? 'translate-x-4' : '' }}"></span>
+                                </span>
+                                <span class="text-xs font-semibold {{ $checked ? 'text-purple-700 dark:text-purple-300' : 'text-slate-700 dark:text-slate-300' }}">{{ $label }}</span>
+                            </button>
+                        @endforeach
+                    </div>
+
+                    <p class="text-xs font-semibold uppercase tracking-wider text-purple-600 dark:text-purple-400 mb-3">{{ __('settings.action_permissions') }}</p>
+                    <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+                        @foreach([
                             'view-deficit' => __('settings.view_deficit'),
                             'delete-closure' => __('settings.delete_closure'),
                             'login-as' => __('settings.login_as'),
-                            'incomes' => __('incomes.title'),
                         ] as $key => $label)
                             @php $checked = $permValues[$key] ?? false; @endphp
                             <button type="button" wire:click="togglePermission('{{ $key }}')"

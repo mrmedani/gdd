@@ -277,7 +277,6 @@
     "reports.daily_avg": "Moyenne quotidienne",
     "reports.period_days": "Jours de la période",
     "reports.daily_trend": "Tendance quotidienne",
-    "reports.distribution": "Répartition",
     "reports.of_total": "du total",
     "reports.budget": "Budget",
     "reports.actual": "Réel",
@@ -285,7 +284,6 @@
     "reports.variance": "Écart",
     "reports.employee_salaries_subtotal": "Sous-total salaires employés",
     "reports.by_employee": "Par employé",
-    "reports.operations": "opérations",
     "reports.active_months": "mois actifs",
     "reports.active_days": "Jours actifs",
     "reports.weekly_summary": "Résumé hebdomadaire",
@@ -300,7 +298,12 @@
     "statistics.period_label": "Période",
     "statistics.by_category": "Par catégorie",
     "statistics.trend": "Tendance 12 mois",
-    "statistics.growth_trend": "Évolution des gains",
+    "statistics.growth_title": "Évolution des gains",
+    "statistics.incomes_title": "Entrées d'argent",
+    "statistics.incomes_subtitle": "Investissements, droits de franchise et autres entrées",
+    "statistics.incomes_total": "Total des entrées",
+    "statistics.incomes_by_type": "Répartition par type",
+    "statistics.incomes_trend": "Tendance (12 mois)",
     "statistics.closures": "Historique des clôtures",
     "statistics.period": "Période",
     "statistics.operations": "opérations",
@@ -621,5 +624,7 @@
     "incomes.no_data": "Aucune entrée enregistrée pour cette période",
     "incomes.confirm_delete": "Supprimer cette entrée ?",
     "caisse.total_incomes_auto": "Total entrées (auto)",
-    "caisse.use_incomes_as_gains": "Utiliser comme gains du mois"
+    "caisse.use_incomes_as_gains": "Utiliser comme gains du mois",
+    "settings.page_access_permissions": "Permissions d’accès aux pages",
+    "settings.action_permissions": "Permissions d’actions"
 }
