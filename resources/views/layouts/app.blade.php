@@ -223,6 +223,17 @@
                                 </a>
                             </li>
                             @endif
+
+                            @if(auth()->user()->hasPermission('incomes'))
+                            <li>
+                                <a href="{{ route('incomes.index') }}" class="flex items-center px-4 py-3 rounded-xl transition-colors duration-200 group {{ request()->routeIs('incomes.*') ? 'bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-white font-semibold' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/50 hover:text-slate-900 dark:hover:text-white' }}">
+                                    <div class="{{ request()->routeIs('incomes.*') ? 'bg-blue-600 text-white' : 'bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 group-hover:bg-slate-200 dark:group-hover:bg-slate-700' }} p-2 rounded-lg transition-colors me-3">
+                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19v3m0-18v3m0 6v3m-9 0h3m12 0h3M5.636 5.636l2.121 2.121m8.486 8.486l2.121 2.121M5.636 18.364l2.121-2.121m8.486-8.486l2.121-2.121"/></svg>
+                                    </div>
+                                    <span class="text-sm">{{ __('incomes.title') }}</span>
+                                </a>
+                            </li>
+                            @endif
                         </ul>
                     </div>
 

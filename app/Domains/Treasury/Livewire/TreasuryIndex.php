@@ -28,6 +28,7 @@ class TreasuryIndex extends Component
     public string $closeMonth = '';
     public string $closeGains = '';
     public string $calculatedExpenses = '0';
+    public string $calculatedIncomes = '0';
 
     public function mount()
     {
@@ -48,6 +49,12 @@ class TreasuryIndex extends Component
         $range = getPeriodRange($this->closeMonth);
 
         $this->calculatedExpenses = Expense::whereBetween('date', [$range['start'], $range['end']])->sum('amount');
+        $this->calculatedIncomes = \App\Domains\Treasury\Models\Income::whereBetween('date', [$range['start'], $range['end']])->sum('amount');
+    }
+
+    public function useIncomesAsGains(): void
+    {
+        $this->closeGains = number_format((float) $this->calculatedIncomes, 2, '.', '');
     }
 
     public function closeMonthSubmit()

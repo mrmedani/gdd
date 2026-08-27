@@ -137,6 +137,10 @@ class AppServiceProvider extends ServiceProvider
             return $user->hasPermission('delete-closure');
         });
 
+        Gate::define('manage-incomes', function (User $user) {
+            return $user->hasPermission('incomes');
+        });
+
         Gate::define('view-audit-logs', function (User $user) {
             return $user->hasPermission('audit-logs');
         });

@@ -265,6 +265,17 @@
                     </div>
                 </div>
 
+                <!-- Incomes Display (Readonly) -->
+                <div class="bg-emerald-50/30 dark:bg-emerald-950/20 border border-emerald-100/50 dark:border-emerald-900/30 p-4 rounded-xl">
+                    <label class="block text-xs font-semibold text-emerald-800 dark:text-emerald-400 mb-1.5">{{ __('caisse.total_incomes_auto') }}</label>
+                    <div class="text-2xl font-black text-emerald-600 dark:text-emerald-500 leading-none flex items-baseline gap-1">
+                        <span dir="ltr">+ {{ number_format((float)$calculatedIncomes, 2, ',', ' ') }}</span> <span class="text-sm font-bold">{{ getCurrency() }}</span>
+                    </div>
+                    @if((float)$calculatedIncomes > 0)
+                    <button type="button" wire:click="useIncomesAsGains" class="mt-3 text-xs font-bold text-blue-600 dark:text-blue-400 hover:underline cursor-pointer">{{ __('caisse.use_incomes_as_gains') }}</button>
+                    @endif
+                </div>
+
                 <!-- Gains Input -->
                 <div>
                     <label class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">{{ __('caisse.month_gains') }} <span class="text-red-500">*</span></label>
