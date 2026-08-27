@@ -21,7 +21,9 @@ use App\Domains\Settings\Observers\RoleObserver;
 use App\Domains\Settings\Observers\SalaryAdvanceObserver;
 use App\Domains\Settings\Observers\SalaryPaymentObserver;
 use App\Domains\Settings\Observers\UserObserver;
+use App\Domains\Treasury\Models\Income;
 use App\Domains\Treasury\Models\MonthlyClosure;
+use App\Domains\Treasury\Observers\IncomeObserver;
 use App\Models\Role;
 use App\Models\User;
 use App\Domains\Settings\Livewire\Categories;
@@ -55,6 +57,7 @@ class AppServiceProvider extends ServiceProvider
         Schema::defaultStringLength(191);
         Gate::policy(Expense::class, ExpensePolicy::class);
         Expense::observe(ExpenseObserver::class);
+        Income::observe(IncomeObserver::class);
         ExpenseCategory::observe(ExpenseCategoryObserver::class);
         Employee::observe(EmployeeObserver::class);
         SalaryAdvance::observe(SalaryAdvanceObserver::class);

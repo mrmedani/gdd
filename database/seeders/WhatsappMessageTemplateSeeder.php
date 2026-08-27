@@ -90,6 +90,30 @@ class WhatsappMessageTemplateSeeder extends Seeder
                 'message_ar' => "🎉 تم تغطية العجز في الصندوق بالكامل!\n──────────────\n📆 الفترة : {period}\n💰 رصيد العجز أصبح صفراً.",
                 'variables' => ['period', 'company_name'],
             ],
+            [
+                'type' => 'income_created',
+                'label_fr' => 'Nouvelle entrée d\'argent',
+                'label_ar' => 'إيراد جديد',
+                'message_fr' => "💰 Nouvelle entrée d'argent\n──────────────\n📝 {source_name}\n🏷️ Type : {source_type}\n💵 Montant : {amount} {currency}\n📅 Date : {date}\n🏢 {company_name}",
+                'message_ar' => "💰 إيراد جديد\n──────────────\n📝 {source_name}\n🏷️ النوع : {source_type}\n💵 المبلغ : {amount} {currency}\n📅 التاريخ : {date}\n🏢 {company_name}",
+                'variables' => ['source_name', 'source_type', 'amount', 'currency', 'date', 'company_name'],
+            ],
+            [
+                'type' => 'income_modified',
+                'label_fr' => 'Entrée d\'argent modifiée',
+                'label_ar' => 'تم تعديل الإيراد',
+                'message_fr' => "✏️ Entrée d'argent modifiée\n──────────────\n📝 {source_name}\n🏷️ Type : {source_type}\n💵 Montant : {amount} {currency}\n📅 Date : {date}\n🏢 {company_name}",
+                'message_ar' => "✏️ تم تعديل الإيراد\n──────────────\n📝 {source_name}\n🏷️ النوع : {source_type}\n💵 المبلغ : {amount} {currency}\n📅 التاريخ : {date}\n🏢 {company_name}",
+                'variables' => ['source_name', 'source_type', 'amount', 'currency', 'date', 'company_name'],
+            ],
+            [
+                'type' => 'income_deleted',
+                'label_fr' => 'Entrée d\'argent supprimée',
+                'label_ar' => 'تم حذف الإيراد',
+                'message_fr' => "🗑️ Entrée d'argent supprimée\n──────────────\n📝 {source_name}\n🏷️ Type : {source_type}\n💵 Montant : {amount} {currency}\n📅 Date : {date}\n🏢 {company_name}",
+                'message_ar' => "🗑️ تم حذف الإيراد\n──────────────\n📝 {source_name}\n🏷️ النوع : {source_type}\n💵 المبلغ : {amount} {currency}\n📅 التاريخ : {date}\n🏢 {company_name}",
+                'variables' => ['source_name', 'source_type', 'amount', 'currency', 'date', 'company_name'],
+            ],
         ];
 
         foreach ($templates as $template) {
