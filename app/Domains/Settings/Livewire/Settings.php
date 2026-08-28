@@ -59,6 +59,9 @@ class Settings extends Component
     public ?string $waQr = null;
     public bool $waStarting = false;
 
+    public string $geminiApiKey = '';
+    public bool $geminiConfigured = false;
+
     public function mount(): void
     {
         Gate::authorize('manage-settings');
@@ -87,6 +90,8 @@ class Settings extends Component
         $this->loginPopupEnabled = (bool) Setting::get('login_popup_enabled', false);
         $this->loginPopupContent = Setting::get('login_popup_content', '');
         $this->pollWhatsAppStatus();
+        $this->geminiApiKey = (string) Setting::get('gemini_api_key', '');
+        $this->geminiConfigured = !empty($this->geminiApiKey);
     }
 
     public function updateThreshold(): void
@@ -356,6 +361,16 @@ class Settings extends Component
         Setting::set('login_popup_content', $this->loginPopupContent);
 
         $this->notify(__('common.saved'));
+    }
+
+    public function updateGeminiKey(): void
+    {
+        $this->validate(['geminiApiKey' => 'required|string|min:10|max:255']);
+
+        Setting::set('gemini_api_key', $this->geminiApiKey);
+        $this->geminiConfigured = true;
+
+        $this->notify(__('settings.gemini_saved'));
     }
 
     public function pollWhatsAppStatus(): void

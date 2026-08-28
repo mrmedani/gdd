@@ -613,6 +613,27 @@
     </div>
     @endif
     @endif
+
+    {{-- Widget chatbot IA flottant (iframe isolé pour éviter que Livewire ne le mange).
+         PAS de pointer-events:none : un iframe en pointer-events:none est totalement inclickable
+         (le hit-testing ne descend jamais dans son document). On garde l'iframe à la taille du
+         bouton (100x100) pour ne pas bloquer la page, et le widget demande un resize via
+         postMessage quand le chat s'ouvre/se ferme. --}}
+    @auth
+    <iframe src="{{ route('ai.chat') }}" title="{{ __('ai.title') }}" id="ai-chatbot-frame"
+        style="position:fixed;bottom:0;right:0;width:100px;height:100px;border:0;z-index:200;background:transparent;overflow:hidden;"></iframe>
+    <script>
+    (function () {
+        var frame = document.getElementById('ai-chatbot-frame');
+        if (!frame) return;
+        window.addEventListener('message', function (e) {
+            var d = e.data || {};
+            if (d.aiChatbot === 'open') { frame.style.width = '400px'; frame.style.height = '540px'; }
+            if (d.aiChatbot === 'close') { frame.style.width = '100px'; frame.style.height = '100px'; }
+        });
+    })();
+    </script>
+    @endauth
 </body>
 </html>
 

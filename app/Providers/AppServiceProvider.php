@@ -89,6 +89,9 @@ class AppServiceProvider extends ServiceProvider
         }
 
         Livewire::component('dashboard', Dashboard::class);
+        // NOTE: le composant 'ai.chatbot' a ete retire — le widget IA est rendu par la route
+        // /ai-chat (shell blade iframe-isole), pas par Livewire (le layout serait morphe par
+        // Livewire et detruirait le widget, cf. skill floating-widget-iframe-isolation).
         Livewire::component('expense-form', ExpenseForm::class);
         Livewire::component('expense-list', ExpenseList::class);
         Livewire::component('profile-settings', ProfileSettings::class);

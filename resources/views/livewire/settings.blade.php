@@ -539,6 +539,37 @@
                     </div>
                 </div>
 
+                <form wire:submit="updateGeminiKey" class="space-y-5 bg-slate-50/50 dark:bg-slate-950/40 p-5 rounded-2xl border border-slate-200/40 dark:border-slate-800/60 relative z-10">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white text-lg shadow-lg">🤖</div>
+                        <div>
+                            <h3 class="font-bold text-slate-800 dark:text-white font-heading">{{ __('settings.gemini_title') }}</h3>
+                            <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5 leading-tight">{{ __('settings.gemini_desc') }}</p>
+                        </div>
+                        @if($geminiConfigured)
+                            <span class="ms-auto inline-flex items-center gap-1 px-2 py-1 rounded-full bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 text-xs font-semibold">
+                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                                {{ __('settings.configured') }}
+                            </span>
+                        @endif
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-slate-600 dark:text-slate-300 mb-1.5">{{ __('settings.gemini_key_label') }}</label>
+                        <input type="password" wire:model="geminiApiKey" placeholder="AIza..." autocomplete="off"
+                            class="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-950/40 px-4 py-2.5 text-sm text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-400 transition-all" />
+                        <p class="text-xs text-slate-400 dark:text-slate-500 mt-1.5">{{ __('settings.gemini_key_help') }}</p>
+                        @error('geminiApiKey') <span class="text-xs text-red-500">{{ $message }}</span> @enderror
+                    </div>
+
+                    <div class="flex justify-end">
+                        <button type="submit" class="inline-flex items-center gap-2 px-5 py-2.5 bg-gradient-to-br from-indigo-600 to-purple-600 text-white rounded-xl font-semibold text-sm shadow-lg hover:shadow-indigo-500/40 transition-all cursor-pointer">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                            {{ __('settings.gemini_save_btn') }}
+                        </button>
+                    </div>
+                </form>
+
                 <form wire:submit="updateLoginPopup" class="space-y-5 bg-slate-50/50 dark:bg-slate-950/40 p-5 rounded-2xl border border-slate-200/40 dark:border-slate-800/60 relative z-10">
                     <div class="flex items-center gap-3">
                         <button type="button" wire:click="$toggle('loginPopupEnabled')"

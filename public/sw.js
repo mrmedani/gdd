@@ -1,4 +1,5 @@
-const CACHE_NAME = 'chronorex-v5';
+// v6 : purge des caches contenant des pages d'erreur mises en cache par erreur (bug widget IA 500 fantome)
+const CACHE_NAME = 'chronorex-v6';
 
 const PRECACHE_URLS = [
     '/manifest.json',
@@ -91,6 +92,9 @@ self.addEventListener('fetch', event => {
     if (request.mode === 'navigate') {
         event.respondWith(
             fetch(request).then(response => {
+                // NE JAMAIS mettre en cache une erreur (4xx/5xx) : un 500 ponctuel
+                // resterait servi pendant des jours depuis le cache (bug du widget IA 500 fantome).
+                if (!response.ok) return response;
                 const clone = response.clone();
                 caches.open(CACHE_NAME).then(cache => cache.put(request, clone));
                 return response;
@@ -109,6 +113,8 @@ self.addEventListener('fetch', event => {
     event.respondWith(
         caches.match(request).then(cached => {
             const fetchPromise = fetch(request).then(response => {
+                // Idem : pas de cache pour les reponses en erreur
+                if (!response.ok) return response;
                 const clone = response.clone();
                 caches.open(CACHE_NAME).then(cache => cache.put(request, clone));
                 return response;

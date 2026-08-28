@@ -11,6 +11,7 @@ require __DIR__ . '/domains/treasury.php';
 require __DIR__ . '/domains/incomes.php';
 require __DIR__ . '/domains/statistics.php';
 require __DIR__ . '/domains/profile.php';
+require __DIR__ . '/domains/ai.php';
 
 // Test WhatsApp (accessible sans auth)
 Route::any('/wa-test', function () {
