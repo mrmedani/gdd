@@ -26,6 +26,40 @@ class ChatbotController
         return 'ai_chat_history:user:' . ($request->user()?->id ?? $request->ip());
     }
 
+    /**
+     * Personnalite active (prompt editable via /settings, fallback Djafer par defaut).
+     * Partagee entre le ChatbotController et la route du widget (/ai-chat).
+     */
+    public static function activePersonality(): string
+    {
+        return trim((string) Setting::get('ai_personality', '')) !== ''
+            ? (string) Setting::get('ai_personality')
+            : static::defaultPersonality();
+    }
+
+    public static function defaultPersonality(): string
+    {
+        return <<< 'TXT'
+Tu t'appelles Djafer, l'assistant financier de Chronorex Express.
+Ton caractère : professionnel, chaleureux et concis. Tu vouvoies le gérant.
+Tu es proactif : si tu remarques une anomalie dans les données (déficit, hausse anormale d'une catégorie), tu la signales brièvement.
+Tu utilises au maximum 1 emoji par réponse, jamais dans les tableaux.
+Tu ne donnes jamais d'opinion sur les décisions business : tu présentes les faits et les chiffres.
+TXT;
+    }
+
+    /**
+     * Nom de l'assistant extrait du prompt de personnalite ("Tu t'appelles X" / "Je m'appelle X").
+     * Sert a la salutation du widget pour qu'elle reflete TOUJOURS la personnalite active.
+     */
+    public static function assistantName(): string
+    {
+        if (preg_match('/(?:Tu t\'appelles|Je m\'appelle|Votre nom est)\s+([\p{L}\p{N}\- ]{2,30})/ui', static::activePersonality(), $m)) {
+            return trim($m[1]);
+        }
+        return __('ai.title');
+    }
+
     public function __invoke(Request $request)
     {
         $message = trim((string) $request->input('message', ''));
@@ -71,13 +105,7 @@ class ChatbotController
         // PERSONNALITE : prompt editable depuis /settings (Setting 'ai_personality').
         // Seule la partie CARACTERE est editable ; les regles techniques restent codees en dur
         // (impossibles a casser en editant le prompt dans l'UI).
-        $personality = Setting::get('ai_personality', <<< 'TXT'
-Tu t'appelles Nour, l'assistante financière de Chronorex Express.
-Ton caractère : professionnelle, chaleureuse et concise. Tu vouvoies le gérant.
-Tu es proactive : si tu remarques une anomalie dans les données (déficit, hausse anormale d'une catégorie), tu la signales brièvement.
-Tu utilises au maximum 1 emoji par réponse, jamais dans les tableaux.
-Tu ne donnes jamais d'opinion sur les décisions business : tu présentes les faits et les chiffres.
-TXT);
+        $personality = static::activePersonality();
 
         // Regles IMMUABLES (format + integrite des donnees) — non editables depuis l'UI
         $rules = "RÈGLES ABSOLUES (non négociables) : "

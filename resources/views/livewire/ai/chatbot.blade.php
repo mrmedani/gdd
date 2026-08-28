@@ -20,7 +20,13 @@
         </div>
 
         <div id="ai-chat-messages" class="ai-scroll" style="flex:1;overflow-y:auto;padding:14px;display:flex;flex-direction:column;gap:10px;background:transparent;">
-            <div class="ai-bubble-ai">{{ __('ai.greeting') }}</div>
+            @if(!empty($authRequired))
+            <div style="align-self:center;text-align:center;background:#fef3c7;color:#92400e;border-radius:16px;padding:14px 18px;font-size:13px;line-height:1.6;max-width:90%;">
+                ⏳ {{ __('ai.session_expired') }}<br>
+                <button id="ai-chat-reload" type="button" style="margin-top:8px;border:0;background:linear-gradient(135deg,#4f46e5,#7c3aed);color:#fff;border-radius:10px;padding:7px 16px;font-size:12px;cursor:pointer;font-family:inherit;">{{ __('ai.reload_page') }}</button>
+            </div>
+            @else
+            <div class="ai-bubble-ai">{{ $greeting }}</div>
             {{-- Chips de questions suggerees : retirees apres le premier message envoye --}}
             <div id="ai-chat-suggestions" style="display:flex;flex-wrap:wrap;gap:6px;">
                 @foreach([
@@ -32,6 +38,7 @@
                 <button type="button" class="ai-sug" data-msg="{{ $sug }}">{{ $sug }}</button>
                 @endforeach
             </div>
+            @endif
         </div>
 
         {{-- Scroll-to-bottom flottant --}}
@@ -259,6 +266,14 @@
 
     toggle.addEventListener('click', function () { setOpen(!open); });
     closeBtn.addEventListener('click', function () { setOpen(false); });
+
+    // Mode degrade : session expiree -> le bouton recharge la page PARENTE (l iframe est dedans)
+    var reloadBtn = document.getElementById('ai-chat-reload');
+    if (reloadBtn) {
+        reloadBtn.addEventListener('click', function () {
+            try { parent.location.reload(); } catch (e) { window.location.reload(); }
+        });
+    }
 
     function csrf() {
         return document.querySelector('meta[name="csrf-token"]').getAttribute('content');

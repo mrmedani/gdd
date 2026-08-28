@@ -12,6 +12,6 @@
     <style>html,body{background:transparent;margin:0;padding:0;overflow:hidden;}</style>
 </head>
 <body class="font-sans antialiased">
-    @include('livewire.ai.chatbot', ['chatHistory' => $chatHistory ?? []])
+    @include('livewire.ai.chatbot', ['chatHistory' => $chatHistory ?? [], 'greeting' => $greeting ?? __('ai.greeting'), 'assistantName' => $assistantName ?? __('ai.title')])
 </body>
 </html>
