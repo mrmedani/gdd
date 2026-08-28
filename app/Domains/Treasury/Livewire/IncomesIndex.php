@@ -53,7 +53,6 @@ class IncomesIndex extends Component
 
     public function mount(): void
     {
-        Gate::authorize('manage-incomes');
         $this->period = getPeriodFromDate(now());
         $this->date = now()->format('Y-m-d');
     }
