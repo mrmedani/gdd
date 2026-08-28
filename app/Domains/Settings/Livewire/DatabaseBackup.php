@@ -86,6 +86,120 @@ class DatabaseBackup extends Component
         $this->notify(__('common.deleted'));
     }
 
+    public function restoreBackup(string $filename): void
+    {
+        $filename = basename($filename);
+        $path = storage_path('app/backups/' . $filename);
+
+        if (!file_exists($path)) {
+            $this->statusMessage = __('settings.backup_not_found');
+            $this->loadBackups();
+            return;
+        }
+
+        $ext = strtolower(pathinfo($path, PATHINFO_EXTENSION));
+        if ($ext !== 'sql') {
+            $this->statusMessage = __('settings.backup_restore_sql_only');
+            return;
+        }
+
+        // Backup automatique de securite avant restauration
+        try {
+            Artisan::call('backup:database');
+        } catch (\Throwable $e) {
+            // non bloquant
+        }
+
+        $config = config('database.connections.' . config('database.default'));
+        $host = $config['host'] ?? '127.0.0.1';
+        $port = (string) ($config['port'] ?? 3306);
+        $db = $config['database'];
+        $user = $config['username'];
+        $pass = $config['password'];
+
+        $ok = false;
+        $error = '';
+
+        // 1) Tentative via mysql CLI
+        $cmd = sprintf(
+            'mysql --host=%s --port=%s --user=%s --password=%s %s',
+            escapeshellarg($host),
+            escapeshellarg($port),
+            escapeshellarg($user),
+            escapeshellarg($pass),
+            escapeshellarg($db)
+        );
+
+        $descriptors = [
+            0 => ['file', $path, 'r'],
+            1 => ['pipe', 'w'],
+            2 => ['pipe', 'w'],
+        ];
+
+        $process = @proc_open($cmd, $descriptors, $pipes);
+        if (is_resource($process)) {
+            $error = (string) stream_get_contents($pipes[2]);
+            fclose($pipes[1]);
+            fclose($pipes[2]);
+            $exitCode = proc_close($process);
+            $ok = ($exitCode === 0);
+        } else {
+            $error = 'mysql CLI indisponible';
+        }
+
+        // 2) Fallback PDO si mysql CLI a echoue
+        if (!$ok) {
+            try {
+                $this->restoreViaPdo($path);
+                $ok = true;
+                $error = '';
+            } catch (\Throwable $e) {
+                $error = $e->getMessage();
+            }
+        }
+
+        if ($ok) {
+            $this->statusMessage = __('settings.backup_restored');
+            $this->notify(__('settings.backup_restored'));
+        } else {
+            $this->statusMessage = __('settings.backup_restore_failed') . ': ' . trim($error);
+        }
+
+        $this->loadBackups();
+    }
+
+    protected function restoreViaPdo(string $path): void
+    {
+        $pdo = \Illuminate\Support\Facades\DB::connection()->getPdo();
+        $pdo->exec('SET FOREIGN_KEY_CHECKS = 0');
+        $sql = (string) file_get_contents($path);
+        foreach ($this->splitSql($sql) as $stmt) {
+            if (trim($stmt) !== '') {
+                $pdo->exec($stmt);
+            }
+        }
+        $pdo->exec('SET FOREIGN_KEY_CHECKS = 1');
+    }
+
+    protected function splitSql(string $sql): array
+    {
+        $sql = preg_replace('/^--.*$/m', '', $sql); // retire commentaires --
+        $lines = explode("\n", $sql);
+        $statements = [];
+        $current = '';
+        foreach ($lines as $line) {
+            $current .= $line . "\n";
+            if (str_ends_with(rtrim($line), ';')) {
+                $statements[] = $current;
+                $current = '';
+            }
+        }
+        if (trim($current) !== '') {
+            $statements[] = $current;
+        }
+        return $statements;
+    }
+
     public function render()
     {
         return view('livewire.database-backup')
