@@ -61,6 +61,7 @@ class Settings extends Component
 
     public string $geminiApiKey = '';
     public bool $geminiConfigured = false;
+    public string $aiPersonality = '';
 
     public function mount(): void
     {
@@ -92,6 +93,7 @@ class Settings extends Component
         $this->pollWhatsAppStatus();
         $this->geminiApiKey = (string) Setting::get('gemini_api_key', '');
         $this->geminiConfigured = !empty($this->geminiApiKey);
+        $this->aiPersonality = (string) Setting::get('ai_personality', '');
     }
 
     public function updateThreshold(): void
@@ -371,6 +373,22 @@ class Settings extends Component
         $this->geminiConfigured = true;
 
         $this->notify(__('settings.gemini_saved'));
+    }
+
+    public function updateAiPersonality(): void
+    {
+        $this->validate(['aiPersonality' => 'nullable|string|max:4000']);
+
+        // Vide = retour au prompt par defaut (le controller a le fallback)
+        Setting::set('ai_personality', trim($this->aiPersonality));
+        $this->notify(__('settings.ai_personality_saved'));
+    }
+
+    public function resetAiPersonality(): void
+    {
+        Setting::set('ai_personality', '');
+        $this->aiPersonality = '';
+        $this->notify(__('settings.ai_personality_reset'));
     }
 
     public function pollWhatsAppStatus(): void

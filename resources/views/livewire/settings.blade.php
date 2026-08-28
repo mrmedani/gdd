@@ -570,6 +570,36 @@
                     </div>
                 </form>
 
+                {{-- Personnalite de l assistant : prompt editable (le caractere seul ; les regles techniques sont immuables) --}}
+                <form wire:submit="updateAiPersonality" class="space-y-4 bg-slate-50/50 dark:bg-slate-950/40 p-5 rounded-2xl border border-slate-200/40 dark:border-slate-800/60 relative z-10">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-2xl bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-white text-lg shadow-lg">✨</div>
+                        <div>
+                            <h3 class="font-bold text-slate-800 dark:text-white font-heading">{{ __('settings.ai_personality_title') }}</h3>
+                            <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5 leading-tight">{{ __('settings.ai_personality_desc') }}</p>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-slate-600 dark:text-slate-300 mb-1.5">{{ __('settings.ai_personality_label') }}</label>
+                        <textarea wire:model="aiPersonality" rows="6" placeholder="{{ __('settings.ai_personality_placeholder') }}"
+                            class="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-950/40 px-4 py-3 text-sm text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-purple-400 transition-all font-mono leading-relaxed resize-y"></textarea>
+                        <p class="text-xs text-slate-400 dark:text-slate-500 mt-1.5">{{ __('settings.ai_personality_help') }}</p>
+                        @error('aiPersonality') <span class="text-xs text-red-500">{{ $message }}</span> @enderror
+                    </div>
+
+                    <div class="flex flex-wrap items-center justify-between gap-3">
+                        <button type="button" wire:click="resetAiPersonality" wire:confirm="{{ __('settings.ai_personality_confirm_reset') }}"
+                            class="inline-flex items-center gap-2 px-4 py-2.5 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 rounded-xl font-semibold text-sm hover:bg-slate-200 dark:hover:bg-slate-700 transition-all cursor-pointer">
+                            {{ __('settings.ai_personality_reset_btn') }}
+                        </button>
+                        <button type="submit" class="inline-flex items-center gap-2 px-5 py-2.5 bg-gradient-to-br from-purple-600 to-pink-600 text-white rounded-xl font-semibold text-sm shadow-lg hover:shadow-purple-500/40 transition-all cursor-pointer">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                            {{ __('settings.ai_personality_save_btn') }}
+                        </button>
+                    </div>
+                </form>
+
                 <form wire:submit="updateLoginPopup" class="space-y-5 bg-slate-50/50 dark:bg-slate-950/40 p-5 rounded-2xl border border-slate-200/40 dark:border-slate-800/60 relative z-10">
                     <div class="flex items-center gap-3">
                         <button type="button" wire:click="$toggle('loginPopupEnabled')"
