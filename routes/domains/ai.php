@@ -14,10 +14,11 @@ Route::get('/ai-chat', function () {
         if (!$userId) {
             // Non authentifie : shell en mode degrade (le JS affichera l'invite login)
             return response()->view('ai.widget-shell', [
-                'chatHistory' => [],
-                'greeting' => __('ai.greeting'),
+                'chatHistory'   => [],
+                'greeting'      => __('ai.greeting'),
                 'assistantName' => __('ai.title'),
-                'authRequired' => true,
+                'authRequired'  => true,
+                'aiCfg'         => \App\Domains\AI\Support\WidgetConfig::get(),
             ], 200);
         }
 
@@ -34,30 +35,38 @@ Route::get('/ai-chat', function () {
             }
         }
 
-        // Salutation refletant la PERSONNALITE ACTIVE : le nom est extrait du prompt
-        // (defaut "Djafer", ou le nom defini dans /settings). Utilise le prenom du gerant.
-        $assistantName = ChatbotController::assistantName();
+        // Nom : le Setting ai_name a PRIORITE (garanti), sinon extraction du prompt de personnalite
+        $cfg = \App\Domains\AI\Support\WidgetConfig::get();
+        $assistantName = $cfg['name'] !== '' ? $cfg['name'] : ChatbotController::assistantName();
         $userName = explode(' ', trim(auth()->user()->name ?? ''))[0];
-        $greeting = __('ai.greeting_named', ['name' => $assistantName, 'user' => $userName]);
-        $authRequired = false;
+
+        // Salutation : le Setting ai_greeting a priorite (variables :user / :name supportees),
+        // sinon salutation auto generee
+        $greeting = $cfg['greeting'] !== ''
+            ? str_replace([':user', ':name'], [$userName, $assistantName], $cfg['greeting'])
+            : __('ai.greeting_named', ['name' => $assistantName, 'user' => $userName]);
+
+        return view('ai.widget-shell', [
+            'chatHistory'   => $history,
+            'assistantName' => $assistantName,
+            'greeting'      => $greeting,
+            'authRequired'  => false,
+            'aiCfg'         => $cfg,
+        ]);
     } catch (\Throwable $e) {
         // Degrade proprement : log complet + shell minimal au lieu du 500
         \Illuminate\Support\Facades\Log::error('AI widget degraded', [
             'error' => $e->getMessage(),
             'file'  => $e->getFile() . ':' . $e->getLine(),
         ]);
-        $history = [];
-        $greeting = __('ai.greeting');
-        $assistantName = __('ai.title');
-        $authRequired = true;
+        return response()->view('ai.widget-shell', [
+            'chatHistory'   => [],
+            'greeting'      => __('ai.greeting'),
+            'assistantName' => __('ai.title'),
+            'authRequired'  => true,
+            'aiCfg'         => \App\Domains\AI\Support\WidgetConfig::get(),
+        ], 200);
     }
-
-    return view('ai.widget-shell', [
-        'chatHistory' => $history,
-        'assistantName' => $assistantName,
-        'greeting' => $greeting,
-        'authRequired' => $authRequired,
-    ]);
 })->name('ai.chat');
 
 // Endpoint API appelé par le widget (la clé Gemini reste côté serveur)

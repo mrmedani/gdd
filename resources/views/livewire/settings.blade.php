@@ -600,6 +600,130 @@
                     </div>
                 </form>
 
+                {{-- Identite du widget IA : nom, avatar, salutation, chips --}}
+                <form wire:submit="updateAiIdentity" class="space-y-4 bg-slate-50/50 dark:bg-slate-950/40 p-5 rounded-2xl border border-slate-200/40 dark:border-slate-800/60 relative z-10">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-2xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white text-lg shadow-lg">🎨</div>
+                        <div>
+                            <h3 class="font-bold text-slate-800 dark:text-white font-heading">{{ __('settings.ai_identity_title') }}</h3>
+                            <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5 leading-tight">{{ __('settings.ai_identity_desc') }}</p>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-slate-600 dark:text-slate-300 mb-1.5">{{ __('settings.ai_name_label') }}</label>
+                            <input type="text" wire:model="aiName" placeholder="Djafer"
+                                class="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-950/40 px-4 py-2.5 text-sm text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-400 transition-all" />
+                            <p class="text-xs text-slate-400 dark:text-slate-500 mt-1">{{ __('settings.ai_name_help') }}</p>
+                            @error('aiName') <span class="text-xs text-red-500">{{ $message }}</span> @enderror
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-slate-600 dark:text-slate-300 mb-1.5">{{ __('settings.ai_emoji_label') }}</label>
+                            <input type="text" wire:model="aiEmoji" placeholder="🤖" maxlength="8"
+                                class="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-950/40 px-4 py-2.5 text-sm text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-400 transition-all text-center text-xl" />
+                            <p class="text-xs text-slate-400 dark:text-slate-500 mt-1">{{ __('settings.ai_emoji_help') }}</p>
+                            @error('aiEmoji') <span class="text-xs text-red-500">{{ $message }}</span> @enderror
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-slate-600 dark:text-slate-300 mb-1.5">{{ __('settings.ai_greeting_label') }}</label>
+                        <textarea wire:model="aiGreeting" rows="2" placeholder="{{ __('settings.ai_greeting_placeholder') }}"
+                            class="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-950/40 px-4 py-3 text-sm text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-400 transition-all resize-y"></textarea>
+                        <p class="text-xs text-slate-400 dark:text-slate-500 mt-1">{{ __('settings.ai_greeting_help') }}</p>
+                        @error('aiGreeting') <span class="text-xs text-red-500">{{ $message }}</span> @enderror
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-slate-600 dark:text-slate-300 mb-1.5">{{ __('settings.ai_suggestions_label') }}</label>
+                        <textarea wire:model="aiSuggestions" rows="4" placeholder="{{ __('settings.ai_suggestions_placeholder') }}"
+                            class="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-950/40 px-4 py-3 text-sm text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-400 transition-all resize-y"></textarea>
+                        <p class="text-xs text-slate-400 dark:text-slate-500 mt-1">{{ __('settings.ai_suggestions_help') }}</p>
+                        @error('aiSuggestions') <span class="text-xs text-red-500">{{ $message }}</span> @enderror
+                    </div>
+
+                    <div class="flex justify-end">
+                        <button type="submit" class="inline-flex items-center gap-2 px-5 py-2.5 bg-gradient-to-br from-blue-600 to-indigo-600 text-white rounded-xl font-semibold text-sm shadow-lg hover:shadow-indigo-500/40 transition-all cursor-pointer">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                            {{ __('settings.ai_identity_save_btn') }}
+                        </button>
+                    </div>
+                </form>
+
+                {{-- Apparence & comportement du widget IA --}}
+                <form wire:submit="updateAiAppearance" class="space-y-4 bg-slate-50/50 dark:bg-slate-950/40 p-5 rounded-2xl border border-slate-200/40 dark:border-slate-800/60 relative z-10">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-2xl bg-gradient-to-br from-teal-500 to-emerald-600 flex items-center justify-center text-white text-lg shadow-lg">⚙️</div>
+                        <div>
+                            <h3 class="font-bold text-slate-800 dark:text-white font-heading">{{ __('settings.ai_appearance_title') }}</h3>
+                            <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5 leading-tight">{{ __('settings.ai_appearance_desc') }}</p>
+                        </div>
+                        <button type="button" wire:click="$toggle('aiWidgetEnabled')"
+                            class="ms-auto relative w-11 h-6 rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-emerald-500/30 cursor-pointer @if($aiWidgetEnabled) bg-emerald-600 @else bg-slate-300 dark:bg-slate-700 @endif">
+                            <span class="absolute top-0.5 start-[2px] w-5 h-5 bg-white border border-slate-300 rounded-full transition-transform duration-200 shadow-sm @if($aiWidgetEnabled) translate-x-full rtl:-translate-x-full @else translate-x-0 @endif"></span>
+                        </button>
+                    </div>
+                    <p class="text-xs -mt-2 {{ $aiWidgetEnabled ? 'text-emerald-600 dark:text-emerald-400' : 'text-slate-400' }}">
+                        {{ $aiWidgetEnabled ? __('settings.ai_widget_on') : __('settings.ai_widget_off') }}
+                    </p>
+
+                    <div>
+                        <label class="block text-sm font-medium text-slate-600 dark:text-slate-300 mb-2">{{ __('settings.ai_palette_label') }}</label>
+                        <div class="flex flex-wrap gap-2">
+                            @foreach(['indigo' => '#4f46e5', 'emerald' => '#059669', 'ocean' => '#0284c7', 'sunset' => '#ea580c', 'slate' => '#334155', 'rose' => '#e11d48'] as $palKey => $palColor)
+                            <button type="button" wire:click="$set('aiPalette', '{{ $palKey }}')"
+                                class="w-10 h-10 rounded-xl cursor-pointer border-2 transition-all {{ $aiPalette === $palKey ? 'border-slate-800 dark:border-white scale-110' : 'border-transparent opacity-70 hover:opacity-100' }}"
+                                style="background:{{ $palColor }}" title="{{ $palKey }}"></button>
+                            @endforeach
+                        </div>
+                        @error('aiPalette') <span class="text-xs text-red-500">{{ $message }}</span> @enderror
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-slate-600 dark:text-slate-300 mb-1.5">{{ __('settings.ai_position_label') }}</label>
+                            <select wire:model="aiPosition" class="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-950/40 px-4 py-2.5 text-sm text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-400 cursor-pointer">
+                                <option value="right">{{ __('settings.ai_position_right') }}</option>
+                                <option value="left">{{ __('settings.ai_position_left') }}</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-slate-600 dark:text-slate-300 mb-1.5">{{ __('settings.ai_size_label') }}</label>
+                            <select wire:model="aiWindowSize" class="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-950/40 px-4 py-2.5 text-sm text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-400 cursor-pointer">
+                                <option value="normal">{{ __('settings.ai_size_normal') }}</option>
+                                <option value="large">{{ __('settings.ai_size_large') }}</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="space-y-3">
+                        <label class="flex items-center gap-3 cursor-pointer">
+                            <input type="checkbox" wire:model="aiShowSuggestions" class="w-4 h-4 rounded accent-emerald-600" />
+                            <span class="text-sm text-slate-600 dark:text-slate-300">{{ __('settings.ai_show_suggestions') }}</span>
+                        </label>
+                        <label class="flex items-center gap-3 cursor-pointer">
+                            <input type="checkbox" wire:model="aiAutoOpen" class="w-4 h-4 rounded accent-emerald-600" />
+                            <span class="text-sm text-slate-600 dark:text-slate-300">{{ __('settings.ai_auto_open') }}</span>
+                        </label>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-slate-600 dark:text-slate-300 mb-1.5">{{ __('settings.ai_offline_label') }}</label>
+                        <textarea wire:model="aiOfflineMessage" rows="2" placeholder="{{ __('settings.ai_offline_placeholder') }}"
+                            class="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-950/40 px-4 py-3 text-sm text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-400 transition-all resize-y"></textarea>
+                        <p class="text-xs text-slate-400 dark:text-slate-500 mt-1">{{ __('settings.ai_offline_help') }}</p>
+                        @error('aiOfflineMessage') <span class="text-xs text-red-500">{{ $message }}</span> @enderror
+                    </div>
+
+                    <div class="flex justify-end">
+                        <button type="submit" class="inline-flex items-center gap-2 px-5 py-2.5 bg-gradient-to-br from-teal-600 to-emerald-600 text-white rounded-xl font-semibold text-sm shadow-lg hover:shadow-emerald-500/40 transition-all cursor-pointer">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                            {{ __('settings.ai_appearance_save_btn') }}
+                        </button>
+                    </div>
+                </form>
+
                 <form wire:submit="updateLoginPopup" class="space-y-5 bg-slate-50/50 dark:bg-slate-950/40 p-5 rounded-2xl border border-slate-200/40 dark:border-slate-800/60 relative z-10">
                     <div class="flex items-center gap-3">
                         <button type="button" wire:click="$toggle('loginPopupEnabled')"

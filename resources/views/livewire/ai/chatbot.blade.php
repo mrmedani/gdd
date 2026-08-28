@@ -1,14 +1,35 @@
 {{-- Widget chatbot IA : bouton flottant + fenêtre togglable. Rendu dans un iframe isolé (shell sans layout).
      position:fixed obligatoire (le body de l'iframe n'a pas de hauteur).
      Historique en CACHE serveur (24h) — survit aux refreshs/navigations.
-     UX v2 : animations d'ouverture, dark mode, copier réponse, textarea auto-resize, tableaux scrollables. --}}
+     UX v2 : animations d'ouverture, dark mode, copier réponse, textarea auto-resize, tableaux scrollables.
+     UX v3 : TOUT est configurable depuis /settings via $aiCfg (nom, emoji, salutation, chips,
+     palette, position, taille, auto-open, on/off, message offline). --}}
+@php
+    $cfg = $aiCfg ?? [];
+    $aiNameFinal = ($cfg['name'] ?? '') !== '' ? $cfg['name'] : $assistantName;
+    $aiEmojiFinal = $cfg['emoji'] ?? '🤖';
+    // Palettes : [gradient bouton/header, couleur accent texte chips/tableaux]
+    $palettes = [
+        'indigo'  => ['linear-gradient(135deg,#4f46e5,#7c3aed)', '#4f46e5'],
+        'emerald' => ['linear-gradient(135deg,#059669,#10b981)', '#059669'],
+        'ocean'   => ['linear-gradient(135deg,#0284c7,#2563eb)', '#0284c7'],
+        'sunset'  => ['linear-gradient(135deg,#ea580c,#f59e0b)', '#ea580c'],
+        'slate'   => ['linear-gradient(135deg,#334155,#475569)', '#334155'],
+        'rose'    => ['linear-gradient(135deg,#e11d48,#f43f5e)', '#e11d48'],
+    ];
+    $pal = $palettes[$cfg['palette'] ?? 'indigo'] ?? $palettes['indigo'];
+    $gradient = $pal[0];
+    $accent = $pal[1];
+    $posSide = ($cfg['position'] ?? 'right') === 'left' ? 'left' : 'right';
+    $winLarge = ($cfg['size'] ?? 'normal') === 'large';
+@endphp
 <div id="ai-chatbot-root" style="background:transparent;">
     {{-- Fenêtre de chat (cachée par défaut) --}}
-    <div id="ai-chat-window" class="ai-window" style="position:fixed;bottom:84px;right:14px;width:360px;max-width:calc(100vw - 2rem);height:460px;max-height:calc(100vh - 2rem);display:none;flex-direction:column;background:rgba(255,255,255,0.97);border-radius:24px;box-shadow:0 20px 60px rgba(15,23,42,0.25);border:1px solid rgba(148,163,184,0.35);overflow:hidden;pointer-events:auto;z-index:10;">
-        <div style="display:flex;align-items:center;gap:10px;padding:14px 16px;background:linear-gradient(135deg,#4f46e5,#7c3aed);color:#fff;">
-            <div style="width:36px;height:36px;border-radius:12px;background:rgba(255,255,255,0.2);display:flex;align-items:center;justify-content:center;font-size:18px;">🤖</div>
+    <div id="ai-chat-window" class="ai-window" style="position:fixed;bottom:84px;{{ $posSide }}:14px;width:360px;max-width:calc(100vw - 2rem);height:{{ $winLarge ? '560px' : '460px' }};max-height:calc(100vh - 2rem);display:none;flex-direction:column;background:rgba(255,255,255,0.97);border-radius:24px;box-shadow:0 20px 60px rgba(15,23,42,0.25);border:1px solid rgba(148,163,184,0.35);overflow:hidden;pointer-events:auto;z-index:10;">
+        <div style="display:flex;align-items:center;gap:10px;padding:14px 16px;background:{{ $gradient }};color:#fff;">
+            <div style="width:36px;height:36px;border-radius:12px;background:rgba(255,255,255,0.2);display:flex;align-items:center;justify-content:center;font-size:18px;">{{ $aiEmojiFinal }}</div>
             <div style="flex:1;">
-                <div style="font-weight:700;font-size:15px;">{{ __('ai.title') }}</div>
+                <div style="font-weight:700;font-size:15px;">{{ $aiNameFinal }}</div>
                 <div style="font-size:11px;opacity:0.85;">{{ __('ai.subtitle') }}</div>
             </div>
             <button id="ai-chat-clear" type="button" title="{{ __('ai.clear') }}" style="background:none;border:0;color:#fff;cursor:pointer;padding:6px;border-radius:10px;display:flex;opacity:0.85;">
@@ -27,8 +48,13 @@
             </div>
             @else
             <div class="ai-bubble-ai">{{ $greeting }}</div>
-            {{-- Chips de questions suggerees : retirees apres le premier message envoye --}}
+            {{-- Chips de questions suggerees : retirees apres le premier message envoye.
+                 Contenu configurable depuis /settings (ai_suggestions, 1 question par ligne). --}}
+            @if(!empty($cfg['showSuggestions']))
             <div id="ai-chat-suggestions" style="display:flex;flex-wrap:wrap;gap:6px;">
+                @forelse(($cfg['suggestions'] ?? []) as $sug)
+                <button type="button" class="ai-sug" data-msg="{{ $sug }}">{{ $sug }}</button>
+                @empty
                 @foreach([
                     __('ai.sug_summary'),
                     __('ai.sug_recurring'),
@@ -37,7 +63,9 @@
                 ] as $sug)
                 <button type="button" class="ai-sug" data-msg="{{ $sug }}">{{ $sug }}</button>
                 @endforeach
+                @endforelse
             </div>
+            @endif
             @endif
         </div>
 
@@ -58,7 +86,7 @@
 
     {{-- Bouton flottant --}}
     <button id="ai-chatbot-toggle" type="button" aria-label="{{ __('ai.title') }}"
-        style="position:fixed;bottom:14px;right:14px;width:56px;height:56px;border-radius:50%;border:0;background:linear-gradient(135deg,#4f46e5,#7c3aed);box-shadow:0 10px 30px rgba(79,70,229,0.45);cursor:pointer;display:flex;align-items:center;justify-content:center;pointer-events:auto;z-index:10;">
+        style="position:fixed;bottom:14px;{{ $posSide }}:14px;width:56px;height:56px;border-radius:50%;border:0;background:{{ $gradient }};box-shadow:0 10px 30px rgba(79,70,229,0.45);cursor:pointer;display:flex;align-items:center;justify-content:center;pointer-events:auto;z-index:10;">
         <svg id="ai-chat-icon" style="width:26px;height:26px;color:#fff;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/></svg>
     </button>
 </div>
@@ -267,6 +295,12 @@
     toggle.addEventListener('click', function () { setOpen(!open); });
     closeBtn.addEventListener('click', function () { setOpen(false); });
 
+    // Ouverture automatique demandee par le layout (setting ai_auto_open)
+    window.addEventListener('message', function (e) {
+        var d = e.data || {};
+        if (d.aiChatbot === 'openAuto' && !open) setOpen(true);
+    });
+
     // Mode degrade : session expiree -> le bouton recharge la page PARENTE (l iframe est dedans)
     var reloadBtn = document.getElementById('ai-chat-reload');
     if (reloadBtn) {
@@ -324,6 +358,9 @@
         .catch(function () {
             th.remove();
             addBubble('{{ __('ai.api_error') }}', 'assistant');
+            @if(!empty($cfg['offlineMessage']))
+            addBubble(@js($cfg['offlineMessage']), 'assistant');
+            @endif
         })
         .finally(function () {
             sendBtn.disabled = false;

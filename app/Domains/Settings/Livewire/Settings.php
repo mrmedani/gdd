@@ -63,6 +63,19 @@ class Settings extends Component
     public bool $geminiConfigured = false;
     public string $aiPersonality = '';
 
+    // --- Personnalisation du widget IA (Categories 1 + 2) ---
+    public string $aiName = '';
+    public string $aiEmoji = '🤖';
+    public string $aiGreeting = '';
+    public string $aiSuggestions = '';
+    public string $aiPalette = 'indigo';
+    public string $aiPosition = 'right';
+    public string $aiWindowSize = 'normal';
+    public bool $aiAutoOpen = false;
+    public bool $aiShowSuggestions = true;
+    public bool $aiWidgetEnabled = true;
+    public string $aiOfflineMessage = '';
+
     public function mount(): void
     {
         Gate::authorize('manage-settings');
@@ -94,6 +107,17 @@ class Settings extends Component
         $this->geminiApiKey = (string) Setting::get('gemini_api_key', '');
         $this->geminiConfigured = !empty($this->geminiApiKey);
         $this->aiPersonality = (string) Setting::get('ai_personality', '');
+        $this->aiName = (string) Setting::get('ai_name', '');
+        $this->aiEmoji = (string) Setting::get('ai_emoji', '🤖');
+        $this->aiGreeting = (string) Setting::get('ai_greeting', '');
+        $this->aiSuggestions = (string) Setting::get('ai_suggestions', '');
+        $this->aiPalette = (string) Setting::get('ai_palette', 'indigo');
+        $this->aiPosition = (string) Setting::get('ai_position', 'right');
+        $this->aiWindowSize = (string) Setting::get('ai_window_size', 'normal');
+        $this->aiAutoOpen = (bool) Setting::get('ai_auto_open', false);
+        $this->aiShowSuggestions = (bool) Setting::get('ai_show_suggestions', true);
+        $this->aiWidgetEnabled = (bool) Setting::get('ai_widget_enabled', true);
+        $this->aiOfflineMessage = (string) Setting::get('ai_offline_message', '');
     }
 
     public function updateThreshold(): void
@@ -389,6 +413,53 @@ class Settings extends Component
         Setting::set('ai_personality', '');
         $this->aiPersonality = '';
         $this->notify(__('settings.ai_personality_reset'));
+    }
+
+    public function updateAiIdentity(): void
+    {
+        $this->validate([
+            'aiName'         => 'nullable|string|max:30',
+            'aiEmoji'        => 'nullable|string|max:8',
+            'aiGreeting'     => 'nullable|string|max:500',
+            'aiSuggestions'  => 'nullable|string|max:2000',
+        ]);
+
+        // Nom : vide = extraction automatique depuis le prompt de personnalite
+        Setting::set('ai_name', trim($this->aiName));
+        Setting::set('ai_emoji', trim($this->aiEmoji) ?: '🤖');
+        Setting::set('ai_greeting', trim($this->aiGreeting));
+        // Chips : 1 question par ligne, vide = defaut
+        $sugs = collect(explode("\n", str_replace("\r", '', $this->aiSuggestions)))
+            ->map(fn ($s) => trim($s))
+            ->filter()
+            ->take(6)
+            ->implode("\n");
+        Setting::set('ai_suggestions', $sugs);
+
+        $this->notify(__('settings.ai_identity_saved'));
+    }
+
+    public function updateAiAppearance(): void
+    {
+        $this->validate([
+            'aiPalette'       => 'required|in:indigo,emerald,ocean,sunset,slate,rose',
+            'aiPosition'      => 'required|in:right,left',
+            'aiWindowSize'    => 'required|in:normal,large',
+            'aiAutoOpen'      => 'boolean',
+            'aiShowSuggestions' => 'boolean',
+            'aiWidgetEnabled' => 'boolean',
+            'aiOfflineMessage' => 'nullable|string|max:300',
+        ]);
+
+        Setting::set('ai_palette', $this->aiPalette);
+        Setting::set('ai_position', $this->aiPosition);
+        Setting::set('ai_window_size', $this->aiWindowSize);
+        Setting::set('ai_auto_open', $this->aiAutoOpen ? '1' : '0');
+        Setting::set('ai_show_suggestions', $this->aiShowSuggestions ? '1' : '0');
+        Setting::set('ai_widget_enabled', $this->aiWidgetEnabled ? '1' : '0');
+        Setting::set('ai_offline_message', trim($this->aiOfflineMessage));
+
+        $this->notify(__('settings.ai_appearance_saved'));
     }
 
     public function pollWhatsAppStatus(): void
