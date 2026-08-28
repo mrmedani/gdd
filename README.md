@@ -93,6 +93,17 @@
 - **Pop-up de connexion** : message personnalisable affiché après login
 - **Sauvegarde de base de données** : via commande Artisan dédiée
 
+### 💾 Sauvegarde & Restauration
+- **Sauvegardes MySQL** : export complet de la base en `.sql` (avec `DROP TABLE` + `INSERT`), stocké dans `storage/app/backups/`
+- **Création en 1 clic** : bouton « Créer la sauvegarde » sur `/settings/database-backup`
+- **Restauration par sauvegarde** : chaque sauvegarde liste dispose d'un bouton **Restaurer** 🔵
+  - **Confirmation** demandée avant écrasement des données
+  - **Sauvegarde automatique de sécurité** générée avant chaque restauration (point de retour)
+  - **Import** via `mysql` CLI, avec **fallback PDO** si le binaire `mysql` n'est pas disponible (ex : hébergement mutualisé cPanel)
+  - Format `.sql` (MySQL) uniquement — les `.sqlite` sont refusés avec message clair
+- **Téléchargement & Suppression** : chaque sauvegarde peut être téléchargée ou supprimée
+- **Rétention** : les 30 sauvegardes les plus récentes sont conservées (les plus anciennes sont purgées automatiquement)
+
 ---
 
 ## 🚀 Tech Stack
@@ -297,7 +308,7 @@ php artisan optimize:clear
 | `/settings/categories` | Catégories | categories |
 | `/settings/audit-logs` | Journal d'audit | audit-logs |
 | `/settings/email-templates` | Templates email | email-templates |
-| `/settings/database-backup` | Sauvegarde DB | settings |
+| `/settings/database-backup` | Sauvegarde & Restauration DB | settings |
 | `/profile` | Mon Profil (WhatsApp) | auth |
 | `/manifest.json` | PWA manifest | public |
 
@@ -364,6 +375,7 @@ php artisan optimize:clear
 - **Saisie de montants** : tous les champs monétaires acceptent les séparateurs de milliers (espace **et** virgule) — `87 104` ou `87,104` sont normalisés avant conversion (corrige un bug où `87 104` était lu comme `87`)
 - **UI Design** : toutes les pages suivent le registre produit (`reference/product.md`) — pas de glassmorphism, dégradés, orbes, ou animations décoratives
 - **Stockage des uploads** : le `storage:link` est requis pour servir le logo, favicon et photos de profil ; sans lui, les images retournent 404
+- **Restauration de sauvegarde** : la commande `mysql` CLI est tentée en priorité ; si le binaire est absent (hébergement mutualisé), un fallback PDO exécute le `.sql` morceau par morceau (découpage sur `;` en ignorant les commentaires `--`). Une sauvegarde de sécurité est créée automatiquement avant chaque restauration.
 
 ---
 
