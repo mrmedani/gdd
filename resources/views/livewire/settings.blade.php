@@ -48,9 +48,39 @@
         </a>
     </div>
 
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 relative z-10">
-        <!-- Application Settings -->
-        <div class="space-y-8">
+    {{-- ===================== NAVIGATION PAR ONGLETS =====================
+         Organisation par audience/frequence d'usage. $tab persiste dans l'URL (?tab=ai).
+         wire:show : les panneaux restent rendus (etat Livewire preserve), juste masques. --}}
+    <nav class="mb-6 flex flex-wrap gap-2 bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border border-slate-200/50 dark:border-slate-800/60 p-2 rounded-2xl shadow-premium dark:shadow-premium-dark relative z-10">
+        @foreach([
+            'general'       => ['settings.ai_tab_general',       'M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6'],
+            'appearance'    => ['settings.ai_tab_appearance',    'M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-5a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.486M5 11l4 4'],
+            'ai'            => ['settings.ai_tab_ai',            'M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z'],
+            'notifications' => ['settings.ai_tab_notifications', 'M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9'],
+            'system'        => ['settings.ai_tab_system',        'M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z'],
+        ] as $key => [$label, $icon])
+        <button type="button" wire:click="$set('tab', '{{ $key }}')"
+            class="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-bold transition-all cursor-pointer
+            {{ $tab === $key
+                ? 'bg-gradient-to-br from-blue-600 to-indigo-600 text-white shadow-lg shadow-indigo-500/25'
+                : 'text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-700 dark:hover:text-slate-200' }}">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="{{ $icon }}"/></svg>
+            {{ __($label) }}
+        </button>
+        @endforeach
+    </nav>
+    {{-- ===================== ONGLET GENERAL ===================== --}}
+    <div wire:show="tab === 'general'" class="space-y-8 relative z-10">
+    <div class="flex items-center gap-3 mb-6">
+        <div class="w-11 h-11 rounded-2xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white text-xl shadow-lg">🏠</div>
+        <div>
+            <h2 class="text-xl font-extrabold text-slate-800 dark:text-white font-heading">{{ __('settings.tab_general_title') }}</h2>
+            <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">{{ __('settings.tab_general_desc') }}</p>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
+    <div class="space-y-8">
             <!-- Threshold & Currency -->
             <div class="bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl rounded-3xl shadow-premium dark:shadow-premium-dark border border-slate-200/50 dark:border-slate-800/60 p-6 relative overflow-hidden group hover:shadow-premium-hover dark:hover:shadow-premium-dark-hover transition-all duration-300">
                 <div class="absolute top-0 right-0 w-32 h-32 bg-blue-50/20 dark:bg-blue-500/5 rounded-full blur-3xl -mr-16 -mt-16 z-0 pointer-events-none"></div>
@@ -156,7 +186,57 @@
                     </form>
                 </div>
             </div>
+            <!-- Password Update -->
+            <div class="bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl rounded-3xl shadow-premium dark:shadow-premium-dark border border-slate-200/50 dark:border-slate-800/60 p-6 relative overflow-hidden group hover:shadow-premium-hover dark:hover:shadow-premium-dark-hover transition-all duration-300">
+                <div class="absolute top-0 right-0 w-32 h-32 bg-indigo-50/20 dark:bg-indigo-500/5 rounded-full blur-3xl -mr-16 -mt-16 z-0 pointer-events-none"></div>
+                <div class="flex items-center gap-3 mb-6 relative z-10">
+                    <div class="w-10 h-10 bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 rounded-xl flex items-center justify-center border border-indigo-200/20 dark:border-indigo-800 shadow-sm">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
+                    </div>
+                    <h2 class="text-lg font-bold text-slate-800 dark:text-white">{{ __('settings.password') }}</h2>
+                </div>
 
+                <form wire:submit="updatePassword" class="space-y-4 bg-slate-50/50 dark:bg-slate-950/40 p-5 rounded-2xl border border-slate-200/40 dark:border-slate-800/60 relative z-10">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 dark:text-slate-400 mb-2 uppercase tracking-wider">{{ __('settings.current_password') }}</label>
+                        <input type="password" wire:model="passwordCurrent" class="w-full px-4 py-2.5 bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none transition-all text-slate-700 dark:text-slate-200 shadow-sm font-bold" dir="ltr">
+                        @error('passwordCurrent') <span class="text-rose-500 text-xs mt-1 block font-bold">{{ $message }}</span> @enderror
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 dark:text-slate-400 mb-2 uppercase tracking-wider">{{ __('settings.new_password') }}</label>
+                        <input type="password" wire:model="passwordNew" class="w-full px-4 py-2.5 bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none transition-all text-slate-700 dark:text-slate-200 shadow-sm font-bold" dir="ltr">
+                        @error('passwordNew') <span class="text-rose-500 text-xs mt-1 block font-bold">{{ $message }}</span> @enderror
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 dark:text-slate-400 mb-2 uppercase tracking-wider">{{ __('settings.confirm_password') }}</label>
+                        <input type="password" wire:model="passwordConfirm" class="w-full px-4 py-2.5 bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none transition-all text-slate-700 dark:text-slate-200 shadow-sm font-bold" dir="ltr">
+                    </div>
+                    <button type="submit" class="w-full px-6 py-3 bg-gradient-to-r from-indigo-500 to-blue-600 text-white font-bold rounded-xl hover:from-indigo-600 hover:to-blue-700 hover:shadow-indigo-500/30 transition-all shadow-md shadow-indigo-500/20 cursor-pointer mt-2">
+                        {{ __('settings.update_password') }}
+                    </button>
+                </form>
+            </div>
+    </div>
+    <div class="space-y-8">
+        <div class="bg-white/60 dark:bg-slate-900/60 rounded-3xl border border-slate-200/50 dark:border-slate-800/60 p-6 text-sm text-slate-500 dark:text-slate-400 leading-relaxed">
+            <strong class="block text-slate-700 dark:text-slate-200 mb-2">{{ __('settings.general_hint_title') }}</strong>
+            {{ __('settings.general_hint') }}
+        </div>
+    </div>
+    </div>
+    </div>
+    {{-- ===================== ONGLET APPARENCE ===================== --}}
+    <div wire:show="tab === 'appearance'" class="space-y-8 relative z-10">
+    <div class="flex items-center gap-3 mb-6">
+        <div class="w-11 h-11 rounded-2xl bg-gradient-to-br from-pink-500 to-rose-600 flex items-center justify-center text-white text-xl shadow-lg">🎨</div>
+        <div>
+            <h2 class="text-xl font-extrabold text-slate-800 dark:text-white font-heading">{{ __('settings.tab_appearance_title') }}</h2>
+            <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">{{ __('settings.tab_appearance_desc') }}</p>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
+    <div class="space-y-8">
             <!-- Appearance Settings -->
             <div class="bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl rounded-3xl shadow-premium dark:shadow-premium-dark border border-slate-200/50 dark:border-slate-800/60 p-6 relative overflow-hidden group hover:shadow-premium-hover dark:hover:shadow-premium-dark-hover transition-all duration-300">
                 <div class="absolute top-0 right-0 w-32 h-32 bg-pink-50/20 dark:bg-pink-500/5 rounded-full blur-3xl -mr-16 -mt-16 z-0 pointer-events-none"></div>
@@ -328,7 +408,265 @@
                 </div>
             </div>
 
-            <!-- Mail Configuration -->
+    </div>
+    <div class="space-y-8">
+            <!-- Login Popup -->
+            <div class="bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl rounded-3xl shadow-premium dark:shadow-premium-dark border border-slate-200/50 dark:border-slate-800/60 p-6 relative overflow-hidden group hover:shadow-premium-hover dark:hover:shadow-premium-dark-hover transition-all duration-300">
+                <div class="absolute top-0 right-0 w-32 h-32 bg-blue-50/20 dark:bg-blue-500/5 rounded-full blur-3xl -mr-16 -mt-16 z-0 pointer-events-none"></div>
+                <div class="flex items-center gap-3 mb-6 relative z-10">
+                    <div class="w-10 h-10 bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded-xl flex items-center justify-center border border-blue-200/20 dark:border-blue-800 shadow-sm">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path></svg>
+                    </div>
+                    <div>
+                        <h2 class="text-lg font-bold text-slate-800 dark:text-white">Popup de connexion</h2>
+                        <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5 leading-tight">Popup affiché après la connexion d'un utilisateur.</p>
+                    </div>
+                </div>                <form wire:submit="updateLoginPopup" class="space-y-5 bg-slate-50/50 dark:bg-slate-950/40 p-5 rounded-2xl border border-slate-200/40 dark:border-slate-800/60 relative z-10">
+                    <div class="flex items-center gap-3">
+                        <button type="button" wire:click="$toggle('loginPopupEnabled')"
+                            class="relative w-10 h-5 rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500/30 cursor-pointer @if($loginPopupEnabled) bg-blue-600 @else bg-slate-200 dark:bg-slate-700 @endif">
+                            <span class="absolute top-0.5 start-[2px] w-4 h-4 bg-white border border-slate-300 rounded-full transition-transform duration-200 shadow-sm @if($loginPopupEnabled) translate-x-full rtl:-translate-x-full @else translate-x-0 @endif"></span>
+                        </button>
+                        <span class="text-sm font-bold text-slate-700 dark:text-slate-300">Activé</span>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 dark:text-slate-400 mb-2 uppercase tracking-wider">Contenu du popup</label>
+                        <textarea wire:model="loginPopupContent" rows="6" class="w-full px-4 py-3 bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all text-slate-700 dark:text-slate-200 shadow-sm font-medium" placeholder="Écrivez votre message ici..."></textarea>
+                        @error('loginPopupContent') <span class="text-rose-500 text-xs mt-1 block font-bold">{{ $message }}</span> @enderror
+                    </div>
+
+                    <button type="submit" class="w-full px-6 py-3 bg-gradient-to-r from-blue-500 to-indigo-600 text-white font-bold rounded-xl hover:from-blue-600 hover:to-indigo-700 hover:shadow-blue-500/30 transition-all shadow-md shadow-blue-500/20 cursor-pointer">
+                        {{ __('common.save') }}
+                    </button>
+                </form>
+            </div>
+    </div>
+    </div>
+    </div>
+    {{-- ===================== ONGLET ASSISTANT IA ===================== --}}
+    <div wire:show="tab === 'ai'" class="space-y-8 relative z-10">
+    <div class="flex items-center gap-3 mb-6">
+        <div class="w-11 h-11 rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white text-xl shadow-lg">🤖</div>
+        <div>
+            <h2 class="text-xl font-extrabold text-slate-800 dark:text-white font-heading">{{ __('settings.tab_ai_title') }}</h2>
+            <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">{{ __('settings.tab_ai_desc') }}</p>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
+    <div class="space-y-8">
+
+                <form wire:submit="updateGeminiKey" class="space-y-5 bg-slate-50/50 dark:bg-slate-950/40 p-5 rounded-2xl border border-slate-200/40 dark:border-slate-800/60 relative z-10">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white text-lg shadow-lg">🤖</div>
+                        <div>
+                            <h3 class="font-bold text-slate-800 dark:text-white font-heading">{{ __('settings.gemini_title') }}</h3>
+                            <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5 leading-tight">{{ __('settings.gemini_desc') }}</p>
+                        </div>
+                        @if($geminiConfigured)
+                            <span class="ms-auto inline-flex items-center gap-1 px-2 py-1 rounded-full bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 text-xs font-semibold">
+                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                                {{ __('settings.configured') }}
+                            </span>
+                        @endif
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-slate-600 dark:text-slate-300 mb-1.5">{{ __('settings.gemini_key_label') }}</label>
+                        <input type="password" wire:model="geminiApiKey" placeholder="AIza..." autocomplete="off"
+                            class="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-950/40 px-4 py-2.5 text-sm text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-400 transition-all" />
+                        <p class="text-xs text-slate-400 dark:text-slate-500 mt-1.5">{{ __('settings.gemini_key_help') }}</p>
+                        @error('geminiApiKey') <span class="text-xs text-red-500">{{ $message }}</span> @enderror
+                    </div>
+
+                    <div class="flex justify-end">
+                        <button type="submit" class="inline-flex items-center gap-2 px-5 py-2.5 bg-gradient-to-br from-indigo-600 to-purple-600 text-white rounded-xl font-semibold text-sm shadow-lg hover:shadow-indigo-500/40 transition-all cursor-pointer">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                            {{ __('settings.gemini_save_btn') }}
+                        </button>
+                    </div>
+                </form>
+
+                {{-- Personnalite de l assistant : prompt editable (le caractere seul ; les regles techniques sont immuables) --}}
+                <form wire:submit="updateAiPersonality" class="space-y-4 bg-slate-50/50 dark:bg-slate-950/40 p-5 rounded-2xl border border-slate-200/40 dark:border-slate-800/60 relative z-10">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-2xl bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-white text-lg shadow-lg">✨</div>
+                        <div>
+                            <h3 class="font-bold text-slate-800 dark:text-white font-heading">{{ __('settings.ai_personality_title') }}</h3>
+                            <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5 leading-tight">{{ __('settings.ai_personality_desc') }}</p>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-slate-600 dark:text-slate-300 mb-1.5">{{ __('settings.ai_personality_label') }}</label>
+                        <textarea wire:model="aiPersonality" rows="6" placeholder="{{ __('settings.ai_personality_placeholder') }}"
+                            class="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-950/40 px-4 py-3 text-sm text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-purple-400 transition-all font-mono leading-relaxed resize-y"></textarea>
+                        <p class="text-xs text-slate-400 dark:text-slate-500 mt-1.5">{{ __('settings.ai_personality_help') }}</p>
+                        @error('aiPersonality') <span class="text-xs text-red-500">{{ $message }}</span> @enderror
+                    </div>
+
+                    <div class="flex flex-wrap items-center justify-between gap-3">
+                        <button type="button" wire:click="resetAiPersonality" wire:confirm="{{ __('settings.ai_personality_confirm_reset') }}"
+                            class="inline-flex items-center gap-2 px-4 py-2.5 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 rounded-xl font-semibold text-sm hover:bg-slate-200 dark:hover:bg-slate-700 transition-all cursor-pointer">
+                            {{ __('settings.ai_personality_reset_btn') }}
+                        </button>
+                        <button type="submit" class="inline-flex items-center gap-2 px-5 py-2.5 bg-gradient-to-br from-purple-600 to-pink-600 text-white rounded-xl font-semibold text-sm shadow-lg hover:shadow-purple-500/40 transition-all cursor-pointer">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                            {{ __('settings.ai_personality_save_btn') }}
+                        </button>
+                    </div>
+                </form>
+
+                {{-- Identite du widget IA : nom, avatar, salutation, chips --}}
+                <form wire:submit="updateAiIdentity" class="space-y-4 bg-slate-50/50 dark:bg-slate-950/40 p-5 rounded-2xl border border-slate-200/40 dark:border-slate-800/60 relative z-10">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-2xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white text-lg shadow-lg">🎨</div>
+                        <div>
+                            <h3 class="font-bold text-slate-800 dark:text-white font-heading">{{ __('settings.ai_identity_title') }}</h3>
+                            <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5 leading-tight">{{ __('settings.ai_identity_desc') }}</p>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-slate-600 dark:text-slate-300 mb-1.5">{{ __('settings.ai_name_label') }}</label>
+                            <input type="text" wire:model="aiName" placeholder="Djafer"
+                                class="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-950/40 px-4 py-2.5 text-sm text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-400 transition-all" />
+                            <p class="text-xs text-slate-400 dark:text-slate-500 mt-1">{{ __('settings.ai_name_help') }}</p>
+                            @error('aiName') <span class="text-xs text-red-500">{{ $message }}</span> @enderror
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-slate-600 dark:text-slate-300 mb-1.5">{{ __('settings.ai_emoji_label') }}</label>
+                            <input type="text" wire:model="aiEmoji" placeholder="🤖" maxlength="8"
+                                class="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-950/40 px-4 py-2.5 text-sm text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-400 transition-all text-center text-xl" />
+                            <p class="text-xs text-slate-400 dark:text-slate-500 mt-1">{{ __('settings.ai_emoji_help') }}</p>
+                            @error('aiEmoji') <span class="text-xs text-red-500">{{ $message }}</span> @enderror
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-slate-600 dark:text-slate-300 mb-1.5">{{ __('settings.ai_greeting_label') }}</label>
+                        <textarea wire:model="aiGreeting" rows="2" placeholder="{{ __('settings.ai_greeting_placeholder') }}"
+                            class="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-950/40 px-4 py-3 text-sm text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-400 transition-all resize-y"></textarea>
+                        <p class="text-xs text-slate-400 dark:text-slate-500 mt-1">{{ __('settings.ai_greeting_help') }}</p>
+                        @error('aiGreeting') <span class="text-xs text-red-500">{{ $message }}</span> @enderror
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-slate-600 dark:text-slate-300 mb-1.5">{{ __('settings.ai_suggestions_label') }}</label>
+                        <textarea wire:model="aiSuggestions" rows="4" placeholder="{{ __('settings.ai_suggestions_placeholder') }}"
+                            class="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-950/40 px-4 py-3 text-sm text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-400 transition-all resize-y"></textarea>
+                        <p class="text-xs text-slate-400 dark:text-slate-500 mt-1">{{ __('settings.ai_suggestions_help') }}</p>
+                        @error('aiSuggestions') <span class="text-xs text-red-500">{{ $message }}</span> @enderror
+                    </div>
+
+                    <div class="flex justify-end">
+                        <button type="submit" class="inline-flex items-center gap-2 px-5 py-2.5 bg-gradient-to-br from-blue-600 to-indigo-600 text-white rounded-xl font-semibold text-sm shadow-lg hover:shadow-indigo-500/40 transition-all cursor-pointer">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                            {{ __('settings.ai_identity_save_btn') }}
+                        </button>
+                    </div>
+                </form>
+
+                {{-- Apparence & comportement du widget IA --}}
+                <form wire:submit="updateAiAppearance" class="space-y-4 bg-slate-50/50 dark:bg-slate-950/40 p-5 rounded-2xl border border-slate-200/40 dark:border-slate-800/60 relative z-10">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-2xl bg-gradient-to-br from-teal-500 to-emerald-600 flex items-center justify-center text-white text-lg shadow-lg">⚙️</div>
+                        <div>
+                            <h3 class="font-bold text-slate-800 dark:text-white font-heading">{{ __('settings.ai_appearance_title') }}</h3>
+                            <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5 leading-tight">{{ __('settings.ai_appearance_desc') }}</p>
+                        </div>
+                        <button type="button" wire:click="$toggle('aiWidgetEnabled')"
+                            class="ms-auto relative w-11 h-6 rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-emerald-500/30 cursor-pointer @if($aiWidgetEnabled) bg-emerald-600 @else bg-slate-300 dark:bg-slate-700 @endif">
+                            <span class="absolute top-0.5 start-[2px] w-5 h-5 bg-white border border-slate-300 rounded-full transition-transform duration-200 shadow-sm @if($aiWidgetEnabled) translate-x-full rtl:-translate-x-full @else translate-x-0 @endif"></span>
+                        </button>
+                    </div>
+                    <p class="text-xs -mt-2 {{ $aiWidgetEnabled ? 'text-emerald-600 dark:text-emerald-400' : 'text-slate-400' }}">
+                        {{ $aiWidgetEnabled ? __('settings.ai_widget_on') : __('settings.ai_widget_off') }}
+                    </p>
+
+                    <div>
+                        <label class="block text-sm font-medium text-slate-600 dark:text-slate-300 mb-2">{{ __('settings.ai_palette_label') }}</label>
+                        <div class="flex flex-wrap gap-2">
+                            @foreach(['indigo' => '#4f46e5', 'emerald' => '#059669', 'ocean' => '#0284c7', 'sunset' => '#ea580c', 'slate' => '#334155', 'rose' => '#e11d48'] as $palKey => $palColor)
+                            <button type="button" wire:click="$set('aiPalette', '{{ $palKey }}')"
+                                class="w-10 h-10 rounded-xl cursor-pointer border-2 transition-all {{ $aiPalette === $palKey ? 'border-slate-800 dark:border-white scale-110' : 'border-transparent opacity-70 hover:opacity-100' }}"
+                                style="background:{{ $palColor }}" title="{{ $palKey }}"></button>
+                            @endforeach
+                        </div>
+                        @error('aiPalette') <span class="text-xs text-red-500">{{ $message }}</span> @enderror
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-slate-600 dark:text-slate-300 mb-1.5">{{ __('settings.ai_position_label') }}</label>
+                            <select wire:model="aiPosition" class="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-950/40 px-4 py-2.5 text-sm text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-400 cursor-pointer">
+                                <option value="right">{{ __('settings.ai_position_right') }}</option>
+                                <option value="left">{{ __('settings.ai_position_left') }}</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-slate-600 dark:text-slate-300 mb-1.5">{{ __('settings.ai_size_label') }}</label>
+                            <select wire:model="aiWindowSize" class="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-950/40 px-4 py-2.5 text-sm text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-400 cursor-pointer">
+                                <option value="normal">{{ __('settings.ai_size_normal') }}</option>
+                                <option value="large">{{ __('settings.ai_size_large') }}</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="space-y-3">
+                        <label class="flex items-center gap-3 cursor-pointer">
+                            <input type="checkbox" wire:model="aiShowSuggestions" class="w-4 h-4 rounded accent-emerald-600" />
+                            <span class="text-sm text-slate-600 dark:text-slate-300">{{ __('settings.ai_show_suggestions') }}</span>
+                        </label>
+                        <label class="flex items-center gap-3 cursor-pointer">
+                            <input type="checkbox" wire:model="aiAutoOpen" class="w-4 h-4 rounded accent-emerald-600" />
+                            <span class="text-sm text-slate-600 dark:text-slate-300">{{ __('settings.ai_auto_open') }}</span>
+                        </label>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-slate-600 dark:text-slate-300 mb-1.5">{{ __('settings.ai_offline_label') }}</label>
+                        <textarea wire:model="aiOfflineMessage" rows="2" placeholder="{{ __('settings.ai_offline_placeholder') }}"
+                            class="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-950/40 px-4 py-3 text-sm text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-400 transition-all resize-y"></textarea>
+                        <p class="text-xs text-slate-400 dark:text-slate-500 mt-1">{{ __('settings.ai_offline_help') }}</p>
+                        @error('aiOfflineMessage') <span class="text-xs text-red-500">{{ $message }}</span> @enderror
+                    </div>
+
+                    <div class="flex justify-end">
+                        <button type="submit" class="inline-flex items-center gap-2 px-5 py-2.5 bg-gradient-to-br from-teal-600 to-emerald-600 text-white rounded-xl font-semibold text-sm shadow-lg hover:shadow-emerald-500/40 transition-all cursor-pointer">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                            {{ __('settings.ai_appearance_save_btn') }}
+                        </button>
+                    </div>
+                </form>
+
+    </div>
+    <div class="space-y-8 sticky top-4">
+        <div class="bg-gradient-to-br from-indigo-50/80 to-purple-50/60 dark:from-indigo-950/20 dark:to-purple-950/10 rounded-3xl border border-indigo-200/40 dark:border-indigo-900/30 p-6 text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
+            <strong class="block text-slate-800 dark:text-white mb-2">{{ __('settings.ai_hint_title') }}</strong>
+            {{ __('settings.ai_hint') }}
+            <div class="mt-3 pt-3 border-t border-indigo-200/40 dark:border-indigo-900/40 text-xs">
+                <strong class="text-slate-700 dark:text-slate-200">{{ __('settings.ai_hint_security_title') }}</strong><br>
+                {{ __('settings.ai_hint_security') }}
+            </div>
+        </div>
+    </div>
+    </div>
+    </div>
+    {{-- ===================== ONGLET NOTIFICATIONS ===================== --}}
+    <div wire:show="tab === 'notifications'" class="space-y-8 relative z-10">
+    <div class="flex items-center gap-3 mb-6">
+        <div class="w-11 h-11 rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center text-white text-xl shadow-lg">📢</div>
+        <div>
+            <h2 class="text-xl font-extrabold text-slate-800 dark:text-white font-heading">{{ __('settings.tab_notifications_title') }}</h2>
+            <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">{{ __('settings.tab_notifications_desc') }}</p>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
+    <div class="space-y-8">
             <!-- WhatsApp Configuration -->
             <div class="bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl rounded-3xl shadow-premium dark:shadow-premium-dark border border-slate-200/50 dark:border-slate-800/60 p-6 relative overflow-hidden group hover:shadow-premium-hover dark:hover:shadow-premium-dark-hover transition-all duration-300"
                  wire:poll.10s="pollWhatsAppStatus">
@@ -525,285 +863,8 @@
                     }, 10000);
                 });
             </script>
-
-            <!-- Login Popup -->
-            <div class="bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl rounded-3xl shadow-premium dark:shadow-premium-dark border border-slate-200/50 dark:border-slate-800/60 p-6 relative overflow-hidden group hover:shadow-premium-hover dark:hover:shadow-premium-dark-hover transition-all duration-300">
-                <div class="absolute top-0 right-0 w-32 h-32 bg-blue-50/20 dark:bg-blue-500/5 rounded-full blur-3xl -mr-16 -mt-16 z-0 pointer-events-none"></div>
-                <div class="flex items-center gap-3 mb-6 relative z-10">
-                    <div class="w-10 h-10 bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded-xl flex items-center justify-center border border-blue-200/20 dark:border-blue-800 shadow-sm">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path></svg>
-                    </div>
-                    <div>
-                        <h2 class="text-lg font-bold text-slate-800 dark:text-white">Popup de connexion</h2>
-                        <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5 leading-tight">Popup affiché après la connexion d'un utilisateur.</p>
-                    </div>
-                </div>
-
-                <form wire:submit="updateGeminiKey" class="space-y-5 bg-slate-50/50 dark:bg-slate-950/40 p-5 rounded-2xl border border-slate-200/40 dark:border-slate-800/60 relative z-10">
-                    <div class="flex items-center gap-3">
-                        <div class="w-10 h-10 rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white text-lg shadow-lg">🤖</div>
-                        <div>
-                            <h3 class="font-bold text-slate-800 dark:text-white font-heading">{{ __('settings.gemini_title') }}</h3>
-                            <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5 leading-tight">{{ __('settings.gemini_desc') }}</p>
-                        </div>
-                        @if($geminiConfigured)
-                            <span class="ms-auto inline-flex items-center gap-1 px-2 py-1 rounded-full bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 text-xs font-semibold">
-                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
-                                {{ __('settings.configured') }}
-                            </span>
-                        @endif
-                    </div>
-
-                    <div>
-                        <label class="block text-sm font-medium text-slate-600 dark:text-slate-300 mb-1.5">{{ __('settings.gemini_key_label') }}</label>
-                        <input type="password" wire:model="geminiApiKey" placeholder="AIza..." autocomplete="off"
-                            class="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-950/40 px-4 py-2.5 text-sm text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-400 transition-all" />
-                        <p class="text-xs text-slate-400 dark:text-slate-500 mt-1.5">{{ __('settings.gemini_key_help') }}</p>
-                        @error('geminiApiKey') <span class="text-xs text-red-500">{{ $message }}</span> @enderror
-                    </div>
-
-                    <div class="flex justify-end">
-                        <button type="submit" class="inline-flex items-center gap-2 px-5 py-2.5 bg-gradient-to-br from-indigo-600 to-purple-600 text-white rounded-xl font-semibold text-sm shadow-lg hover:shadow-indigo-500/40 transition-all cursor-pointer">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
-                            {{ __('settings.gemini_save_btn') }}
-                        </button>
-                    </div>
-                </form>
-
-                {{-- Personnalite de l assistant : prompt editable (le caractere seul ; les regles techniques sont immuables) --}}
-                <form wire:submit="updateAiPersonality" class="space-y-4 bg-slate-50/50 dark:bg-slate-950/40 p-5 rounded-2xl border border-slate-200/40 dark:border-slate-800/60 relative z-10">
-                    <div class="flex items-center gap-3">
-                        <div class="w-10 h-10 rounded-2xl bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-white text-lg shadow-lg">✨</div>
-                        <div>
-                            <h3 class="font-bold text-slate-800 dark:text-white font-heading">{{ __('settings.ai_personality_title') }}</h3>
-                            <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5 leading-tight">{{ __('settings.ai_personality_desc') }}</p>
-                        </div>
-                    </div>
-
-                    <div>
-                        <label class="block text-sm font-medium text-slate-600 dark:text-slate-300 mb-1.5">{{ __('settings.ai_personality_label') }}</label>
-                        <textarea wire:model="aiPersonality" rows="6" placeholder="{{ __('settings.ai_personality_placeholder') }}"
-                            class="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-950/40 px-4 py-3 text-sm text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-purple-400 transition-all font-mono leading-relaxed resize-y"></textarea>
-                        <p class="text-xs text-slate-400 dark:text-slate-500 mt-1.5">{{ __('settings.ai_personality_help') }}</p>
-                        @error('aiPersonality') <span class="text-xs text-red-500">{{ $message }}</span> @enderror
-                    </div>
-
-                    <div class="flex flex-wrap items-center justify-between gap-3">
-                        <button type="button" wire:click="resetAiPersonality" wire:confirm="{{ __('settings.ai_personality_confirm_reset') }}"
-                            class="inline-flex items-center gap-2 px-4 py-2.5 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 rounded-xl font-semibold text-sm hover:bg-slate-200 dark:hover:bg-slate-700 transition-all cursor-pointer">
-                            {{ __('settings.ai_personality_reset_btn') }}
-                        </button>
-                        <button type="submit" class="inline-flex items-center gap-2 px-5 py-2.5 bg-gradient-to-br from-purple-600 to-pink-600 text-white rounded-xl font-semibold text-sm shadow-lg hover:shadow-purple-500/40 transition-all cursor-pointer">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
-                            {{ __('settings.ai_personality_save_btn') }}
-                        </button>
-                    </div>
-                </form>
-
-                {{-- Identite du widget IA : nom, avatar, salutation, chips --}}
-                <form wire:submit="updateAiIdentity" class="space-y-4 bg-slate-50/50 dark:bg-slate-950/40 p-5 rounded-2xl border border-slate-200/40 dark:border-slate-800/60 relative z-10">
-                    <div class="flex items-center gap-3">
-                        <div class="w-10 h-10 rounded-2xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white text-lg shadow-lg">🎨</div>
-                        <div>
-                            <h3 class="font-bold text-slate-800 dark:text-white font-heading">{{ __('settings.ai_identity_title') }}</h3>
-                            <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5 leading-tight">{{ __('settings.ai_identity_desc') }}</p>
-                        </div>
-                    </div>
-
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        <div>
-                            <label class="block text-sm font-medium text-slate-600 dark:text-slate-300 mb-1.5">{{ __('settings.ai_name_label') }}</label>
-                            <input type="text" wire:model="aiName" placeholder="Djafer"
-                                class="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-950/40 px-4 py-2.5 text-sm text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-400 transition-all" />
-                            <p class="text-xs text-slate-400 dark:text-slate-500 mt-1">{{ __('settings.ai_name_help') }}</p>
-                            @error('aiName') <span class="text-xs text-red-500">{{ $message }}</span> @enderror
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-slate-600 dark:text-slate-300 mb-1.5">{{ __('settings.ai_emoji_label') }}</label>
-                            <input type="text" wire:model="aiEmoji" placeholder="🤖" maxlength="8"
-                                class="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-950/40 px-4 py-2.5 text-sm text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-400 transition-all text-center text-xl" />
-                            <p class="text-xs text-slate-400 dark:text-slate-500 mt-1">{{ __('settings.ai_emoji_help') }}</p>
-                            @error('aiEmoji') <span class="text-xs text-red-500">{{ $message }}</span> @enderror
-                        </div>
-                    </div>
-
-                    <div>
-                        <label class="block text-sm font-medium text-slate-600 dark:text-slate-300 mb-1.5">{{ __('settings.ai_greeting_label') }}</label>
-                        <textarea wire:model="aiGreeting" rows="2" placeholder="{{ __('settings.ai_greeting_placeholder') }}"
-                            class="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-950/40 px-4 py-3 text-sm text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-400 transition-all resize-y"></textarea>
-                        <p class="text-xs text-slate-400 dark:text-slate-500 mt-1">{{ __('settings.ai_greeting_help') }}</p>
-                        @error('aiGreeting') <span class="text-xs text-red-500">{{ $message }}</span> @enderror
-                    </div>
-
-                    <div>
-                        <label class="block text-sm font-medium text-slate-600 dark:text-slate-300 mb-1.5">{{ __('settings.ai_suggestions_label') }}</label>
-                        <textarea wire:model="aiSuggestions" rows="4" placeholder="{{ __('settings.ai_suggestions_placeholder') }}"
-                            class="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-950/40 px-4 py-3 text-sm text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-400 transition-all resize-y"></textarea>
-                        <p class="text-xs text-slate-400 dark:text-slate-500 mt-1">{{ __('settings.ai_suggestions_help') }}</p>
-                        @error('aiSuggestions') <span class="text-xs text-red-500">{{ $message }}</span> @enderror
-                    </div>
-
-                    <div class="flex justify-end">
-                        <button type="submit" class="inline-flex items-center gap-2 px-5 py-2.5 bg-gradient-to-br from-blue-600 to-indigo-600 text-white rounded-xl font-semibold text-sm shadow-lg hover:shadow-indigo-500/40 transition-all cursor-pointer">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
-                            {{ __('settings.ai_identity_save_btn') }}
-                        </button>
-                    </div>
-                </form>
-
-                {{-- Apparence & comportement du widget IA --}}
-                <form wire:submit="updateAiAppearance" class="space-y-4 bg-slate-50/50 dark:bg-slate-950/40 p-5 rounded-2xl border border-slate-200/40 dark:border-slate-800/60 relative z-10">
-                    <div class="flex items-center gap-3">
-                        <div class="w-10 h-10 rounded-2xl bg-gradient-to-br from-teal-500 to-emerald-600 flex items-center justify-center text-white text-lg shadow-lg">⚙️</div>
-                        <div>
-                            <h3 class="font-bold text-slate-800 dark:text-white font-heading">{{ __('settings.ai_appearance_title') }}</h3>
-                            <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5 leading-tight">{{ __('settings.ai_appearance_desc') }}</p>
-                        </div>
-                        <button type="button" wire:click="$toggle('aiWidgetEnabled')"
-                            class="ms-auto relative w-11 h-6 rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-emerald-500/30 cursor-pointer @if($aiWidgetEnabled) bg-emerald-600 @else bg-slate-300 dark:bg-slate-700 @endif">
-                            <span class="absolute top-0.5 start-[2px] w-5 h-5 bg-white border border-slate-300 rounded-full transition-transform duration-200 shadow-sm @if($aiWidgetEnabled) translate-x-full rtl:-translate-x-full @else translate-x-0 @endif"></span>
-                        </button>
-                    </div>
-                    <p class="text-xs -mt-2 {{ $aiWidgetEnabled ? 'text-emerald-600 dark:text-emerald-400' : 'text-slate-400' }}">
-                        {{ $aiWidgetEnabled ? __('settings.ai_widget_on') : __('settings.ai_widget_off') }}
-                    </p>
-
-                    <div>
-                        <label class="block text-sm font-medium text-slate-600 dark:text-slate-300 mb-2">{{ __('settings.ai_palette_label') }}</label>
-                        <div class="flex flex-wrap gap-2">
-                            @foreach(['indigo' => '#4f46e5', 'emerald' => '#059669', 'ocean' => '#0284c7', 'sunset' => '#ea580c', 'slate' => '#334155', 'rose' => '#e11d48'] as $palKey => $palColor)
-                            <button type="button" wire:click="$set('aiPalette', '{{ $palKey }}')"
-                                class="w-10 h-10 rounded-xl cursor-pointer border-2 transition-all {{ $aiPalette === $palKey ? 'border-slate-800 dark:border-white scale-110' : 'border-transparent opacity-70 hover:opacity-100' }}"
-                                style="background:{{ $palColor }}" title="{{ $palKey }}"></button>
-                            @endforeach
-                        </div>
-                        @error('aiPalette') <span class="text-xs text-red-500">{{ $message }}</span> @enderror
-                    </div>
-
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        <div>
-                            <label class="block text-sm font-medium text-slate-600 dark:text-slate-300 mb-1.5">{{ __('settings.ai_position_label') }}</label>
-                            <select wire:model="aiPosition" class="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-950/40 px-4 py-2.5 text-sm text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-400 cursor-pointer">
-                                <option value="right">{{ __('settings.ai_position_right') }}</option>
-                                <option value="left">{{ __('settings.ai_position_left') }}</option>
-                            </select>
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-slate-600 dark:text-slate-300 mb-1.5">{{ __('settings.ai_size_label') }}</label>
-                            <select wire:model="aiWindowSize" class="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-950/40 px-4 py-2.5 text-sm text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-400 cursor-pointer">
-                                <option value="normal">{{ __('settings.ai_size_normal') }}</option>
-                                <option value="large">{{ __('settings.ai_size_large') }}</option>
-                            </select>
-                        </div>
-                    </div>
-
-                    <div class="space-y-3">
-                        <label class="flex items-center gap-3 cursor-pointer">
-                            <input type="checkbox" wire:model="aiShowSuggestions" class="w-4 h-4 rounded accent-emerald-600" />
-                            <span class="text-sm text-slate-600 dark:text-slate-300">{{ __('settings.ai_show_suggestions') }}</span>
-                        </label>
-                        <label class="flex items-center gap-3 cursor-pointer">
-                            <input type="checkbox" wire:model="aiAutoOpen" class="w-4 h-4 rounded accent-emerald-600" />
-                            <span class="text-sm text-slate-600 dark:text-slate-300">{{ __('settings.ai_auto_open') }}</span>
-                        </label>
-                    </div>
-
-                    <div>
-                        <label class="block text-sm font-medium text-slate-600 dark:text-slate-300 mb-1.5">{{ __('settings.ai_offline_label') }}</label>
-                        <textarea wire:model="aiOfflineMessage" rows="2" placeholder="{{ __('settings.ai_offline_placeholder') }}"
-                            class="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-950/40 px-4 py-3 text-sm text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-400 transition-all resize-y"></textarea>
-                        <p class="text-xs text-slate-400 dark:text-slate-500 mt-1">{{ __('settings.ai_offline_help') }}</p>
-                        @error('aiOfflineMessage') <span class="text-xs text-red-500">{{ $message }}</span> @enderror
-                    </div>
-
-                    <div class="flex justify-end">
-                        <button type="submit" class="inline-flex items-center gap-2 px-5 py-2.5 bg-gradient-to-br from-teal-600 to-emerald-600 text-white rounded-xl font-semibold text-sm shadow-lg hover:shadow-emerald-500/40 transition-all cursor-pointer">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
-                            {{ __('settings.ai_appearance_save_btn') }}
-                        </button>
-                    </div>
-                </form>
-
-                <form wire:submit="updateLoginPopup" class="space-y-5 bg-slate-50/50 dark:bg-slate-950/40 p-5 rounded-2xl border border-slate-200/40 dark:border-slate-800/60 relative z-10">
-                    <div class="flex items-center gap-3">
-                        <button type="button" wire:click="$toggle('loginPopupEnabled')"
-                            class="relative w-10 h-5 rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500/30 cursor-pointer @if($loginPopupEnabled) bg-blue-600 @else bg-slate-200 dark:bg-slate-700 @endif">
-                            <span class="absolute top-0.5 start-[2px] w-4 h-4 bg-white border border-slate-300 rounded-full transition-transform duration-200 shadow-sm @if($loginPopupEnabled) translate-x-full rtl:-translate-x-full @else translate-x-0 @endif"></span>
-                        </button>
-                        <span class="text-sm font-bold text-slate-700 dark:text-slate-300">Activé</span>
-                    </div>
-
-                    <div>
-                        <label class="block text-xs font-bold text-slate-500 dark:text-slate-400 mb-2 uppercase tracking-wider">Contenu du popup</label>
-                        <textarea wire:model="loginPopupContent" rows="6" class="w-full px-4 py-3 bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all text-slate-700 dark:text-slate-200 shadow-sm font-medium" placeholder="Écrivez votre message ici..."></textarea>
-                        @error('loginPopupContent') <span class="text-rose-500 text-xs mt-1 block font-bold">{{ $message }}</span> @enderror
-                    </div>
-
-                    <button type="submit" class="w-full px-6 py-3 bg-gradient-to-r from-blue-500 to-indigo-600 text-white font-bold rounded-xl hover:from-blue-600 hover:to-indigo-700 hover:shadow-blue-500/30 transition-all shadow-md shadow-blue-500/20 cursor-pointer">
-                        {{ __('common.save') }}
-                    </button>
-                </form>
-            </div>
-
-            <!-- Password Update -->
-            <div class="bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl rounded-3xl shadow-premium dark:shadow-premium-dark border border-slate-200/50 dark:border-slate-800/60 p-6 relative overflow-hidden group hover:shadow-premium-hover dark:hover:shadow-premium-dark-hover transition-all duration-300">
-                <div class="absolute top-0 right-0 w-32 h-32 bg-indigo-50/20 dark:bg-indigo-500/5 rounded-full blur-3xl -mr-16 -mt-16 z-0 pointer-events-none"></div>
-                <div class="flex items-center gap-3 mb-6 relative z-10">
-                    <div class="w-10 h-10 bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 rounded-xl flex items-center justify-center border border-indigo-200/20 dark:border-indigo-800 shadow-sm">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
-                    </div>
-                    <h2 class="text-lg font-bold text-slate-800 dark:text-white">{{ __('settings.password') }}</h2>
-                </div>
-
-                <form wire:submit="updatePassword" class="space-y-4 bg-slate-50/50 dark:bg-slate-950/40 p-5 rounded-2xl border border-slate-200/40 dark:border-slate-800/60 relative z-10">
-                    <div>
-                        <label class="block text-xs font-bold text-slate-500 dark:text-slate-400 mb-2 uppercase tracking-wider">{{ __('settings.current_password') }}</label>
-                        <input type="password" wire:model="passwordCurrent" class="w-full px-4 py-2.5 bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none transition-all text-slate-700 dark:text-slate-200 shadow-sm font-bold" dir="ltr">
-                        @error('passwordCurrent') <span class="text-rose-500 text-xs mt-1 block font-bold">{{ $message }}</span> @enderror
-                    </div>
-                    <div>
-                        <label class="block text-xs font-bold text-slate-500 dark:text-slate-400 mb-2 uppercase tracking-wider">{{ __('settings.new_password') }}</label>
-                        <input type="password" wire:model="passwordNew" class="w-full px-4 py-2.5 bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none transition-all text-slate-700 dark:text-slate-200 shadow-sm font-bold" dir="ltr">
-                        @error('passwordNew') <span class="text-rose-500 text-xs mt-1 block font-bold">{{ $message }}</span> @enderror
-                    </div>
-                    <div>
-                        <label class="block text-xs font-bold text-slate-500 dark:text-slate-400 mb-2 uppercase tracking-wider">{{ __('settings.confirm_password') }}</label>
-                        <input type="password" wire:model="passwordConfirm" class="w-full px-4 py-2.5 bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none transition-all text-slate-700 dark:text-slate-200 shadow-sm font-bold" dir="ltr">
-                    </div>
-                    <button type="submit" class="w-full px-6 py-3 bg-gradient-to-r from-indigo-500 to-blue-600 text-white font-bold rounded-xl hover:from-indigo-600 hover:to-blue-700 hover:shadow-indigo-500/30 transition-all shadow-md shadow-indigo-500/20 cursor-pointer mt-2">
-                        {{ __('settings.update_password') }}
-                    </button>
-                </form>
-            </div>
-        </div>
-
-        <!-- Danger Zone & Alerts -->
-        <div class="space-y-8">
-            <div class="bg-rose-50/50 dark:bg-rose-950/15 backdrop-blur-xl rounded-3xl shadow-premium dark:shadow-premium-dark border border-rose-200/50 dark:border-rose-900/40 p-6 relative overflow-hidden group hover:shadow-premium-hover dark:hover:shadow-premium-dark-hover transition-all duration-300">
-                <div class="absolute top-0 right-0 w-32 h-32 bg-rose-50/20 dark:bg-rose-500/5 rounded-full blur-3xl -mr-16 -mt-16 z-0 pointer-events-none"></div>
-                <div class="flex items-center gap-3 mb-6 relative z-10">
-                    <div class="w-10 h-10 bg-rose-100 dark:bg-rose-900/30 text-rose-600 dark:text-rose-500 rounded-xl flex items-center justify-center border border-rose-200/20 dark:border-rose-800 shadow-sm">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
-                    </div>
-                    <div>
-                        <h2 class="text-lg font-bold text-rose-700 dark:text-rose-400">{{ __('settings.danger_zone', ['default' => 'Zone Dangereuse']) }}</h2>
-                        <p class="text-xs text-rose-600/80 dark:text-rose-400/80 mt-0.5 leading-tight">{{ __('settings.danger_zone_desc', ['default' => 'Attention, ces actions sont irreversibles.']) }}</p>
-                    </div>
-                </div>
-
-                <div class="bg-white/50 dark:bg-slate-950/40 p-5 rounded-2xl border border-rose-100/30 dark:border-rose-900/20 relative z-10">
-                    <h3 class="font-bold text-slate-800 dark:text-slate-200 text-sm mb-1">{{ __('settings.delete_all_data', ['default' => 'Supprimer toutes les donnees']) }}</h3>
-                    <p class="text-xs text-slate-500 dark:text-slate-500 mb-4 leading-relaxed">{{ __('settings.delete_all_data_desc', ['default' => 'Supprime l\'historique complet des charges, revenus et clotures.']) }}</p>
-                    
-                    <button wire:click="deleteAllData" 
-                            wire:confirm="{{ __('settings.confirm_delete_all', ['default' => 'Etes-vous sur de vouloir supprimer absolument toutes les donnees de la caisse et des charges ? Cette action est irreversible !']) }}" 
-                            class="w-full sm:w-auto px-6 py-3 bg-rose-600 text-white font-bold rounded-xl hover:bg-rose-700 hover:shadow-rose-600/30 transition-all shadow-md shadow-rose-500/20 flex items-center justify-center gap-2 cursor-pointer">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
-                        {{ __('settings.delete_all_btn', ['default' => 'Tout supprimer']) }}
-                    </button>
-                </div>
-            </div>
-
+    </div>
+    <div class="space-y-8">
             <!-- Alerts -->
             <div class="bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl rounded-3xl shadow-premium dark:shadow-premium-dark border border-slate-200/50 dark:border-slate-800/60 p-6 relative overflow-hidden group hover:shadow-premium-hover dark:hover:shadow-premium-dark-hover transition-all duration-300 flex flex-col h-fit">
                 <div class="absolute top-0 right-0 w-32 h-32 bg-amber-50/20 dark:bg-amber-500/5 rounded-full blur-3xl -mr-16 -mt-16 z-0 pointer-events-none"></div>
@@ -899,10 +960,23 @@
                     </div>
                 @endif
             </div>
+
+    </div>
+    </div>
+    </div>
+    @if(auth()->user()->isAdmin())
+    {{-- ===================== ONGLET SYSTEME ===================== --}}
+    <div wire:show="tab === 'system'" class="space-y-8 relative z-10">
+    <div class="flex items-center gap-3 mb-6">
+        <div class="w-11 h-11 rounded-2xl bg-gradient-to-br from-slate-600 to-slate-800 flex items-center justify-center text-white text-xl shadow-lg">🛠️</div>
+        <div>
+            <h2 class="text-xl font-extrabold text-slate-800 dark:text-white font-heading">{{ __('settings.tab_system_title') }}</h2>
+            <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">{{ __('settings.tab_system_desc') }}</p>
         </div>
     </div>
 
-    @if(auth()->user()->isAdmin())
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
+    <div class="space-y-8">
     <!-- Cron Jobs Section -->
     <div class="space-y-4 relative z-10">
         <div class="bg-indigo-50/30 dark:bg-indigo-950/10 backdrop-blur-xl rounded-3xl shadow-premium dark:shadow-premium-dark border border-indigo-200/50 dark:border-indigo-900/40 p-6 relative overflow-hidden group hover:shadow-premium-hover dark:hover:shadow-premium-dark-hover transition-all duration-300">
@@ -1088,14 +1162,41 @@
                         {{ __('settings.clear_cache_btn') }}
                     </button>
                 </div>
-
             </div>
         </div>
+
     </div>
-@endif
+    <div class="space-y-8">
+        <!-- Danger Zone & Alerts -->
+            <div class="bg-rose-50/50 dark:bg-rose-950/15 backdrop-blur-xl rounded-3xl shadow-premium dark:shadow-premium-dark border border-rose-200/50 dark:border-rose-900/40 p-6 relative overflow-hidden group hover:shadow-premium-hover dark:hover:shadow-premium-dark-hover transition-all duration-300">
+                <div class="absolute top-0 right-0 w-32 h-32 bg-rose-50/20 dark:bg-rose-500/5 rounded-full blur-3xl -mr-16 -mt-16 z-0 pointer-events-none"></div>
+                <div class="flex items-center gap-3 mb-6 relative z-10">
+                    <div class="w-10 h-10 bg-rose-100 dark:bg-rose-900/30 text-rose-600 dark:text-rose-500 rounded-xl flex items-center justify-center border border-rose-200/20 dark:border-rose-800 shadow-sm">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+                    </div>
+                    <div>
+                        <h2 class="text-lg font-bold text-rose-700 dark:text-rose-400">{{ __('settings.danger_zone', ['default' => 'Zone Dangereuse']) }}</h2>
+                        <p class="text-xs text-rose-600/80 dark:text-rose-400/80 mt-0.5 leading-tight">{{ __('settings.danger_zone_desc', ['default' => 'Attention, ces actions sont irreversibles.']) }}</p>
+                    </div>
+                </div>
 
+                <div class="bg-white/50 dark:bg-slate-950/40 p-5 rounded-2xl border border-rose-100/30 dark:border-rose-900/20 relative z-10">
+                    <h3 class="font-bold text-slate-800 dark:text-slate-200 text-sm mb-1">{{ __('settings.delete_all_data', ['default' => 'Supprimer toutes les donnees']) }}</h3>
+                    <p class="text-xs text-slate-500 dark:text-slate-500 mb-4 leading-relaxed">{{ __('settings.delete_all_data_desc', ['default' => 'Supprime l\'historique complet des charges, revenus et clotures.']) }}</p>
+                    
+                    <button wire:click="deleteAllData" 
+                            wire:confirm="{{ __('settings.confirm_delete_all', ['default' => 'Etes-vous sur de vouloir supprimer absolument toutes les donnees de la caisse et des charges ? Cette action est irreversible !']) }}" 
+                            class="w-full sm:w-auto px-6 py-3 bg-rose-600 text-white font-bold rounded-xl hover:bg-rose-700 hover:shadow-rose-600/30 transition-all shadow-md shadow-rose-500/20 flex items-center justify-center gap-2 cursor-pointer">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                        {{ __('settings.delete_all_btn', ['default' => 'Tout supprimer']) }}
+                    </button>
+                </div>
+            </div>
+    </div>
+    </div>
+    </div>
+    @endif
 </div>
-
 @push('scripts')
 <script>
 function copyCommand(id, btn) {

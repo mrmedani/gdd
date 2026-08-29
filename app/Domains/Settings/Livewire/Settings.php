@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\RateLimiter;
 use Livewire\Attributes\Computed;
+use Livewire\Attributes\Url;
 use Livewire\Component;
 use Livewire\WithPagination;
 
@@ -75,6 +76,10 @@ class Settings extends Component
     public bool $aiShowSuggestions = true;
     public bool $aiWidgetEnabled = true;
     public string $aiOfflineMessage = '';
+
+    // Onglet actif de la page /settings (persiste dans l'URL : /settings?tab=ai)
+    #[Url]
+    public string $tab = 'general';
 
     public function mount(): void
     {
