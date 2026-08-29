@@ -57,19 +57,21 @@ class GeminiService
 
         try {
             // Chaine de fallback : le free tier Gemini renvoie souvent 503 "high demand"
-            // sur le modele principal ; on tente les modeles secondaires avant d'echouer.
+            // ou 404 (modele supprime) sur le modele principal ; on tente les modeles
+            // secondaires connus-disponibles en 2026 avant d'echouer.
+            // NB: gemini-2.5-flash a ete supprime pour les nouveaux utilisateurs (404 en 2026).
             $models = array_unique([
                 $this->model,
-                'gemini-2.5-flash',
+                'gemini-3.6-flash',
                 'gemini-flash-lite-latest',
             ]);
 
             $lastStatus = 0;
             $lastBody = '';
             foreach ($models as $model) {
-                // 25s par modele max : 3 modeles x 25s = ~75s pire cas, acceptable ;
-                // 60s par modele faisait attendre jusqu'a 3 minutes avant l'erreur (cURL 28).
-                $response = Http::timeout(25)
+                // 60s par modele max : laisse plus de marge au free tier Gemini souvent
+                // surcharge (503 "high demand") au lieu de timeout trop vite. Pire cas ~3 min.
+                $response = Http::timeout(60)
                     ->withHeaders(['Content-Type' => 'application/json'])
                     // Fix cURL error 60 (WAMP sans CA bundle) : pointer Guzzle sur le bundle officiel.
                     // Ne PAS mettre verify=false (trou de sécurité) — voir skill gdd curl-ssl-cacert-fix.
@@ -83,8 +85,9 @@ class GeminiService
                 $lastStatus = $response->status();
                 $lastBody = $response->body();
 
-                // 4xx (cle invalide, quota, requete refusee) : inutile d'essayer les autres modeles
-                if ($response->status() < 500) {
+                // 4xx autres que 404 : cle invalide (401), quota depasse (429), requete refusee.
+                // 404 = modele supprime/indisponible -> on essaie le modele de fallback suivant.
+                if ($response->status() < 500 && $response->status() !== 404) {
                     break;
                 }
             }

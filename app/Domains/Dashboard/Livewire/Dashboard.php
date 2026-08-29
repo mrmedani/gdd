@@ -121,21 +121,17 @@ class Dashboard extends Component
 
         $startDay = getMonthPeriodStartDay();
 
-        $periodTotals = Expense::whereBetween('date', [$periods12->last()['start'], $periods12->first()['end']])
-            ->selectRaw("
-                DATE_FORMAT(
-                    CASE 
-                        WHEN DAY(date) > ? THEN DATE_ADD(date, INTERVAL 1 MONTH)
-                        ELSE date
-                    END, 
-                    '%Y-%m'
-                ) as period, 
-                SUM(amount) as total
-            ", [$startDay])
-            ->groupBy('period')
-            ->pluck('total', 'period');
+        // Regroupement par période comptable, compatible SQLite et MySQL.
+        // On calcule la clé de période en PHP (getPeriodFromDate) plutôt qu'en
+        // SQL brut, car DATE_FORMAT/DATE_ADD/DAY/INTERVAL sont MySQL-only.
+        $windowExpenses = Expense::whereBetween('date', [$periods12->last()['start'], $periods12->first()['end']])
+            ->get(['date', 'amount']);
 
-        $expenseTotals = $periodTotals->map(fn($v) => (float) $v)->toArray();
+        $expenseTotals = [];
+        foreach ($windowExpenses as $e) {
+            $period = getPeriodFromDate($e->date);
+            $expenseTotals[$period] = ($expenseTotals[$period] ?? 0) + (float) $e->amount;
+        }
 
         $this->monthlyTrend = $periods12->map(function ($p, $i) use ($now, $monthlyClosures, $expenseTotals) {
             $expensesTotal = (float) ($expenseTotals[$p['key']] ?? 0);

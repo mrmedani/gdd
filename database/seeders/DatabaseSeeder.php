@@ -88,19 +88,28 @@ class DatabaseSeeder extends Seeder
         $catKeys = array_keys($inserted);
 
         $methods = ['cash', 'bank_transfer', 'check', 'credit_card'];
-        foreach (range(1, 30) as $i) {
+        $created = 0;
+        $attempts = 0;
+        while ($created < 30 && $attempts < 300) {
+            $attempts++;
             $key = $catKeys[array_rand($catKeys)];
             $cat = $inserted[$key];
             $desc = $descriptions[$key];
-            Expense::create([
-                'date' => Carbon::now()->subDays(rand(0, 60))->format('Y-m-d'),
-                'amount' => round(rand(100, 15000) + rand(0, 99) / 100, 2),
-                'category_id' => $cat->id,
-                'category_key' => $key,
-                'description' => $desc[array_rand($desc)],
-                'payment_method' => $methods[array_rand($methods)],
-                'created_by' => $admin->id,
-            ]);
+            try {
+                Expense::create([
+                    'date' => Carbon::now()->subDays(rand(0, 60))->format('Y-m-d'),
+                    'amount' => round(rand(100, 15000) + rand(0, 99) / 100, 2),
+                    'category_id' => $cat->id,
+                    'category_key' => $key,
+                    'description' => $desc[array_rand($desc)],
+                    'payment_method' => $methods[array_rand($methods)],
+                    'created_by' => $admin->id,
+                ]);
+                $created++;
+            } catch (\Exception $e) {
+                // Skip expenses that fall in an already-closed accounting month.
+                continue;
+            }
         }
     }
 }
