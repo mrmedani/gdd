@@ -77,6 +77,14 @@ class Settings extends Component
     public bool $aiWidgetEnabled = true;
     public string $aiOfflineMessage = '';
 
+    // --- Parametres avances (controle profond) ---
+    public float $aiTemperature = 0.2;
+    public string $aiModel = '';
+    public int $aiHistoryPeriods = 6;
+    public int $aiMaxExchanges = 15;
+    public int $aiRateLimit = 20;
+    public int $aiTtlHours = 24;
+
     // Onglet actif de la page /settings (persiste dans l'URL : /settings?tab=ai)
     #[Url]
     public string $tab = 'general';
@@ -123,6 +131,12 @@ class Settings extends Component
         $this->aiShowSuggestions = (bool) Setting::get('ai_show_suggestions', true);
         $this->aiWidgetEnabled = (bool) Setting::get('ai_widget_enabled', true);
         $this->aiOfflineMessage = (string) Setting::get('ai_offline_message', '');
+        $this->aiTemperature = (float) Setting::get('ai_temperature', 0.2);
+        $this->aiModel = (string) Setting::get('gemini_model', '');
+        $this->aiHistoryPeriods = (int) Setting::get('ai_history_periods', 6);
+        $this->aiMaxExchanges = (int) Setting::get('ai_max_exchanges', 15);
+        $this->aiRateLimit = (int) Setting::get('ai_rate_limit', 20);
+        $this->aiTtlHours = (int) Setting::get('ai_ttl_hours', 24);
     }
 
     public function updateThreshold(): void
@@ -454,6 +468,13 @@ class Settings extends Component
             'aiShowSuggestions' => 'boolean',
             'aiWidgetEnabled' => 'boolean',
             'aiOfflineMessage' => 'nullable|string|max:300',
+            // Parametres avances
+            'aiTemperature'   => 'nullable|numeric|between:0,1',
+            'aiModel'         => 'nullable|string|max:60',
+            'aiHistoryPeriods' => 'nullable|integer|between:1,12',
+            'aiMaxExchanges'  => 'nullable|integer|between:5,50',
+            'aiRateLimit'     => 'nullable|integer|between:5,60',
+            'aiTtlHours'      => 'nullable|integer|between:1,168',
         ]);
 
         Setting::set('ai_palette', $this->aiPalette);
@@ -463,6 +484,16 @@ class Settings extends Component
         Setting::set('ai_show_suggestions', $this->aiShowSuggestions ? '1' : '0');
         Setting::set('ai_widget_enabled', $this->aiWidgetEnabled ? '1' : '0');
         Setting::set('ai_offline_message', trim($this->aiOfflineMessage));
+        // Parametres avances
+        Setting::set('ai_temperature', (string) $this->aiTemperature);
+        Setting::set('gemini_model', trim($this->aiModel));
+        Setting::set('ai_history_periods', (string) $this->aiHistoryPeriods);
+        Setting::set('ai_max_exchanges', (string) $this->aiMaxExchanges);
+        Setting::set('ai_rate_limit', (string) $this->aiRateLimit);
+        Setting::set('ai_ttl_hours', (string) $this->aiTtlHours);
+        // Invalide le cache memoire de config pour que les nouveaux valeurs soient
+        // actives DES LA PROCHAINE requete (meme processus PHP-FPM)
+        \App\Domains\AI\Support\WidgetConfig::flush();
 
         $this->notify(__('settings.ai_appearance_saved'));
     }

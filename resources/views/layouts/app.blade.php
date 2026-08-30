@@ -630,14 +630,19 @@
         var frame = document.getElementById('ai-chatbot-frame');
         if (!frame) return;
         window.addEventListener('message', function (e) {
+            // Securite : n'accepter les ordres que de notre propre origine
+            if (e.origin !== window.location.origin) return;
             var d = e.data || {};
             if (d.aiChatbot === 'open') { frame.style.width = '400px'; frame.style.height = '540px'; }
             if (d.aiChatbot === 'close') { frame.style.width = '100px'; frame.style.height = '100px'; }
+            @if($aiCfg['autoOpen'])
+            if (d.aiChatbot === 'openAuto') { frame.style.width = '400px'; frame.style.height = '540px'; }
+            @endif
         });
         @if($aiCfg['autoOpen'])
         // Ouverture automatique : transmet l'ordre au widget apres son chargement
         frame.addEventListener('load', function () {
-            try { frame.contentWindow.postMessage({ aiChatbot: 'openAuto' }, '*'); } catch (e) {}
+            try { frame.contentWindow.postMessage({ aiChatbot: 'openAuto' }, window.location.origin); } catch (e) {}
         });
         @endif
     })();

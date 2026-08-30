@@ -9,6 +9,10 @@ use Illuminate\Support\Facades\Route;
 // le cache PWA, impossible a purger pour l'utilisateur). La garde auth est faite DANS le
 // closure ; en cas d'echec, on rend le shell en mode degrade (200) plutot qu'un 500.
 Route::get('/ai-chat', function () {
+    // Kill-switch : widget desactive -> 404 propre (pas seulement masque dans le layout)
+    if (!\App\Domains\AI\Support\WidgetConfig::get()['enabled']) {
+        abort(404);
+    }
     try {
         $userId = auth()->id();
         if (!$userId) {
@@ -70,7 +74,8 @@ Route::get('/ai-chat', function () {
 })->name('ai.chat');
 
 // Endpoint API appelé par le widget (la clé Gemini reste côté serveur)
-Route::middleware(['auth'])->group(function () {
+// Kill-switch : widget desactive -> 404 (l'API ne reste pas appelable en direct)
+Route::middleware(['auth', \App\Domains\AI\Http\Middleware\EnsureAiWidgetEnabled::class])->group(function () {
     Route::post('/api/chatbot', [ChatbotController::class, '__invoke'])->name('api.chatbot');
     Route::post('/api/chatbot/clear', [ChatbotController::class, 'clear'])->name('api.chatbot.clear');
 });

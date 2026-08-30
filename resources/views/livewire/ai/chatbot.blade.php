@@ -20,8 +20,23 @@
     $pal = $palettes[$cfg['palette'] ?? 'indigo'] ?? $palettes['indigo'];
     $gradient = $pal[0];
     $accent = $pal[1];
+    // Palette : couleur RGB de la couleur active pour les ombres/pulse (sinon indigo fixe)
+    $accentRgb = match ($cfg['palette'] ?? 'indigo') {
+        'emerald' => '5,150,105',
+        'ocean'   => '2,132,199',
+        'sunset'  => '234,88,12',
+        'slate'   => '51,65,85',
+        'rose'    => '225,29,72',
+        default   => '79,70,229',
+    };
     $posSide = ($cfg['position'] ?? 'right') === 'left' ? 'left' : 'right';
     $winLarge = ($cfg['size'] ?? 'normal') === 'large';
+    // Source unique des chips pour le chargement ET le clear (custom sinon defaut traduit)
+    $chipsForJs = !empty($cfg['showSuggestions'])
+        ? (!empty($cfg['suggestions'])
+            ? $cfg['suggestions']
+            : [__('ai.sug_summary'), __('ai.sug_recurring'), __('ai.sug_top'), __('ai.sug_trend')])
+        : [];
 @endphp
 <div id="ai-chatbot-root" style="background:transparent;">
     {{-- Fenêtre de chat (cachée par défaut) --}}
@@ -47,7 +62,7 @@
                 <button id="ai-chat-reload" type="button" style="margin-top:8px;border:0;background:linear-gradient(135deg,#4f46e5,#7c3aed);color:#fff;border-radius:10px;padding:7px 16px;font-size:12px;cursor:pointer;font-family:inherit;">{{ __('ai.reload_page') }}</button>
             </div>
             @else
-            <div class="ai-bubble-ai">{{ $greeting }}</div>
+            <div class="ai-bubble-ai" dir="auto">{{ $greeting }}</div>
             {{-- Chips de questions suggerees : retirees apres le premier message envoye.
                  Contenu configurable depuis /settings (ai_suggestions, 1 question par ligne). --}}
             @if(!empty($cfg['showSuggestions']))
@@ -76,7 +91,7 @@
 
         <div style="padding:10px;border-top:1px solid rgba(148,163,184,0.25);background:#fff;" class="ai-inputbar">
             <form id="ai-chat-form" style="display:flex;gap:8px;align-items:flex-end;">
-                <textarea id="ai-chat-input" rows="1" placeholder="{{ __('ai.placeholder') }}" style="flex:1;resize:none;border:1px solid rgba(148,163,184,0.45);border-radius:14px;padding:10px 14px;font-size:13px;font-family:inherit;outline:none;background:#f8fafc;color:#334155;max-height:96px;"></textarea>
+                <textarea id="ai-chat-input" rows="1" maxlength="2000" placeholder="{{ __('ai.placeholder') }}" style="flex:1;resize:none;border:1px solid rgba(148,163,184,0.45);border-radius:14px;padding:10px 14px;font-size:13px;font-family:inherit;outline:none;background:#f8fafc;color:#334155;max-height:96px;"></textarea>
                 <button type="submit" id="ai-chat-send" style="width:40px;height:40px;border-radius:14px;border:0;background:linear-gradient(135deg,#4f46e5,#7c3aed);color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
                     <svg style="width:18px;height:18px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19V5m0 0l-7 7m7-7l7 7"/></svg>
                 </button>
@@ -86,7 +101,7 @@
 
     {{-- Bouton flottant --}}
     <button id="ai-chatbot-toggle" type="button" aria-label="{{ __('ai.title') }}"
-        style="position:fixed;bottom:14px;{{ $posSide }}:14px;width:56px;height:56px;border-radius:50%;border:0;background:{{ $gradient }};box-shadow:0 10px 30px rgba(79,70,229,0.45);cursor:pointer;display:flex;align-items:center;justify-content:center;pointer-events:auto;z-index:10;">
+        style="position:fixed;bottom:14px;{{ $posSide }}:14px;width:56px;height:56px;border-radius:50%;border:0;background:{{ $gradient }};box-shadow:0 10px 30px rgba({{$accentRgb}},0.45);cursor:pointer;display:flex;align-items:center;justify-content:center;pointer-events:auto;z-index:10;">
         <svg id="ai-chat-icon" style="width:26px;height:26px;color:#fff;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/></svg>
     </button>
 </div>
@@ -110,6 +125,8 @@
     .ai-bubble-ai, .ai-bubble-user {
         max-width:85%; padding:10px 14px; font-size:13px; line-height:1.55;
         border-radius:16px; word-wrap:break-word;
+        /* dir=auto : le texte arabe s'affiche RTL automatiquement, le fr/en en LTR */
+        unicode-bidi:plaintext;
     }
     .ai-bubble-ai  { align-self:flex-start; background:#f1f5f9; color:#334155; border-top-left-radius:4px; }
     .ai-bubble-user{ align-self:flex-end; background:linear-gradient(135deg,#4f46e5,#7c3aed); color:#fff; border-top-right-radius:4px; white-space:pre-wrap; }
@@ -142,7 +159,7 @@
     .ai-window.open { display:flex !important; animation:aiPop .22s cubic-bezier(.2,.9,.3,1.2); }
     @keyframes aiBubbleIn { from { opacity:0; transform:translateY(6px); } to { opacity:1; transform:none; } }
     .ai-bubble-ai, .ai-bubble-user, .ai-msg-wrap { animation:aiBubbleIn .18s ease-out; }
-    @keyframes aiPulse { 0%,100% { box-shadow:0 10px 30px rgba(79,70,229,0.45); } 50% { box-shadow:0 10px 30px rgba(79,70,229,0.9); } }
+    @keyframes aiPulse { 0%,100% { box-shadow:0 10px 30px rgba({{$accentRgb}},0.45); } 50% { box-shadow:0 10px 30px rgba({{$accentRgb}},0.9); } }
     #ai-chatbot-toggle.pulse { animation:aiPulse 1.4s ease-in-out 3; }
     @keyframes aiBlink { 0%,80%,100% { opacity:.25 } 40% { opacity:1 } }
 
@@ -232,6 +249,7 @@
 
         var b = document.createElement('div');
         b.className = role === 'user' ? 'ai-bubble-user' : 'ai-bubble-ai';
+        b.setAttribute('dir', 'auto'); // arabe = RTL automatique, fr/en = LTR
         if (role === 'assistant') { b.innerHTML = md(text); }
         else { b.textContent = text; }
         wrap.appendChild(b);
@@ -297,6 +315,8 @@
 
     // Ouverture automatique demandee par le layout (setting ai_auto_open)
     window.addEventListener('message', function (e) {
+        // Securite : n'accepter les ordres que de notre propre origine (same-origin iframe)
+        if (e.origin !== window.location.origin) return;
         var d = e.data || {};
         if (d.aiChatbot === 'openAuto' && !open) setOpen(true);
     });
@@ -371,26 +391,26 @@
     clearBtn.addEventListener('click', function () {
         while (box.children.length > 1) box.removeChild(box.lastChild);
         hideSuggestions();
-        // Recree les chips apres effacement
-        var div = document.createElement('div');
-        div.id = 'ai-chat-suggestions';
-        div.style.cssText = 'display:flex;flex-wrap:wrap;gap:6px;';
-        @foreach([
-            __('ai.sug_summary'),
-            __('ai.sug_recurring'),
-            __('ai.sug_top'),
-            __('ai.sug_trend'),
-        ] as $sug)
-        var b = document.createElement('button');
-        b.type = 'button';
-        b.className = 'ai-sug';
-        b.setAttribute('data-msg', @js($sug));
-        b.textContent = @js($sug);
-        div.appendChild(b);
-        @endforeach
-        box.appendChild(div);
-        sugs = div;
-        bindSugs();
+        // Recree les chips apres effacement — MEMES chips que le chargement initial
+        // (custom si configurees dans /settings, sinon defaut) : source unique ci-dessous.
+        var chipList = @js($chipsForJs);
+        var showChips = @js(!empty($cfg['showSuggestions']));
+        if (showChips) {
+            var div = document.createElement('div');
+            div.id = 'ai-chat-suggestions';
+            div.style.cssText = 'display:flex;flex-wrap:wrap;gap:6px;';
+            for (var ci = 0; ci < chipList.length; ci++) {
+                var b = document.createElement('button');
+                b.type = 'button';
+                b.className = 'ai-sug';
+                b.setAttribute('data-msg', chipList[ci]);
+                b.textContent = chipList[ci];
+                div.appendChild(b);
+            }
+            box.appendChild(div);
+            sugs = div;
+            bindSugs();
+        }
         fetch('/api/chatbot/clear', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': csrf() },

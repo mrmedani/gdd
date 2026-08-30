@@ -16,12 +16,16 @@ class GeminiService
     // Alias auto-mis-a-jour par Google : pas de deprecation surprise (gemini-2.0-flash est devenu 404 en 2026).
     protected string $model = 'gemini-flash-latest';
     protected string $baseUrl = 'https://generativelanguage.googleapis.com/v1beta/models';
+    /** Temperature (0 = robot factuel, 1 = creatif). Defaut 0.2, overridable via /settings. */
+    protected float $temperature = 0.2;
 
     public function __construct(protected ?string $apiKey = null)
     {
         $this->apiKey = $apiKey ?: Setting::get('gemini_api_key', '');
-        // Modele overridable via Setting (ex: gemini-2.5-flash, gemini-3.6-flash)
-        $this->model = Setting::get('gemini_model', $this->model);
+        // Modele overridable via /settings (Setting gemini_model, UI dans l'onglet IA)
+        $this->model = Setting::get('gemini_model', '') ?: 'gemini-flash-latest';
+        // Temperature overridable via /settings (controle creativite vs rigueur factuelle)
+        $this->temperature = min(1.0, max(0.0, (float) Setting::get('ai_temperature', 0.2)));
     }
 
     public function isConfigured(): bool
@@ -52,6 +56,13 @@ class GeminiService
         if ($systemInstruction !== '') {
             $payload['systemInstruction'] = ['parts' => [['text' => $systemInstruction]]];
         }
+        // ANTI-HALLUCINATION : temperature basse par defaut (reponses factuelles ancrees
+        // aux donnees). Overridable via /settings (ai_temperature) pour qui veut plus de style.
+        $payload['generationConfig'] = [
+            'temperature'      => $this->temperature,
+            'topP'             => 0.9,
+            'maxOutputTokens'  => 2048,
+        ];
 
         $url = $this->baseUrl . '/';
 
@@ -83,7 +94,13 @@ class GeminiService
                 $lastStatus = $response->status();
                 $lastBody = $response->body();
 
-                // 4xx (cle invalide, quota, requete refusee) : inutile d'essayer les autres modeles
+                // 429 (quota du MODELE epuise) : on CONTINUE la chaine — chaque modele a son
+                // propre bucket de quota, le suivant peut etre libre. (Bug constate : le
+                // break sur 4xx faisait echouer la chaine alors que flash-lite etait libre.)
+                if ($response->status() === 429) {
+                    continue;
+                }
+                // Autres 4xx (cle invalide, requete refusee) : inutile d'essayer les autres modeles
                 if ($response->status() < 500) {
                     break;
                 }
@@ -93,6 +110,10 @@ class GeminiService
             // Message informatif selon la cause (timeout frequent sur le free tier)
             if ($lastStatus === 0) {
                 return __('ai.timeout');
+            }
+            // 429 = quota Google depasse (pas notre rate limiter local, celui de Google)
+            if ($lastStatus === 429) {
+                return __('ai.quota_exceeded');
             }
             return __('ai.api_error');
         } catch (\Throwable $e) {
@@ -109,12 +130,24 @@ class GeminiService
     {
         $candidates = $data['candidates'] ?? [];
         if (empty($candidates)) {
+            // Pas de candidat : bloque par les filtres de securite (promptFeedback) ou erreur
+            $block = $data['promptFeedback']['blockReason'] ?? null;
+            if ($block) {
+                Log::warning('Gemini response blocked', ['reason' => $block]);
+                return __('ai.no_response');
+            }
             return __('ai.no_response');
         }
         $parts = $candidates[0]['content']['parts'] ?? [];
         $text = '';
         foreach ($parts as $part) {
             $text .= $part['text'] ?? '';
+        }
+        // Reponse tronquee (MAX_TOKENS) ou bloquee (SAFETY) : on log pour diagnostic,
+        // et on rend le texte partiel s'il existe plutot qu'un echec muet.
+        $finish = $candidates[0]['finishReason'] ?? null;
+        if ($finish && $finish !== 'STOP') {
+            Log::warning('Gemini finishReason anormal', ['finishReason' => $finish, 'text_len' => mb_strlen($text)]);
         }
         return $text ?: __('ai.no_response');
     }

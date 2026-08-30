@@ -642,6 +642,82 @@
                     </div>
                 </form>
 
+                {{-- Controle avance : temperature, modele, contexte, limites (experts) --}}
+                <form wire:submit="updateAiAppearance" class="space-y-4 bg-slate-50/50 dark:bg-slate-950/40 p-5 rounded-2xl border border-slate-200/40 dark:border-slate-800/60 relative z-10">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-2xl bg-gradient-to-br from-slate-600 to-slate-800 flex items-center justify-center text-white text-lg shadow-lg">🎛️</div>
+                        <div>
+                            <h3 class="font-bold text-slate-800 dark:text-white font-heading">{{ __('settings.ai_advanced_title') }}</h3>
+                            <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5 leading-tight">{{ __('settings.ai_advanced_desc') }}</p>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-slate-600 dark:text-slate-300 mb-1.5">
+                            {{ __('settings.ai_temperature_label') }}
+                            <span class="float-end font-mono text-xs font-bold text-indigo-600 dark:text-indigo-400">{{ number_format($aiTemperature, 2) }}</span>
+                        </label>
+                        <input type="range" min="0" max="1" step="0.05" wire:model="aiTemperature" class="w-full accent-indigo-600 cursor-pointer" />
+                        <div class="flex justify-between text-[10px] text-slate-400 mt-1">
+                            <span>{{ __('settings.ai_temperature_min') }}</span>
+                            <span>{{ __('settings.ai_temperature_max') }}</span>
+                        </div>
+                        <p class="text-xs text-slate-400 dark:text-slate-500 mt-1.5">{{ __('settings.ai_temperature_help') }}</p>
+                        @error('aiTemperature') <span class="text-xs text-red-500">{{ $message }}</span> @enderror
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-slate-600 dark:text-slate-300 mb-1.5">{{ __('settings.ai_model_label') }}</label>
+                        <select wire:model="aiModel" class="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-950/40 px-4 py-2.5 text-sm text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-slate-400 cursor-pointer">
+                            <option value="">{{ __('settings.ai_model_auto') }}</option>
+                            <option value="gemini-flash-latest">gemini-flash-latest (recommandé)</option>
+                            <option value="gemini-2.5-flash">gemini-2.5-flash</option>
+                            <option value="gemini-flash-lite-latest">gemini-flash-lite-latest (rapide, moins précis)</option>
+                            <option value="gemini-2.5-pro">gemini-2.5-pro (payant, plus intelligent)</option>
+                        </select>
+                        <p class="text-xs text-slate-400 dark:text-slate-500 mt-1.5">{{ __('settings.ai_model_help') }}</p>
+                        @error('aiModel') <span class="text-xs text-red-500">{{ $message }}</span> @enderror
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-slate-600 dark:text-slate-300 mb-1.5">{{ __('settings.ai_history_periods_label') }}</label>
+                            <input type="number" min="1" max="12" wire:model="aiHistoryPeriods" class="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-950/40 px-4 py-2.5 text-sm text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-slate-400" />
+                            <p class="text-xs text-slate-400 dark:text-slate-500 mt-1">{{ __('settings.ai_history_periods_help') }}</p>
+                            @error('aiHistoryPeriods') <span class="text-xs text-red-500">{{ $message }}</span> @enderror
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-slate-600 dark:text-slate-300 mb-1.5">{{ __('settings.ai_max_exchanges_label') }}</label>
+                            <input type="number" min="5" max="50" wire:model="aiMaxExchanges" class="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-950/40 px-4 py-2.5 text-sm text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-slate-400" />
+                            <p class="text-xs text-slate-400 dark:text-slate-500 mt-1">{{ __('settings.ai_max_exchanges_help') }}</p>
+                            @error('aiMaxExchanges') <span class="text-xs text-red-500">{{ $message }}</span> @enderror
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-slate-600 dark:text-slate-300 mb-1.5">{{ __('settings.ai_rate_limit_label') }}</label>
+                            <input type="number" min="5" max="60" wire:model="aiRateLimit" class="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-950/40 px-4 py-2.5 text-sm text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-slate-400" />
+                            <p class="text-xs text-slate-400 dark:text-slate-500 mt-1">{{ __('settings.ai_rate_limit_help') }}</p>
+                            @error('aiRateLimit') <span class="text-xs text-red-500">{{ $message }}</span> @enderror
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-slate-600 dark:text-slate-300 mb-1.5">{{ __('settings.ai_ttl_hours_label') }}</label>
+                            <input type="number" min="1" max="168" wire:model="aiTtlHours" class="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-950/40 px-4 py-2.5 text-sm text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-slate-400" />
+                            <p class="text-xs text-slate-400 dark:text-slate-500 mt-1">{{ __('settings.ai_ttl_hours_help') }}</p>
+                            @error('aiTtlHours') <span class="text-xs text-red-500">{{ $message }}</span> @enderror
+                        </div>
+                    </div>
+
+                    <p class="text-xs text-amber-600 dark:text-amber-400 bg-amber-50/60 dark:bg-amber-950/20 border border-amber-200/40 dark:border-amber-900/30 rounded-xl p-3">
+                        ⚠️ {{ __('settings.ai_advanced_warning') }}
+                    </p>
+
+                    <div class="flex justify-end">
+                        <button type="submit" class="inline-flex items-center gap-2 px-5 py-2.5 bg-gradient-to-br from-slate-600 to-slate-800 text-white rounded-xl font-semibold text-sm shadow-lg hover:shadow-slate-500/40 transition-all cursor-pointer">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                            {{ __('settings.ai_advanced_save_btn') }}
+                        </button>
+                    </div>
+                </form>
+
     </div>
     <div class="space-y-8 sticky top-4">
         <div class="bg-gradient-to-br from-indigo-50/80 to-purple-50/60 dark:from-indigo-950/20 dark:to-purple-950/10 rounded-3xl border border-indigo-200/40 dark:border-indigo-900/30 p-6 text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
