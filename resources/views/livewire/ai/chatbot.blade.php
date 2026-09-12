@@ -545,16 +545,28 @@
             });
     }
     function openSession(id, title) {
-        fetch('/api/chatbot/sessions/' + id + '/open', { method: 'POST', credentials: 'same-origin', headers: { 'Accept': 'application/json' } })
+        fetch('/api/chatbot/sessions/' + id + '/open', {
+            method: 'POST',
+            credentials: 'same-origin',
+            headers: { 'Accept': 'application/json', 'X-CSRF-TOKEN': csrf() },
+            body: JSON.stringify({})
+        })
             .then(function (r) { return r.json(); })
             .then(function (data) {
-                if (!data.messages) return;
+                if (!data.messages) {
+                    // session vide ou erreur : affiche au moins un retour visible
+                    addBubble(@js(__('ai.session_not_found')), 'assistant');
+                    return;
+                }
                 while (box.children.length > 0) box.removeChild(box.lastChild);
                 hideSuggestions();
                 data.messages.forEach(function (m) {
                     if (m && m.content) addBubble(m.content, m.role === 'user' ? 'user' : 'assistant');
                 });
                 closeDrawer();
+            })
+            .catch(function (e) {
+                addBubble(@js(__('ai.api_error')), 'assistant');
             });
     }
     if (sessionsBtn) sessionsBtn.addEventListener('click', openDrawer);
