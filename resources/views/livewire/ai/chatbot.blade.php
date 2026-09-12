@@ -409,7 +409,24 @@
     }
 
     clearBtn.addEventListener('click', function () {
-        if (!confirm(@js(__('ai.clear_confirm')))) return;
+        Swal.fire({
+            title: @js(__('common.confirm')),
+            text: @js(__('ai.clear_confirm')),
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#ef4444',
+            cancelButtonColor: '#64748b',
+            confirmButtonText: @js(__('common.confirm')),
+            cancelButtonText: @js(__('common.cancel')),
+            background: document.documentElement.classList.contains('dark') ? '#1e293b' : '#ffffff',
+            color: document.documentElement.classList.contains('dark') ? '#f8fafc' : '#0f172a',
+            customClass: {
+                popup: 'rounded-3xl shadow-2xl border border-slate-200 dark:border-slate-700',
+                confirmButton: 'rounded-xl px-6 py-2.5 font-bold',
+                cancelButton: 'rounded-xl px-6 py-2.5 font-bold'
+            }
+        }).then(function (result) {
+            if (!result.isConfirmed) return;
         while (box.children.length > 1) box.removeChild(box.lastChild);
         hideSuggestions();
         // Recree les chips apres effacement — MEMES chips que le chargement initial
@@ -436,6 +453,7 @@
             method: 'POST',
             headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': csrf() },
             credentials: 'same-origin'
+        });
         });
     });
 
