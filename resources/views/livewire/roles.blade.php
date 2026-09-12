@@ -62,6 +62,8 @@
                             'audit-logs' => __('settings.audit_logs'),
                             'whatsapp-messages' => 'Messages WhatsApp',
                             'incomes' => __('incomes.title'),
+                            'investments' => __('investments.title'),
+                            'alerts' => __('alerts.title'),
                         ] as $key => $label)
                             @php $checked = $permValues[$key] ?? false; @endphp
                             <button type="button" wire:click="togglePermission('{{ $key }}')"

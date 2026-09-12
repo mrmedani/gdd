@@ -29,6 +29,8 @@ class Roles extends Component
         'delete-closure',
         'login-as',
         'incomes',
+        'investments',
+        'alerts',
     ];
 
     public ?int $roleId = null;
@@ -52,6 +54,8 @@ class Roles extends Component
     public bool $perm_delete_closure = false;
     public bool $perm_login_as = false;
     public bool $perm_incomes = false;
+    public bool $perm_investments = false;
+    public bool $perm_alerts = false;
 
     public bool $showForm = false;
 

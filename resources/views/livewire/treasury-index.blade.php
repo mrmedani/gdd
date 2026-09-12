@@ -273,6 +273,14 @@
                     </div>
                 </div>
 
+                <!-- Investments Display (Readonly) -->
+                <div class="bg-amber-50/30 dark:bg-amber-950/20 border border-amber-100/50 dark:border-amber-900/30 p-4 rounded-xl">
+                    <label class="block text-xs font-semibold text-amber-800 dark:text-amber-400 mb-1.5">{{ __('caisse.total_investments_auto') }}</label>
+                    <div class="text-2xl font-black text-amber-600 dark:text-amber-500 leading-none flex items-baseline gap-1">
+                        <span dir="ltr">− {{ number_format((float)$calculatedInvestments, 2, ',', ' ') }}</span> <span class="text-sm font-bold">{{ getCurrency() }}</span>
+                    </div>
+                </div>
+
                 <!-- Gains Input -->
                 <div>
                     <label class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">{{ __('caisse.month_gains') }} <span class="text-red-500">*</span></label>
@@ -285,7 +293,7 @@
 
                 <!-- Live Balance Preview -->
                 @if($closeGains !== '')
-                @php $previewBalance = (float)str_replace([' ', ','], ['', '.'], $closeGains) + (float)$calculatedIncomes - (float)$calculatedExpenses; @endphp
+                @php $previewBalance = (float)str_replace([' ', ','], ['', '.'], $closeGains) + (float)$calculatedIncomes - (float)$calculatedExpenses - (float)$calculatedInvestments; @endphp
                 <div class="pt-4 border-t border-slate-100 dark:border-slate-800/60">
                     <p class="text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1">{{ __('caisse.preview_balance') }}</p>
                     <div class="text-3xl font-black flex items-baseline gap-1 {{ $previewBalance >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-500' }}">

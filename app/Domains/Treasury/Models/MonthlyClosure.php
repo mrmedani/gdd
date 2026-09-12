@@ -11,6 +11,7 @@ class MonthlyClosure extends Model
         'month',
         'gains',
         'expenses',
+        'investments',
         'balance',
         'closed_by',
     ];
@@ -20,6 +21,7 @@ class MonthlyClosure extends Model
         return [
             'gains' => 'decimal:2',
             'expenses' => 'decimal:2',
+            'investments' => 'decimal:2',
             'balance' => 'decimal:2',
         ];
     }

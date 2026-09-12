@@ -42,6 +42,8 @@ class Dashboard extends Component
     public string $alertFilterType = '';
     public string $alertFilterSeverity = '';
 
+    public array $upcomingCommitments = [];
+
     public string $greeting = '';
     public string $greetingIcon = '';
     public string $greetingGradient = '';
@@ -173,6 +175,23 @@ class Dashboard extends Component
             ])->toArray();
 
         $this->loadUnreadCount();
+
+        // Engagements mensuels dus prochainement (fenêtre lead_days), si permission 'alerts'
+        if (auth()->user()?->hasPermission('alerts')) {
+            $this->upcomingCommitments = \App\Domains\Alerts\Models\Commitment::where('is_active', true)
+                ->get()
+                ->filter(fn ($c) => $c->isDueSoon())
+                ->sortBy(fn ($c) => $c->daysUntilDue())
+                ->values()
+                ->map(fn ($c) => [
+                    'id' => $c->id,
+                    'label' => $c->label,
+                    'amount' => $c->amount !== null ? (float) $c->amount : null,
+                    'due_date' => $c->nextDueDate()->format('d/m/Y'),
+                    'days_left' => $c->daysUntilDue(),
+                ])
+                ->toArray();
+        }
 
         if (auth()->user()?->isAdmin()) {
             $this->totalUsers = User::count();

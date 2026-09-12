@@ -234,6 +234,26 @@
                                 </a>
                             </li>
                             @endif
+                            @if(auth()->user()->hasPermission('investments'))
+                            <li>
+                                <a href="{{ route('investments.index') }}" class="flex items-center px-4 py-3 rounded-xl transition-colors duration-200 group {{ request()->routeIs('investments.*') ? 'bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-white font-semibold' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/50 hover:text-slate-900 dark:hover:text-white' }}">
+                                    <div class="{{ request()->routeIs('investments.*') ? 'bg-blue-600 text-white' : 'bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 group-hover:bg-slate-200 dark:group-hover:bg-slate-700' }} p-2 rounded-lg transition-colors me-3">
+                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 17h8m0 0V9m0 8l-8-8-4 4-6-6"/></svg>
+                                    </div>
+                                    <span class="text-sm">{{ __('investments.title') }}</span>
+                                </a>
+                            </li>
+                            @endif
+                            @if(auth()->user()->hasPermission('alerts'))
+                            <li>
+                                <a href="{{ route('alerts.index') }}" class="flex items-center px-4 py-3 rounded-xl transition-colors duration-200 group {{ request()->routeIs('alerts.*') ? 'bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-white font-semibold' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/50 hover:text-slate-900 dark:hover:text-white' }}">
+                                    <div class="{{ request()->routeIs('alerts.*') ? 'bg-blue-600 text-white' : 'bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 group-hover:bg-slate-200 dark:group-hover:bg-slate-700' }} p-2 rounded-lg transition-colors me-3">
+                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg>
+                                    </div>
+                                    <span class="text-sm">{{ __('alerts.title') }}</span>
+                                </a>
+                            </li>
+                            @endif
                         </ul>
                     </div>
 

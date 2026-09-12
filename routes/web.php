@@ -9,6 +9,8 @@ require __DIR__ . '/domains/locale.php';
 require __DIR__ . '/domains/employees.php';
 require __DIR__ . '/domains/treasury.php';
 require __DIR__ . '/domains/incomes.php';
+require __DIR__ . '/domains/investments.php';
+require __DIR__ . '/domains/alerts.php';
 require __DIR__ . '/domains/statistics.php';
 require __DIR__ . '/domains/profile.php';
 require __DIR__ . '/domains/ai.php';
