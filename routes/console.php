@@ -4,11 +4,13 @@ use App\Domains\Alerts\Commands\CheckBudgets;
 use App\Domains\Alerts\Commands\CheckHighExpenses;
 use App\Domains\Alerts\Commands\CheckMissingReceipts;
 use App\Domains\Alerts\Commands\CleanupAlerts;
+use App\Domains\Alerts\Commands\CommitmentReminders;
 use Illuminate\Support\Facades\Schedule;
 
 Schedule::command('alerts:high-expenses')->dailyAt('00:00');
 Schedule::command('backup:database')->weeklyOn(1, '01:00');
 Schedule::command('alerts:salary-reminders')->monthlyOn(20, '08:00');
+Schedule::command('alerts:commitment-reminders')->dailyAt('08:00');
 Schedule::command('alerts:report', ['daily'])->dailyAt('00:00');
 Schedule::command('alerts:report weekly')->weeklyOn(6, '00:00');
 Schedule::command('alerts:report monthly')->monthlyOn(1, '00:00');

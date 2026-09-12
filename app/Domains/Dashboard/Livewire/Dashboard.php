@@ -176,12 +176,13 @@ class Dashboard extends Component
 
         $this->loadUnreadCount();
 
-        // Engagements mensuels actifs (triés par urgence), si permission 'alerts'.
-        // Le widget dashboard est toujours visible ; les échéances dans la
-        // fenêtre lead_days sont marquées 'urgent' pour attirer l'attention.
+        // Engagements dus prochainement uniquement : le widget dashboard ne
+        // s'affiche que si au moins une échéance tombe dans sa fenêtre
+        // d'alerte (lead_days, ex : 3 jours avant la date déclarée).
         if (auth()->user()?->hasPermission('alerts')) {
             $this->upcomingCommitments = \App\Domains\Alerts\Models\Commitment::where('is_active', true)
                 ->get()
+                ->filter(fn ($c) => $c->isDueSoon())
                 ->sortBy(fn ($c) => $c->daysUntilDue())
                 ->values()
                 ->take(6)

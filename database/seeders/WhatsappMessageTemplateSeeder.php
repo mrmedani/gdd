@@ -114,6 +114,14 @@ class WhatsappMessageTemplateSeeder extends Seeder
                 'message_ar' => "🗑️ تم حذف الإيراد\n──────────────\n📝 {source_name}\n🏷️ النوع : {source_type}\n💵 المبلغ : {amount} {currency}\n📅 التاريخ : {date}\n🏢 {company_name}",
                 'variables' => ['source_name', 'source_type', 'amount', 'currency', 'date', 'company_name'],
             ],
+            [
+                'type' => 'commitment_reminder',
+                'label_fr' => 'Rappel d\'échéance',
+                'label_ar' => 'تذكير بالاستحقاق',
+                'message_fr' => "⏰ Rappel d'échéance\n──────────────\n📌 {label}\n📅 Échéance : {due_date} ({due_in})\n💰 Montant habituel : {amount} {currency}\n🏢 {company_name}",
+                'message_ar' => "⏰ تذكير بالاستحقاق\n──────────────\n📌 {label}\n📅 الاستحقاق : {due_date} ({due_in})\n💰 المبلغ المعتاد : {amount} {currency}\n🏢 {company_name}",
+                'variables' => ['label', 'due_date', 'due_in', 'amount', 'currency', 'company_name'],
+            ],
         ];
 
         foreach ($templates as $template) {
