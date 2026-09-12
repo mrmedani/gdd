@@ -76,6 +76,7 @@
                         <th class="py-4 px-6">{{ __('caisse.month') }}</th>
                         <th class="py-4 px-6">{{ __('caisse.gains') }}</th>
                         <th class="py-4 px-6">{{ __('caisse.expenses') }}</th>
+                        <th class="py-4 px-6">{{ __('caisse.investments') }}</th>
                         <th class="py-4 px-6">{{ __('caisse.balance') }}</th>
                         <th class="py-4 px-6 text-center">{{ __('caisse.growth') }}</th>
                         <th class="py-4 px-6">{{ __('caisse.close_date') }}</th>
@@ -87,25 +88,39 @@
                 </thead>
                 <tbody class="divide-y divide-slate-100 dark:divide-slate-800/50 bg-transparent">
                     @forelse($closures as $closure)
+                        @php $pm = \Carbon\Carbon::createFromFormat('Y-m', $closure->month); @endphp
                         <tr class="hover:bg-blue-50/20 dark:hover:bg-slate-800/30 transition-colors">
-                            <td class="py-4 px-6 font-bold text-slate-800 dark:text-slate-200">{{ formatPeriodLabelShort($closure->month) }}</td>
-                            <td class="py-4 px-6 font-bold text-blue-600 dark:text-blue-400 whitespace-nowrap"><span dir="ltr">+ {{ number_format($closure->gains, 2, ',', ' ') }}</span> <span class="text-xs text-slate-400 font-semibold ms-1">{{ getCurrency() }}</span></td>
-                            <td class="py-4 px-6 font-bold text-rose-500 dark:text-rose-500 whitespace-nowrap"><span dir="ltr">- {{ number_format($closure->expenses, 2, ',', ' ') }}</span> <span class="text-xs text-slate-400 font-semibold ms-1">{{ getCurrency() }}</span></td>
-                            <td class="py-4 px-6 font-extrabold whitespace-nowrap {{ $closure->balance >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400' }}">
-                                <span dir="ltr">{{ $closure->balance > 0 ? '+' : '' }}{{ number_format($closure->balance, 2, ',', ' ') }}</span> <span class="text-xs text-slate-400 font-semibold ms-1">{{ getCurrency() }}</span>
+                            <td class="py-4 px-6">
+                                <div class="flex items-center gap-3">
+                                    <div class="flex shrink-0 flex-col items-center justify-center rounded-lg bg-blue-50 dark:bg-blue-500/10 border border-blue-100 dark:border-blue-800/40 text-blue-700 dark:text-blue-300" style="min-width:3rem;min-height:3rem">
+                                        <span class="text-sm font-black leading-none">{{ $pm->translatedFormat('M') }}</span>
+                                        <span class="text-[10px] font-bold leading-tight">{{ $pm->format('Y') }}</span>
+                                    </div>
+                                    <span class="font-bold text-slate-800 dark:text-slate-200 whitespace-nowrap">{{ formatPeriodLabelShort($closure->month) }}</span>
+                                </div>
                             </td>
-                            <td class="py-4 px-6 text-center font-extrabold whitespace-nowrap">
+                            <td class="py-4 px-6 whitespace-nowrap"><span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold bg-emerald-50 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border border-emerald-100 dark:border-emerald-800/40"><span dir="ltr">+ {{ number_format($closure->gains, 2, ',', ' ') }} {{ getCurrency() }}</span></span></td>
+                            <td class="py-4 px-6 whitespace-nowrap"><span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold bg-rose-50 dark:bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-100 dark:border-rose-800/40"><span dir="ltr">− {{ number_format($closure->expenses, 2, ',', ' ') }} {{ getCurrency() }}</span></span></td>
+                            <td class="py-4 px-6 whitespace-nowrap"><span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold bg-amber-50 dark:bg-amber-500/10 text-amber-700 dark:text-amber-300 border border-amber-100 dark:border-amber-800/40"><span dir="ltr">− {{ number_format($closure->investments ?? 0, 2, ',', ' ') }} {{ getCurrency() }}</span></span></td>
+                            <td class="py-4 px-6 whitespace-nowrap"><span class="inline-flex items-center px-3 py-1.5 rounded-full text-sm font-black {{ $closure->balance >= 0 ? 'bg-emerald-600 text-white shadow-sm' : 'bg-rose-600 text-white shadow-sm' }}"><span dir="ltr">{{ $closure->balance > 0 ? '+' : '' }}{{ number_format($closure->balance, 2, ',', ' ') }} {{ getCurrency() }}</span></span></td>
+                            <td class="py-4 px-6 text-center whitespace-nowrap">
                                 @php $rate = $growthRates[$closure->month] ?? null; @endphp
                                 @if($rate !== null)
-                                    <span class="{{ $rate >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-500' }}">
-                                        {{ $rate >= 0 ? '+' : '' }}{{ number_format($rate, 1) }}%
+                                    <span class="inline-flex items-center gap-1 text-sm font-extrabold {{ $rate >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-500' }}">
+                                        <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20"><path d="{{ $rate >= 0 ? 'M10 3l7 9H3z' : 'M10 17l-7-9h14z' }}"/></svg>
+                                        {{ number_format(abs($rate), 1) }}%
                                     </span>
                                 @else
                                     <span class="text-slate-300 dark:text-slate-600">—</span>
                                 @endif
                             </td>
                             <td class="py-4 px-6 font-semibold text-slate-500 dark:text-slate-400 whitespace-nowrap">{{ $closure->created_at->format('d/m/Y H:i') }}</td>
-                            <td class="py-4 px-6 font-semibold text-slate-700 dark:text-slate-300 whitespace-nowrap">{{ $closure->closer->name ?? '-' }}</td>
+                            <td class="py-4 px-6 whitespace-nowrap">
+                                <div class="flex items-center gap-2">
+                                    <span class="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300 text-xs font-black">{{ mb_substr($closure->closer->name ?? '?', 0, 1) }}</span>
+                                    <span class="font-semibold text-slate-700 dark:text-slate-300">{{ $closure->closer->name ?? '-' }}</span>
+                                </div>
+                            </td>
                             @can('manage-delete-closure')
                                 <td class="py-4 px-6 text-center">
                                     <button wire:click="confirmDelete({{ $closure->id }})"
@@ -118,7 +133,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="8" class="py-16 text-center">
+                            <td colspan="9" class="py-16 text-center">
                                 <div class="flex flex-col items-center justify-center">
                                     <div class="w-16 h-16 bg-slate-50 dark:bg-slate-900/50 rounded-full flex items-center justify-center mb-4">
                                         <svg class="w-10 h-10 text-slate-300 dark:text-slate-700" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path></svg>

@@ -107,6 +107,7 @@
     "caisse.total_expenses_auto": "Total Expenses (Automatic)",
     "caisse.total_gains": "Total Gains",
     "caisse.total_incomes_auto": "Total inflows (auto)",
+    "caisse.investments": "Investments",
     "caisse.total_investments_auto": "Total investments (auto)",
     "caisse.use_incomes_as_gains": "Use as month gains",
     "caisse.warning_lock": "Warning: Once the month is closed, you will no longer be able to add, edit, or delete expenses for this month.",

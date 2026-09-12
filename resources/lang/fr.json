@@ -107,6 +107,7 @@
     "caisse.total_expenses_auto": "Total des charges (Automatique)",
     "caisse.total_gains": "Total Gains",
     "caisse.total_incomes_auto": "Total entrées (auto)",
+    "caisse.investments": "Investissements",
     "caisse.total_investments_auto": "Total investissements (auto)",
     "caisse.use_incomes_as_gains": "Utiliser comme gains du mois",
     "caisse.warning_lock": "Attention : Une fois le mois clôturé, vous ne pourrez plus ajouter, modifier ou supprimer des charges pour ce mois.",

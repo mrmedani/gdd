@@ -107,6 +107,7 @@
     "caisse.total_expenses_auto": "إجمالي المصاريف (تلقائي)",
     "caisse.total_gains": "إجمالي المداخيل",
     "caisse.total_incomes_auto": "إجمالي التدفقات (تلقائي)",
+    "caisse.investments": "الاستثمارات",
     "caisse.total_investments_auto": "إجمالي الاستثمارات (تلقائي)",
     "caisse.use_incomes_as_gains": "استخدام كأرباح الشهر",
     "caisse.warning_lock": "تنبيه: بمجرد إغلاق الشهر، لن تتمكن من إضافة، تعديل أو حذف أي مصاريف لهذا الشهر.",
