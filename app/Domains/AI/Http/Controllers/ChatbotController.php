@@ -218,11 +218,13 @@ TXT;
         return Response::json(['ok' => true]);
     }
 
-    /** LISTE des sessions archivées (titres + dates). */
+    /** LISTE des sessions archivées (titres + dates). Purge les fantômes vides au passage. */
     public function listSessions(Request $request)
     {
-        $sessions = \App\Domains\AI\Support\AiSessionService::listFor((int) $request->user()?->id);
-        $activeId = \App\Domains\AI\Support\AiSessionService::activeId((int) $request->user()?->id);
+        $uid = (int) $request->user()?->id;
+        \App\Domains\AI\Support\AiSessionService::purgeEmpty($uid);
+        $sessions = \App\Domains\AI\Support\AiSessionService::listFor($uid);
+        $activeId = \App\Domains\AI\Support\AiSessionService::activeId($uid);
         return Response::json(['sessions' => $sessions, 'activeId' => $activeId]);
     }
 

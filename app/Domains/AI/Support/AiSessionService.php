@@ -74,6 +74,12 @@ class AiSessionService
     {
         $conv = self::ensureActive($userId);
         $messages = $conv->messages ?? [];
+        // Évite les doublons si deux requêtes concurrentes (2 onglets) ajoutent
+        // le même message user — le verrou serveur ne couvre pas ce cas.
+        $last = end($messages);
+        if ($last && ($last['role'] ?? '') === 'user' && ($last['content'] ?? '') === $userMsg) {
+            return;
+        }
         $messages[] = ['role' => 'user', 'content' => $userMsg];
         $messages[] = ['role' => 'assistant', 'content' => (string) $assistantMsg];
         $conv->update([
@@ -139,6 +145,21 @@ class AiSessionService
             Cache::forget(self::activeKey($userId));
         }
         return true;
+    }
+
+    /** Purge les sessions VIDES (0 message) du user — nettoyage anti-ombre (bug « conversation fantôme »). */
+    public static function purgeEmpty(int $userId): int
+    {
+        $count = 0;
+        AiConversation::where('user_id', $userId)
+            ->get()
+            ->each(function (AiConversation $c) use (&$count) {
+                if (empty($c->messages) || count($c->messages) === 0) {
+                    $c->delete();
+                    $count++;
+                }
+            });
+        return $count;
     }
 
     /** Vide la session active uniquement (comportement de l'ancien bouton poubelle). */
