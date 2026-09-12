@@ -17,4 +17,3 @@ Schedule::command('alerts:report monthly')->monthlyOn(1, '00:00');
 Schedule::command('alerts:missing-receipts')->dailyAt('09:00');
 Schedule::command('alerts:check-budgets')->dailyAt('10:00');
 Schedule::command('alerts:cleanup 90')->dailyAt('03:00');
-Schedule::command('optimize:clear')->hourly();
