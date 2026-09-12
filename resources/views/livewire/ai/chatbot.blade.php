@@ -65,10 +65,12 @@
                 <button id="ai-chat-reload" type="button" style="margin-top:8px;border:0;background:linear-gradient(135deg,#4f46e5,#7c3aed);color:#fff;border-radius:10px;padding:7px 16px;font-size:12px;cursor:pointer;font-family:inherit;">{{ __('ai.reload_page') }}</button>
             </div>
             @else
+            @if(!empty($greeting))
             <div class="ai-bubble-ai" dir="auto">{{ $greeting }}</div>
-            {{-- Chips de questions suggerees : retirees apres le premier message envoye.
-                 Contenu configurable depuis /settings (ai_suggestions, 1 question par ligne). --}}
-            @if(!empty($cfg['showSuggestions']))
+            @endif
+            {{-- Chips de questions suggerees seulement si session VIDE (comme le greeting).
+                 Sinon la conversation active reprend sans doublon. --}}
+            @if(empty($chatHistory) && !empty($cfg['showSuggestions']))
             <div id="ai-chat-suggestions" style="display:flex;flex-wrap:wrap;gap:6px;">
                 @forelse(($cfg['suggestions'] ?? []) as $sug)
                 <button type="button" class="ai-sug" data-msg="{{ $sug }}">{{ $sug }}</button>

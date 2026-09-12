@@ -26,29 +26,25 @@ Route::get('/ai-chat', function () {
             ], 200);
         }
 
-        // Historique stocke en CACHE (24 h, par utilisateur) -> survit aux refreshs/navigations
-        $key = 'ai_chat_history:user:' . $userId;
-        $history = (array) \Illuminate\Support\Facades\Cache::get($key, []);
-        // Migration douce : si une ancienne conversation existe encore en session, on la transpose
-        if (empty($history)) {
-            $old = (array) session()->get('ai_chat_history', []);
-            if (!empty($old)) {
-                $history = $old;
-                \Illuminate\Support\Facades\Cache::put($key, $history, 86400);
-                session()->forget('ai_chat_history');
-            }
-        }
+        // SESSIONS : la conversation active vit dans ai_conversations (via AiSessionService),
+        // MÊME source que ChatbotController::append — sinon le widget-shell chargée le
+        // vieux format cache et créait une nouvelle session à chaque navigation de page.
+        $history = \App\Domains\AI\Support\AiSessionService::activeMessages($userId);
+        $activeId = \App\Domains\AI\Support\AiSessionService::activeId($userId);
 
         // Nom : le Setting ai_name a PRIORITE (garanti), sinon extraction du prompt de personnalite
         $cfg = \App\Domains\AI\Support\WidgetConfig::get();
         $assistantName = $cfg['name'] !== '' ? $cfg['name'] : ChatbotController::assistantName();
         $userName = explode(' ', trim(auth()->user()->name ?? ''))[0];
 
-        // Salutation : le Setting ai_greeting a priorite (variables :user / :name supportees),
-        // sinon salutation auto generee
-        $greeting = $cfg['greeting'] !== ''
-            ? str_replace([':user', ':name'], [$userName, $assistantName], $cfg['greeting'])
-            : __('ai.greeting_named', ['name' => $assistantName, 'user' => $userName]);
+        // Salutation : montrée UNIQUEMENT si la session active est VIDE,
+        // sinon la conversation active reprend telle quelle.
+        $greeting = '';
+        if (empty($history)) {
+            $greeting = $cfg['greeting'] !== ''
+                ? str_replace([':user', ':name'], [$userName, $assistantName], $cfg['greeting'])
+                : __('ai.greeting_named', ['name' => $assistantName, 'user' => $userName]);
+        }
 
         return view('ai.widget-shell', [
             'chatHistory'   => $history,
