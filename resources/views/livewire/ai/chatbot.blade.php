@@ -47,6 +47,9 @@
                 <div style="font-weight:700;font-size:15px;">{{ $aiNameFinal }}</div>
                 <div style="font-size:11px;opacity:0.85;">{{ __('ai.subtitle') }}</div>
             </div>
+            <button id="ai-chat-sessions" type="button" title="{{ __('ai.sessions') }}" style="background:none;border:0;color:#fff;cursor:pointer;padding:6px;border-radius:10px;display:flex;opacity:0.85;">
+                <svg style="width:16px;height:16px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 6h13M8 12h12M8 18h6M3.5 6h.01M3.5 12h.01M3.5 18h.01"/></svg>
+            </button>
             <button id="ai-chat-clear" type="button" title="{{ __('ai.clear') }}" style="background:none;border:0;color:#fff;cursor:pointer;padding:6px;border-radius:10px;display:flex;opacity:0.85;">
                 <svg style="width:16px;height:16px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
             </button>
@@ -96,6 +99,21 @@
                     <svg style="width:18px;height:18px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19V5m0 0l-7 7m7-7l7 7"/></svg>
                 </button>
             </form>
+        </div>
+
+        {{-- Drawer des sessions (caché par défaut) --}}
+        <div id="ai-sessions-drawer" style="position:absolute;inset:0;z-index:20;display:none;flex-direction:column;background:rgba(255,255,255,0.98);">
+            <div style="display:flex;align-items:center;gap:8px;padding:12px 16px;background:{{ $gradient }};color:#fff;">
+                <button id="ai-sessions-back" type="button" style="background:none;border:0;color:#fff;cursor:pointer;padding:4px;display:flex;">
+                    <svg style="width:18px;height:18px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
+                </button>
+                <div style="flex:1;font-weight:700;font-size:14px;">{{ __('ai.sessions') }}</div>
+                <button id="ai-sessions-new" type="button" title="{{ __('ai.new_session') }}" style="background:rgba(255,255,255,0.2);border:0;color:#fff;cursor:pointer;padding:6px 12px;border-radius:10px;font-size:12px;font-family:inherit;display:flex;align-items:center;gap:4px;">
+                    <svg style="width:14px;height:14px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"/></svg>
+                    {{ __('ai.new_session') }}
+                </button>
+            </div>
+            <div id="ai-sessions-list" class="ai-scroll" style="flex:1;overflow-y:auto;padding:10px;"></div>
         </div>
     </div>
 
@@ -391,6 +409,7 @@
     }
 
     clearBtn.addEventListener('click', function () {
+        if (!confirm(@js(__('ai.clear_confirm')))) return;
         while (box.children.length > 1) box.removeChild(box.lastChild);
         hideSuggestions();
         // Recree les chips apres effacement — MEMES chips que le chargement initial
@@ -442,5 +461,110 @@
             if (m && m.content) addBubble(m.content, m.role === 'user' ? 'user' : 'assistant');
         });
     }
+
+    /* ==================== SESSIONS ==================== */
+    var drawer = document.getElementById('ai-sessions-drawer');
+    var sessionsBtn = document.getElementById('ai-chat-sessions');
+    var sessionsBack = document.getElementById('ai-sessions-back');
+    var sessionsNew = document.getElementById('ai-sessions-new');
+    var sessionsList = document.getElementById('ai-sessions-list');
+    var mainArea = document.getElementById('ai-chat-messages').parentElement;
+    var MAIN_DISPLAY = '';
+
+    function openDrawer() {
+        MAIN_DISPLAY = mainArea.style.display;
+        mainArea.style.display = 'none';
+        var inputbar = document.querySelector('.ai-inputbar');
+        inputbar.style.display = 'none';
+        drawer.style.display = 'flex';
+        loadSessions();
+    }
+    function closeDrawer() {
+        drawer.style.display = 'none';
+        mainArea.style.display = MAIN_DISPLAY || 'block';
+        document.querySelector('.ai-inputbar').style.display = 'block';
+    }
+    function loadSessions() {
+        sessionsList.innerHTML = '<div style="text-align:center;color:#94a3b8;font-size:12px;padding:16px;">…</div>';
+        fetch('/api/chatbot/sessions', { credentials: 'same-origin', headers: { 'Accept': 'application/json' } })
+            .then(function (r) { return r.json(); })
+            .then(function (data) {
+                sessionsList.innerHTML = '';
+                var list = data.sessions || [];
+                var activeId = data.activeId;
+                if (!list.length) {
+                    sessionsList.innerHTML = '<div style="text-align:center;color:#94a3b8;font-size:12px;padding:24px;">{{ __('ai.no_sessions') }}</div>';
+                    return;
+                }
+                list.forEach(function (s) {
+                    var row = document.createElement('div');
+                    var isActive = (s.id === activeId);
+                    row.style.cssText = 'display:flex;align-items:center;gap:8px;padding:10px 12px;border-radius:12px;margin-bottom:6px;cursor:pointer;border:1px solid ' + (isActive ? 'rgba(79,70,229,0.4)' : 'rgba(148,163,184,0.3)') + ' ;background:' + (isActive ? 'rgba(79,70,229,0.07)' : '#fff') + ';';
+                    var main = document.createElement('div');
+                    main.style.cssText = 'flex:1;min-width:0;cursor:pointer;';
+                    var title = document.createElement('div');
+                    title.textContent = s.title || '{{ __('ai.title') }}';
+                    title.style.cssText = 'font-size:13px;font-weight:600;color:#334155;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;';
+                    var meta = document.createElement('div');
+                    meta.textContent = new Date(s.last_activity).toLocaleString();
+                    meta.style.cssText = 'font-size:11px;color:#94a3b8;margin-top:2px;';
+                    main.appendChild(title); main.appendChild(meta);
+                    main.addEventListener('click', function () { openSession(s.id, title.textContent); });
+                    var del = document.createElement('button');
+                    del.type = 'button';
+                    del.title = '{{ __('ai.delete_session') }}';
+                    del.innerHTML = '<svg style="width:15px;height:15px;color:#f87171;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>';
+                    del.style.cssText = 'background:none;border:0;cursor:pointer;padding:4px;color:#f87171;display:flex;';
+                    del.addEventListener('click', function (e) {
+                        e.stopPropagation();
+                        if (!confirm(@js(__('ai.delete_session_confirm')))) return;
+                        fetch('/api/chatbot/sessions/' + s.id, { method: 'DELETE', credentials: 'same-origin', headers: { 'Accept': 'application/json' } })
+                            .then(function () { loadSessions(); });
+                    });
+                    row.appendChild(main); row.appendChild(del);
+                    sessionsList.appendChild(row);
+                });
+            });
+    }
+    function openSession(id, title) {
+        fetch('/api/chatbot/sessions/' + id + '/open', { method: 'POST', credentials: 'same-origin', headers: { 'Accept': 'application/json' } })
+            .then(function (r) { return r.json(); })
+            .then(function (data) {
+                if (!data.messages) return;
+                while (box.children.length > 0) box.removeChild(box.lastChild);
+                hideSuggestions();
+                data.messages.forEach(function (m) {
+                    if (m && m.content) addBubble(m.content, m.role === 'user' ? 'user' : 'assistant');
+                });
+                closeDrawer();
+            });
+    }
+    if (sessionsBtn) sessionsBtn.addEventListener('click', openDrawer);
+    if (sessionsBack) sessionsBack.addEventListener('click', closeDrawer);
+    if (sessionsNew) sessionsNew.addEventListener('click', function () {
+        fetch('/api/chatbot/new-session', { method: 'POST', credentials: 'same-origin', headers: { 'Accept': 'application/json' } })
+            .then(function () {
+                while (box.children.length > 0) box.removeChild(box.lastChild);
+                // Show suggestions again for the fresh session
+                var chipList = @js($chipsForJs);
+                var showChips = @js(!empty($cfg['showSuggestions']));
+                if (showChips && chipList.length) {
+                    var div = document.createElement('div');
+                    div.id = 'ai-chat-suggestions';
+                    div.style.cssText = 'display:flex;flex-wrap:wrap;gap:6px;';
+                    for (var ci = 0; ci < chipList.length; ci++) {
+                        var b = document.createElement('button');
+                        b.type = 'button'; b.className = 'ai-sug';
+                        b.setAttribute('data-msg', chipList[ci]);
+                        b.textContent = chipList[ci];
+                        div.appendChild(b);
+                    }
+                    box.appendChild(div);
+                    sugs = div;
+                    bindSugs();
+                }
+                closeDrawer();
+            });
+    });
 })();
 </script>

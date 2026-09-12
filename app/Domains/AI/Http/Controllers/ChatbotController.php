@@ -94,13 +94,17 @@ TXT;
         //   - le cache est partage entre onglets/appareils pour le meme utilisateur
         $historyKey = $this->historyKey($request);
 
+        // SESSIONS : la conversation active vit dans ai_conversations (archivée, jamais perdue).
+        $userId = (int) ($request->user()?->id ?? 0);
+        $history = \App\Domains\AI\Support\AiSessionService::activeMessages($userId);
+
         // Verrou atomique court pour serialiser les lectures/écritures concurrentes (2 onglets)
         $lock = Cache::lock('ai_chat_lock:' . $historyKey, 5);
         try {
             $lock->block(3);
-            $history = (array) Cache::get($historyKey, []);
+            // (lecture passée par AiSessionService — verrou conservé pour l'écriture)
         } catch (\Illuminate\Contracts\Cache\LockTimeoutException) {
-            $history = (array) Cache::get($historyKey, []);
+            // pas critique
         }
 
         // Contexte d'historique borne : les 10 derniers messages, CHAQUE message tronque
@@ -192,26 +196,57 @@ TXT;
         $isError = in_array($reply, $knownErrors, true);
 
         if (!$isError) {
-            // Re-ecriture de l'historique sous verrou (max N echanges, settings)
-            try {
-                $lock->block(3);
-                $history = (array) Cache::get($historyKey, []);
-            } catch (\Illuminate\Contracts\Cache\LockTimeoutException) {
-                // garde l'historique lu avant l'appel
-            }
-            $history[] = ['role' => 'user', 'content' => $message];
-            $history[] = ['role' => 'assistant', 'content' => $reply];
-            Cache::put($historyKey, array_slice($history, -$this->maxHistory), $this->ttlSeconds);
+            // SESSIONS : append dans la conversation active (créée à la volée)
+            // La passe contient : message user + réponse assistant.
+            \App\Domains\AI\Support\AiSessionService::append(
+                $userId,
+                $message,
+                mb_substr($reply, 0, 4000)
+            );
+            // purge du legacy cache si encore présent (migration douce finie)
+            Cache::forget('ai_chat_history:user:' . $userId);
         }
         optional($lock)->release();
 
         return Response::json(['reply' => $reply]);
     }
 
+    /** NOUVELLE SESSION : archive la courante, active une vierge. */
+    public function newSession(Request $request)
+    {
+        \App\Domains\AI\Support\AiSessionService::startNew((int) $request->user()?->id);
+        return Response::json(['ok' => true]);
+    }
+
+    /** LISTE des sessions archivées (titres + dates). */
+    public function listSessions(Request $request)
+    {
+        $sessions = \App\Domains\AI\Support\AiSessionService::listFor((int) $request->user()?->id);
+        $activeId = \App\Domains\AI\Support\AiSessionService::activeId((int) $request->user()?->id);
+        return Response::json(['sessions' => $sessions, 'activeId' => $activeId]);
+    }
+
+    /** OUVRIR une session archivée. */
+    public function openSession(Request $request, int $id)
+    {
+        $messages = \App\Domains\AI\Support\AiSessionService::open((int) $request->user()?->id, $id);
+        if ($messages === null) {
+            return Response::json(['error' => __('ai.session_not_found')], 404);
+        }
+        return Response::json(['messages' => $messages]);
+    }
+
+    /** SUPPRIMER une session archivée (définitif). */
+    public function deleteSession(Request $request, int $id)
+    {
+        $ok = \App\Domains\AI\Support\AiSessionService::delete((int) $request->user()?->id, $id);
+        return Response::json(['ok' => $ok]);
+    }
+
     public function clear(Request $request)
     {
-        Cache::forget($this->historyKey($request));
-        // Purge aussi l'ancien stockage session (migration douce des conversations existantes)
+        // Ancien "poubelle" : vide la session active uniquement
+        \App\Domains\AI\Support\AiSessionService::clearActive((int) $request->user()?->id);
         $request->session()->forget('ai_chat_history');
         return Response::json(['ok' => true]);
     }

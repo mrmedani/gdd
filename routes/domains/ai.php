@@ -78,4 +78,8 @@ Route::get('/ai-chat', function () {
 Route::middleware(['auth', \App\Domains\AI\Http\Middleware\EnsureAiWidgetEnabled::class])->group(function () {
     Route::post('/api/chatbot', [ChatbotController::class, '__invoke'])->name('api.chatbot');
     Route::post('/api/chatbot/clear', [ChatbotController::class, 'clear'])->name('api.chatbot.clear');
+    Route::post('/api/chatbot/new-session', [ChatbotController::class, 'newSession'])->name('api.chatbot.new');
+    Route::get('/api/chatbot/sessions', [ChatbotController::class, 'listSessions'])->name('api.chatbot.sessions');
+    Route::post('/api/chatbot/sessions/{id}/open', [ChatbotController::class, 'openSession'])->whereNumber('id')->name('api.chatbot.open');
+    Route::delete('/api/chatbot/sessions/{id}', [ChatbotController::class, 'deleteSession'])->whereNumber('id')->name('api.chatbot.delete');
 });
