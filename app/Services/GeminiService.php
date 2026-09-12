@@ -34,11 +34,14 @@ class GeminiService
     }
 
     /**
-     * Envoie un tableau de messages (role => content) et retourne la réponse texte.
+     * Envoie un tableau de messages et retourne la réponse texte.
      * @param array $messages [['role'=>'user'|'model','content'=>'...'], ...]
      * @param array $systemInstruction texte système optionnel
+     * @param array|null $tools déclarations function calling optionnelles — si fourni,
+     *        la boucle tool-call est activée (max 2 tours) : Gemini peut demander un tool,
+     *        on exécute via $toolHandler(name, args) puis on renvoie les résultats.
      */
-    public function chat(array $messages, string $systemInstruction = ''): string
+    public function chat(array $messages, string $systemInstruction = '', ?array $tools = null, ?\Closure $toolHandler = null): string
     {
         if (!$this->isConfigured()) {
             return __('ai.not_configured');
@@ -63,6 +66,16 @@ class GeminiService
             'topP'             => 0.9,
             'maxOutputTokens'  => 2048,
         ];
+        // FUNCTION CALLING : declarations de tools. Gemini repondra OU avec du texte final,
+        // OU avec functionCall(s) — gérés dans la boucle ci-dessous.
+        if ($tools !== null && $tools !== []) {
+            $payload['tools'] = [['functionDeclarations' => $tools]];
+        }
+
+        // Boucle tool-call : max 2 tours (protection quota — un message normal = 1 appel,
+        // avec 1 croisement de données max = 3 appels serveur au total, rare).
+        $toolRounds = 0;
+        $maxToolRounds = 2;
 
         $url = $this->baseUrl . '/';
 
@@ -79,6 +92,7 @@ class GeminiService
 
             $lastStatus = 0;
             $lastBody = '';
+            while (true) {
             foreach ($models as $model) {
                 // 60s par modele max : laisse plus de marge au free tier Gemini souvent
                 // surcharge (503 "high demand") au lieu de timeout trop vite. Pire cas ~3 min.
@@ -90,6 +104,43 @@ class GeminiService
                     ->post($url . $model . ':generateContent?key=' . $this->apiKey, $payload);
 
                 if ($response->successful()) {
+                    $json = $response->json();
+                    // TOOL CALL demandé ? (uniquement si la boucle tools est active)
+                    $calls = $json['candidates'][0]['content']['parts'][0]['functionCall'] ?? null
+                        ?? ($json['candidates'][0]['content']['parts'] ?? []);
+                    if ($tools !== null && $toolHandler !== null && $toolRounds < $maxToolRounds && !empty($calls)) {
+                        $gotToolCall = false;
+                        $parts = $json['candidates'][0]['content']['parts'] ?? [];
+                        $functionParts = [];
+                        foreach ($parts as $part) {
+                            if (isset($part['functionCall']['name'])) {
+                                $fname = (string) $part['functionCall']['name'];
+                                $fargs = $part['functionCall']['args'] ?? [];
+                                $result = ($toolHandler)($fname, $fargs);
+                                // REJOUER la part model EXACTEMENT telle que reçue, y compris
+                                // thought_signature (Gemini 3 exige de renvoyer la signature
+                                // du tool call d'origine — sinon 400 INVALID_ARGUMENT).
+                                $payload['contents'][] = [
+                                    'role' => 'model',
+                                    'parts' => [$part],
+                                ];
+                                $payload['contents'][] = [
+                                    'role' => 'user',
+                                    'parts' => [['functionResponse' => [
+                                        'name' => $fname,
+                                        'response' => ['result' => $result],
+                                    ]]],
+                                ];
+                                $gotToolCall = true;
+                            }
+                        }
+                        if ($gotToolCall) {
+                            $toolRounds++;
+                            // On rejoue avec le MÊME modèle (le fallback réapparaît si rate limité).
+                            continue 2; // re-boucle sur $models
+                        }
+                    }
+                    // Réponse texte finale
                     return $this->extractText($response->json());
                 }
 
@@ -112,6 +163,10 @@ class GeminiService
                 if ($response->status() < 500) {
                     break;
                 }
+            }
+            // while(true) : si on arrive ici, on a épuisé tous les modèles du fallback
+            // sans tool call ni réponse — break la boucle externe (échec propre).
+            break;
             }
 
             Log::warning('Gemini API error', ['status' => $lastStatus, 'body' => $lastBody]);

@@ -161,6 +161,14 @@ TXT;
             . "Le gérant avec qui tu parles s'appelle " . mb_substr(trim((string) ($request->user()?->name ?? 'Utilisateur')), 0, 40) . ".\n"
             . $langRule . "\n"
             . $rules . "\n\n"
+            . "OUTILS DISPONIBLES : tu as accès à des fonctions d'interrogation (tools) sur les données de la plateforme. "
+            . "SI la question exige un croisement (jour × catégorie), une plage calendaire, une dépense précise, "
+            . "ou une période hors des 7 périodes listées ci-dessous, UTILISE le tool approprié — ne réponds jamais "
+            . "« pas dans mes données » quand un tool peut fournir la réponse. "
+            . "Les tools disponibles : expenses_by_day (total d'un jour, croisé ou pas), expenses_range (totaux/période, mois calendaire inclus), "
+            . "recent_expenses (détail des N dernières dépenses), incomes_range (entrées d'argent). "
+            . "Un tool suffit par message en général ; maximum deux. Après le résultat du tool, COMPOSE ta réponse finale "
+            . "en français (ou la langue de l'utilisateur) avec le format attendu (tableaux, synthèse).\n\n"
             . "DONNÉES RÉELLES DE LA PLATEFORME :\n"
             . (new ExpenseTools())->buildContext();
 
@@ -170,7 +178,9 @@ TXT;
         $request->session()->save();
 
         $service = new GeminiService();
-        $reply = $service->chat($context, $system);
+        $tools = (new \App\Domains\AI\Tools\AiQueryService());
+        $toolHandler = fn (string $name, array $args) => $tools->call($name, $args);
+        $reply = $service->chat($context, $system, $tools->declarations(), $toolHandler);
 
         // FIX POLLUTION HISTORIQUE : les messages d'erreur (timeout/quota/api) ne sont PAS
         // stockes comme reponses — sinon l'IA les relit comme contexte et l'historique
