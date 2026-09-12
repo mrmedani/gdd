@@ -363,7 +363,9 @@
             method: 'POST',
             headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': csrf() },
             credentials: 'same-origin',
-            body: JSON.stringify({ message: msg })
+            body: JSON.stringify({ message: msg }),
+            // Timeout client 120s : couvre le pire cas serveur (2 fallbacks) sans pendre à l'infini
+            signal: (function () { var c = new AbortController(); setTimeout(function () { c.abort(); }, 120000); return c.signal; })()
         })
         .then(function (r) { return r.json(); })
         .then(function (data) {

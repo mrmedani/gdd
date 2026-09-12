@@ -135,7 +135,7 @@ class Settings extends Component
         $this->aiModel = (string) Setting::get('gemini_model', '');
         $this->aiHistoryPeriods = (int) Setting::get('ai_history_periods', 6);
         $this->aiMaxExchanges = (int) Setting::get('ai_max_exchanges', 15);
-        $this->aiRateLimit = (int) Setting::get('ai_rate_limit', 20);
+        $this->aiRateLimit = (int) Setting::get('ai_rate_limit', 12);
         $this->aiTtlHours = (int) Setting::get('ai_ttl_hours', 24);
     }
 

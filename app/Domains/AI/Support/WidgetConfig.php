@@ -42,7 +42,7 @@ class WidgetConfig
             'model'          => trim((string) Setting::get('gemini_model', '')) ?: 'gemini-flash-latest',
             'historyPeriods' => min(12, max(1, (int) Setting::get('ai_history_periods', 6))),
             'maxExchanges'   => min(50, max(5, (int) Setting::get('ai_max_exchanges', 15))),
-            'rateLimit'      => min(60, max(5, (int) Setting::get('ai_rate_limit', 20))),
+            'rateLimit'      => min(60, max(5, (int) Setting::get('ai_rate_limit', 12))),
             'ttlHours'       => min(168, max(1, (int) Setting::get('ai_ttl_hours', 24))),
         ];
         self::$cachedAt = time();

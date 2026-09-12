@@ -77,7 +77,9 @@ TXT;
         // Limite de longueur : un collage geant gonflerait le cache et casserait l'appel API
         $message = mb_substr($message, 0, $this->maxMessageLength);
 
-        // Rate limit : configurable depuis /settings (defaut 20 messages / minute)
+        // Rate limit : configurable depuis /settings (defaut 12 messages / minute,
+        // sous le quota Google free tier ~15 RPM → évite que 2+ messages tombent sur
+        // un 429 Google quand l'utilisateur enchaîne les questions)
         $rateLimit = \App\Domains\AI\Support\WidgetConfig::get()['rateLimit'];
         $key = 'chatbot:' . ($request->user()?->id ?? $request->ip());
         if (RateLimiter::tooManyAttempts($key, $rateLimit)) {
@@ -111,8 +113,14 @@ TXT;
         }, $context);
         $context[] = ['role' => 'user', 'content' => $message];
 
-        // L'assistant repond dans la LANGUE DU PROFIL utilisateur (ar/fr/en)
-        $langRule = match ($request->user()?->locale) {
+        // L'assistant repond dans la LANGUE ACTIVE (session > profil user), la MEME
+        // priorite que le middleware SetLocale : si le gerant a change la langue dans
+        // l UI (session), le contexte et la reponse suivent — sinon le profil.
+        $userLocale = $request->session()->get('locale')
+            ?? $request->user()?->locale
+            ?? 'fr';
+        app()->setLocale($userLocale);
+        $langRule = match ($userLocale) {
             'ar' => "Réponds toujours en arabe.",
             'en' => "Always respond in English.",
             default => "Réponds en français.",
@@ -139,12 +147,18 @@ TXT;
             . "Les données couvrent la période ACTUELLE et les 6 périodes précédentes "
             . "(chaque période va du 21 d'un mois au 20 du mois suivant). "
             . "Si une question porte sur une période plus ancienne, dis-le clairement. "
+            . "QUESTION DAILY (« aujourd'hui », « hier », un jour précis) : le contexte contient une section "
+            . "« DÉPENSES PAR JOUR ». Utilise-la : lis le montant exact du jour demandé dans cette section "
+            . "(« d'aujourd'hui » = montant du jour, « hier » = jour précédent). Ne remplace JAMAIS une "
+            . "question journalière par le résumé de la période : cite d'abord le montant exact du jour. "
             . "FORMAT : quand tu listes des montants, catégories ou comparaisons (plus de 2 éléments), "
             . "utilise un TABLEAU Markdown (| col | col | avec |---|---|). Un tableau par sujet. "
             . "Termine par une phrase courte de synthèse.";
 
         $system = $personality . "\n\n"
-            . "Le gérant avec qui tu parles s'appelle " . ($request->user()?->name ?? 'Utilisateur') . ".\n"
+            // Nom du gerant : tronque et sans caracteres de structure — evite l'injection
+            // de prompt via un nom d'utilisateur maison ("Ignore les regles...").
+            . "Le gérant avec qui tu parles s'appelle " . mb_substr(trim((string) ($request->user()?->name ?? 'Utilisateur')), 0, 40) . ".\n"
             . $langRule . "\n"
             . $rules . "\n\n"
             . "DONNÉES RÉELLES DE LA PLATEFORME :\n"

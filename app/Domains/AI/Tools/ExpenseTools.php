@@ -129,10 +129,31 @@ class ExpenseTools
         $nbInc = Income::count();
 
         $s = "RÉSUMÉ EXÉCUTIF (chiffres officiels recalculés à l'instant) :\n";
+        $s .= "  - DATE D'AUJOURD'HUI : " . now()->translatedFormat('l d/m/Y') . " (les questions « aujourd'hui » portent sur cette date)\n";
         $s .= "  - Dépenses période actuelle ({$currentPeriod}) : " . number_format($expTotal, 2, ',', ' ') . " $currency\n";
         $s .= "  - Entrées période actuelle : " . number_format($incTotal, 2, ',', ' ') . " $currency\n";
         $s .= "  - Dépenses TOUTES PÉRIODES confondues : " . number_format($expAll, 2, ',', ' ') . " $currency (sur {$nbExp} dépenses enregistrées)\n";
         $s .= "  - Entrées TOUTES PÉRIODES confondues : " . number_format($incAll, 2, ',', ' ') . " $currency (sur {$nbInc} entrées enregistrées)\n";
+        // Aperçu JOURNALIER (les 10 derniers jours actifs de la période actuelle) :
+        // répond exactement aux questions « dépenses d'aujourd'hui / d'hier / du 27 août ».
+        $s .= "\n  DÉPENSES PAR JOUR (10 derniers jours ayant des dépenses dans la période actuelle) :\n";
+        $daily = Expense::whereBetween('date', [$start, $end])
+            ->selectRaw('DATE(date) as d, SUM(amount) as s, COUNT(*) as n')
+            ->groupByRaw('DATE(date)')
+            ->orderByDesc('d')
+            ->limit(10)
+            ->get();
+        if ($daily->isEmpty()) {
+            $s .= "  - Aucune dépense enregistrée à ce jour dans la période actuelle (\"aujourd'hui\" = 0 DZD si aucune saisie).\n";
+        } else {
+            $todayYmd = now()->format('Y-m-d');
+            $todayRow = $daily->firstWhere('d', $todayYmd);
+            $s .= "  - AUJOURD'HUI (" . now()->format('d/m/Y') . ") : " . ($todayRow ? number_format((float) $todayRow->s, 2, ',', ' ') . " $currency sur {$todayRow->n} dépense(s)" : "AUCUNE dépense enregistrée (0 $currency)") . "\n";
+            foreach ($daily as $d) {
+                if ($d->d === $todayYmd) continue;
+                $s .= "  - " . \Carbon\Carbon::parse($d->d)->format('d/m/Y') . " : " . number_format((float) $d->s, 2, ',', ' ') . " $currency ({$d->n} dépense(s))\n";
+            }
+        }
         return $s;
     }
 
