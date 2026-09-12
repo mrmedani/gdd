@@ -19,36 +19,64 @@
 
     {{-- UPCOMING COMMITMENTS (rappels d'échéances) --}}
     @if(auth()->user()->hasPermission('alerts') && count($upcomingCommitments) > 0)
-    <div class="bg-amber-50/70 dark:bg-amber-950/20 border border-amber-200/60 dark:border-amber-800/40 rounded-2xl p-5 sm:p-6 shadow-sm">
-        <div class="flex items-center justify-between mb-4">
-            <div class="flex items-center gap-3">
-                <div class="p-2.5 rounded-xl bg-amber-100 dark:bg-amber-500/20">
-                    <svg class="w-5 h-5 text-amber-600 dark:text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
-                </div>
-                <div>
-                    <h2 class="text-base font-bold text-amber-900 dark:text-amber-200">{{ __('alerts.upcoming_title') }}</h2>
-                    <p class="text-xs font-medium text-amber-700/80 dark:text-amber-400/80">{{ __('alerts.upcoming_subtitle') }}</p>
-                </div>
-            </div>
-            <a href="{{ route('alerts.index') }}" class="text-xs font-bold text-amber-700 dark:text-amber-300 hover:underline whitespace-nowrap">{{ __('alerts.view_all') }}</a>
-        </div>
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-            @foreach($upcomingCommitments as $uc)
-            <div class="flex items-center justify-between gap-3 bg-white/80 dark:bg-slate-900/60 border border-amber-200/50 dark:border-amber-800/30 rounded-xl px-4 py-3">
-                <div class="min-w-0">
-                    <p class="text-sm font-bold text-slate-800 dark:text-slate-100 truncate">{{ $uc['label'] }}</p>
-                    <p class="text-xs text-slate-500 dark:text-slate-400">
-                        {{ $uc['due_date'] }}
-                        @if($uc['amount'] !== null)
-                            · <span dir="ltr">{{ number_format($uc['amount'], 2, ',', ' ') }} {{ getCurrency() }}</span>
+    @php
+        $hasUrgent = collect($upcomingCommitments)->contains(fn($u) => $u['urgent']);
+        $urgentCount = collect($upcomingCommitments)->where('urgent', true)->count();
+    @endphp
+    <div class="overflow-hidden rounded-2xl border {{ $hasUrgent ? 'border-red-200 dark:border-red-800/60' : 'border-slate-200/70 dark:border-slate-800' }} bg-white dark:bg-slate-900 shadow-sm">
+        <div class="h-1 w-full {{ $hasUrgent ? 'bg-gradient-to-r from-red-500 via-rose-500 to-orange-400' : 'bg-gradient-to-r from-amber-400 via-orange-400 to-amber-500' }}"></div>
+        <div class="p-5 sm:p-6">
+            <div class="flex flex-wrap items-center justify-between gap-3 mb-5">
+                <div class="flex items-center gap-3">
+                    <div class="relative flex h-11 w-11 items-center justify-center rounded-xl text-white shadow-sm {{ $hasUrgent ? 'bg-gradient-to-br from-red-500 to-rose-600' : 'bg-gradient-to-br from-amber-400 to-orange-500' }}">
+                        @if($hasUrgent)
+                        <span class="absolute -top-1 -end-1 flex h-3 w-3">
+                            <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                            <span class="relative inline-flex rounded-full h-3 w-3 bg-red-600 border-2 border-white dark:border-slate-900"></span>
+                        </span>
                         @endif
-                    </p>
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg>
+                    </div>
+                    <div>
+                        <h2 class="text-base font-extrabold text-slate-900 dark:text-white flex items-center gap-2">
+                            {{ __('alerts.upcoming_title') }}
+                            @if($hasUrgent)
+                            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-black bg-red-600 text-white animate-pulse">⚠ {{ $urgentCount }}</span>
+                            @endif
+                        </h2>
+                        <p class="text-xs font-medium text-slate-500 dark:text-slate-400">{{ __('alerts.upcoming_subtitle') }}</p>
+                    </div>
                 </div>
-                <span class="shrink-0 inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold {{ $uc['days_left'] === 0 ? 'bg-rose-100 dark:bg-rose-900/30 text-rose-700 dark:text-rose-300' : 'bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300' }}">
-                    {{ $uc['days_left'] === 0 ? __('alerts.today') : ($uc['days_left'] === 1 ? __('alerts.tomorrow') : 'J-' . $uc['days_left']) }}
-                </span>
+                <a href="{{ route('alerts.index') }}" class="inline-flex items-center gap-1 text-xs font-bold text-blue-600 dark:text-blue-400 hover:underline whitespace-nowrap">
+                    {{ __('alerts.view_all') }}
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+                </a>
             </div>
-            @endforeach
+            <div class="space-y-2.5">
+                @foreach($upcomingCommitments as $uc)
+                @php
+                    $due = \Carbon\Carbon::createFromFormat('d/m/Y', $uc['due_date']);
+                    $tone = $uc['urgent'] ? 'red' : ($uc['days_left'] <= 7 ? 'amber' : 'slate');
+                    $pill = $uc['days_left'] === 0 ? __('alerts.today') : ($uc['days_left'] === 1 ? __('alerts.tomorrow') : 'J-' . $uc['days_left']);
+                @endphp
+                <div class="group flex items-center gap-3 sm:gap-4 rounded-xl border px-3 py-2.5 transition-all hover:shadow-sm {{ $tone === 'red' ? 'border-red-200 dark:border-red-800/60 bg-red-50/60 dark:bg-red-950/20' : ($tone === 'amber' ? 'border-amber-200/70 dark:border-amber-800/40 bg-amber-50/50 dark:bg-amber-950/10' : 'border-slate-200/70 dark:border-slate-800 bg-slate-50/60 dark:bg-slate-800/30') }}">
+                    <div class="flex shrink-0 flex-col items-center justify-center rounded-lg border py-1.5 px-2 {{ $tone === 'red' ? 'border-red-200 dark:border-red-700/60 bg-white dark:bg-red-950/40 text-red-700 dark:text-red-300' : ($tone === 'amber' ? 'border-amber-200 dark:border-amber-700/50 bg-white dark:bg-amber-950/30 text-amber-700 dark:text-amber-300' : 'border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-300') }}" style="min-width:3.25rem;min-height:3.25rem">
+                        <span class="text-lg font-black leading-none">{{ $due->format('d') }}</span>
+                        <span class="text-[10px] font-bold uppercase leading-tight">{{ $due->translatedFormat('M') }}</span>
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <p class="text-sm font-bold text-slate-800 dark:text-slate-100 truncate">{{ $uc['label'] }}</p>
+                        <p class="text-xs text-slate-500 dark:text-slate-400 truncate">
+                            {{ $due->translatedFormat('l d F Y') }}
+                            @if($uc['amount'] !== null)
+                                · <span dir="ltr" class="font-semibold">{{ number_format($uc['amount'], 2, ',', ' ') }} {{ getCurrency() }}</span>
+                            @endif
+                        </p>
+                    </div>
+                    <span class="shrink-0 inline-flex items-center px-3 py-1.5 rounded-full text-xs font-black {{ $tone === 'red' ? 'bg-red-600 text-white animate-pulse shadow-sm' : ($tone === 'amber' ? 'bg-amber-100 dark:bg-amber-500/20 text-amber-700 dark:text-amber-300' : 'bg-slate-200/70 dark:bg-slate-700/60 text-slate-600 dark:text-slate-300') }}">{{ $pill }}</span>
+                </div>
+                @endforeach
+            </div>
         </div>
     </div>
     @endif
