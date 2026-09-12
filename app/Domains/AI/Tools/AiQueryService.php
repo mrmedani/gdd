@@ -191,6 +191,12 @@ class AiQueryService
 
     protected function incomesRange(array $args): string
     {
+        // PERMISSION : l'outil d'entrées d'argent exige la permission 'incomes' —
+        // sans elle, respond explicitement refusé (jamais de chiffre).
+        if (!(auth()->user()?->hasPermission('incomes') ?? false)) {
+            return "PERMISSION REFUSÉE : tu n'as pas l'autorisation d'accéder aux entrées d'argent. "
+                . "Dis poliment à l'utilisateur que cette information nécessite une permission que son compte n'a pas.";
+        }
         $from = $this->safeDate($args['from'] ?? null, now()->startOfMonth()->format('Y-m-d'));
         $to = $this->safeDate($args['to'] ?? null, now()->endOfMonth()->format('Y-m-d'));
         $currency = getCurrency();

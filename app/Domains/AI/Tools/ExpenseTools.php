@@ -27,6 +27,10 @@ use Illuminate\Support\Facades\Schema;
  *   6. Clôtures mensuelles (historique officiel validé)
  *   7. Entrées d'argent (incomes, soft-delete exclus — même règle que l'UI)
  *   8. Rappels de couverture (ce que l'IA ne voit PAS : mots de passe, notes privées...)
+ *
+ * FILTRE PAR PERMISSIONS : une section n'est incluse que si le user connecté possède
+ * la permission correspondante dans l'UI — l'assistant ne révèle jamais ce que les
+ * pages cachent (ex: clôtures sans permission 'treasury', incomes sans 'incomes').
  */
 class ExpenseTools
 {
@@ -46,15 +50,34 @@ class ExpenseTools
         // La LOCALE fait partie de la cle : les noms de categories (FR/AR/EN) sont rendus
         // dans la langue du user — sinon un switch de langue servait l'ancien contexte
         // cache pendant 60 s.
-        return Cache::remember('ai_expense_context:' . getCurrency() . ':' . app()->getLocale(), 60, function () {
+        // FILTRÉ PAR PERMISSIONS : la clé inclut le "profil de permissions" du user —
+        // deux users avec permissions différentes ne partagent PAS le même contexte
+        // (sinon le moins privilégié recevrait les sections filtrées pour l'autre).
+        $permProfile = $this->permissionProfile();
+        return Cache::remember('ai_expense_context:' . getCurrency() . ':' . app()->getLocale() . ':' . $permProfile, 60, function () {
             return $this->buildContextRaw();
         });
+    }
+
+    /** Signature compacte des permissions pertinentes du user (pour la clé de cache). */
+    protected function permissionProfile(): string
+    {
+        $u = auth()->user();
+        if (!$u) return 'anon';
+        return ($u->hasPermission('treasury') ? 'T' : '-')
+            . ($u->hasPermission('incomes') ? 'I' : '-')
+            . ($u->hasPermission('employees') ? 'E' : '-');
     }
 
     protected function buildContextRaw(): string
     {
         $currency = getCurrency();
         $currentPeriod = getPeriodFromDate(now());
+        // Permissions du user connecté : filtrent les sections sensibles
+        $user = auth()->user();
+        $canTreasury = $user?->hasPermission('treasury') ?? false;
+        $canIncomes = $user?->hasPermission('incomes') ?? false;
+        $canEmployees = $user?->hasPermission('employees') ?? false;
 
         // Les périodes couvertes : courante + N précédentes (les VIDES aussi, marquées
         // explicitement "AUCUNE donnée" — sinon l'IA déduisait à tort sur une période skippée)
@@ -90,20 +113,37 @@ class ExpenseTools
         // ---- 4. CATEGORIES EXHAUSTIVES ----
         $lines[] = $this->categoriesSummary();
 
-        // ---- 5. EMPLOYES / MASSES SALARIALES ----
-        $lines[] = $this->employeesSummary($currency);
+        // ---- 5. EMPLOYES / MASSES SALARIALES (permission 'employees') ----
+        if ($canEmployees) {
+            $lines[] = $this->employeesSummary($currency);
+        }
 
-        // ---- 6. CLOTURES MENSUELLES (historique officiel) ----
-        $lines[] = $this->closuresSummary($currency);
+        // ---- 6. CLOTURES MENSUELLES (permission 'treasury' — historique officiel) ----
+        if ($canTreasury) {
+            $lines[] = $this->closuresSummary($currency);
+        }
 
-        // ---- 7. ENTREES D'ARGENT (detail source par source, periode courante) ----
-        $lines[] = $this->incomesSummary($periods, $currency);
+        // ---- 7. ENTREES D'ARGENT (permission 'incomes') ----
+        if ($canIncomes) {
+            $lines[] = $this->incomesSummary($periods, $currency);
+        }
 
         // ---- 8. RAPPEL DE COUVERTURE ----
-        $lines[] = "COUVERTURE DE TES CONNAISSANCES : tu connais UNIQUEMENT ce qui précède. "
+        $cover = "COUVERTURE DE TES CONNAISSANCES : tu connais UNIQUEMENT ce qui précède. "
             . "Ce que tu ne vois PAS : notes privées des dépenses, données supprimées (corbeille), "
-            . "mots de passe, données d'autres entreprises, périodes plus anciennes que celles listées. "
-            . "Pour toute question hors couverture : « cette précision n'est pas dans mes données ».";
+            . "mots de passe, données d'autres entreprises, périodes plus anciennes que celles listées. ";
+        // Sections de données SENSIBLES non incluses pour ce rôle : l'IA doit le savoir
+        // pour répondre « permission refusée » au lieu de deviner.
+        $hidden = [];
+        if (!$canTreasury) $hidden[] = "clôtures mensuelles / solde de caisse (permission trésorerie requise)";
+        if (!$canIncomes) $hidden[] = "entrées d'argent (permission incomes requise)";
+        if (!$canEmployees) $hidden[] = "employés et salaires (permission employees requise)";
+        if ($hidden) {
+            $cover .= "IMPORTANT : ton rôle ne donne PAS accès à : " . implode(' ; ', $hidden) . ". "
+                . "Si on te demande une de ces informations, réponds «Cette information nécessite une permission que ton compte n'a pas» — n'ESTIME jamais ces chiffres.";
+        }
+        $cover .= " Pour toute question hors couverture : « cette précision n'est pas dans mes données ».";
+        $lines[] = $cover;
 
         return implode("\n\n", $lines);
     }
@@ -119,21 +159,28 @@ class ExpenseTools
         $start = $range['start']->format('Y-m-d');
         $end = $range['end']->format('Y-m-d');
 
+        // Permission 'incomes' : les lignes "Entrées" de ce résumé sont masquées sinon
+        $canIncomes = auth()->user()?->hasPermission('incomes') ?? false;
+
         $expTotal = (float) Expense::whereBetween('date', [$start, $end])->sum('amount');
-        $incTotal = (float) Income::whereBetween('date', [$start, $end])->sum('amount');
+        $incTotal = $canIncomes ? (float) Income::whereBetween('date', [$start, $end])->sum('amount') : 0.0;
 
         // Totaux "depuis toujours" (toutes periodes confondues)
         $expAll = (float) Expense::sum('amount');
-        $incAll = (float) Income::sum('amount');
+        $incAll = $canIncomes ? (float) Income::sum('amount') : 0.0;
         $nbExp = Expense::count();
-        $nbInc = Income::count();
+        $nbInc = $canIncomes ? Income::count() : 0;
 
         $s = "RÉSUMÉ EXÉCUTIF (chiffres officiels recalculés à l'instant) :\n";
         $s .= "  - DATE D'AUJOURD'HUI : " . now()->translatedFormat('l d/m/Y') . " (les questions « aujourd'hui » portent sur cette date)\n";
         $s .= "  - Dépenses période actuelle ({$currentPeriod}) : " . number_format($expTotal, 2, ',', ' ') . " $currency\n";
-        $s .= "  - Entrées période actuelle : " . number_format($incTotal, 2, ',', ' ') . " $currency\n";
-        $s .= "  - Dépenses TOUTES PÉRIODES confondues : " . number_format($expAll, 2, ',', ' ') . " $currency (sur {$nbExp} dépenses enregistrées)\n";
-        $s .= "  - Entrées TOUTES PÉRIODES confondues : " . number_format($incAll, 2, ',', ' ') . " $currency (sur {$nbInc} entrées enregistrées)\n";
+        if ($canIncomes) {
+            $s .= "  - Entrées période actuelle : " . number_format($incTotal, 2, ',', ' ') . " $currency\n";
+            $s .= "  - Dépenses TOUTES PÉRIODES confondues : " . number_format($expAll, 2, ',', ' ') . " $currency (sur {$nbExp} dépenses enregistrées)\n";
+            $s .= "  - Entrées TOUTES PÉRIODES confondues : " . number_format($incAll, 2, ',', ' ') . " $currency (sur {$nbInc} entrées enregistrées)\n";
+        } else {
+            $s .= "  - Dépenses TOUTES PÉRIODES confondues : " . number_format($expAll, 2, ',', ' ') . " $currency (sur {$nbExp} dépenses enregistrées)\n";
+        }
         // Aperçu JOURNALIER (les 10 derniers jours actifs de la période actuelle) :
         // répond exactement aux questions « dépenses d'aujourd'hui / d'hier / du 27 août ».
         $s .= "\n  DÉPENSES PAR JOUR (10 derniers jours ayant des dépenses dans la période actuelle) :\n";
@@ -240,15 +287,20 @@ class ExpenseTools
         $start = $range['start']->format('Y-m-d');
         $end = $range['end']->format('Y-m-d');
 
+        // Permission 'incomes' : sinon masquer les lignes entrées/gain
+        $canIncomes = auth()->user()?->hasPermission('incomes') ?? false;
+
         $expensesTotal = (float) Expense::whereBetween('date', [$start, $end])->sum('amount');
-        $incomesTotal = (float) Income::whereBetween('date', [$start, $end])->sum('amount');
-        $gain = $incomesTotal - $expensesTotal;
+        $incomesTotal = $canIncomes ? (float) Income::whereBetween('date', [$start, $end])->sum('amount') : 0.0;
+        $gain = $canIncomes ? ($incomesTotal - $expensesTotal) : null;
 
         $label = $isCurrent ? 'Période ACTUELLE' : 'Période';
         $s = "$label $period (du {$range['start']->format('d/m/Y')} au {$range['end']->format('d/m/Y')}):\n";
         $s .= "  - Dépenses TOTAL: " . number_format($expensesTotal, 2, ',', ' ') . " $currency\n";
-        $s .= "  - Entrées d'argent TOTAL: " . number_format($incomesTotal, 2, ',', ' ') . " $currency\n";
-        $s .= "  - GAIN NET de la période (entrées - dépenses): " . number_format($gain, 2, ',', ' ') . " $currency\n";
+        if ($canIncomes) {
+            $s .= "  - Entrées d'argent TOTAL: " . number_format($incomesTotal, 2, ',', ' ') . " $currency\n";
+            $s .= "  - GAIN NET de la période (entrées - dépenses): " . number_format($gain, 2, ',', ' ') . " $currency\n";
+        }
 
         // TOUTES les catégories de la période (pas juste top 3) : couvre "combien en X ?"
         $byCat = Expense::whereBetween('date', [$start, $end])
