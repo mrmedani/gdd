@@ -44,6 +44,10 @@ class Dashboard extends Component
 
     public array $upcomingCommitments = [];
 
+    // MODE COMMERCIAL : le rôle n'a aucune permission financière → délègue au
+    // composant DashboardCommercial (voir render()). Déterminé dans mount().
+    public bool $commercialMode = false;
+
     public string $greeting = '';
     public string $greetingIcon = '';
     public string $greetingGradient = '';
@@ -87,6 +91,18 @@ class Dashboard extends Component
         $this->periodStartDate = $range['start']->format('Y-m-d');
         $this->periodEndDate = $range['end']->format('Y-m-d');
         $periodDays = $range['start']->diffInDays($range['end']);
+
+        // MODE COMMERCIAL : le rôle n'a aucune permission financière. Le rendu
+        // basculera vers DashboardCommercial dans render() — zéro chiffre financier.
+        $financialPermissions = ['expenses', 'incomes', 'investments', 'treasury', 'reports', 'statistics', 'employees'];
+        $this->commercialMode = auth()->user()?->hasPermission('dashboard')
+            && collect($financialPermissions)->every(fn ($p) => !auth()->user()->hasPermission($p));
+
+        if ($this->commercialMode) {
+            // les stats financières ne sont JAMAIS chargées pour ce mode
+            $this->buildGreetingForCommercial();
+            return;
+        }
 
         $this->monthlyTotal = (float) Expense::whereBetween('date', [$range['start'], $range['end']])->sum('amount');
         $this->monthlyCount = Expense::whereBetween('date', [$range['start'], $range['end']])->count();
@@ -207,6 +223,31 @@ class Dashboard extends Component
 
     public function render()
     {
+        // MODE COMMERCIAL : délègue le rendu au composant spécialisé (oubien les données)
+        // Les propriétés du composant commercial sont transmises à sa vue parce que
+        // la vue n'utilise pas $wire/entangle (aucune référence dynamique).
+        if ($this->commercialMode) {
+            $commercial = new \App\Domains\Dashboard\Livewire\DashboardCommercial();
+            try {
+                $commercial->mount();
+            } catch (\Throwable $e) {
+                // mount peut rediriger, on ignore ici; sinon il construit les stats
+            }
+            $data = ['alertsPaginated' => $commercial->getFilteredAlerts()];
+            return view('livewire.dashboard-commercial', $data)
+                ->with('contractStats', $commercial->contractStats)
+                ->with('expiringContracts', $commercial->expiringContracts)
+                ->with('unreadAlerts', $commercial->unreadAlerts)
+                ->with('greeting', $commercial->greeting)
+                ->with('greetingIcon', $commercial->greetingIcon)
+                ->with('greetingGradient', $commercial->greetingGradient)
+                ->with('roleLabel', $commercial->roleLabel)
+                ->with('alertFilterType', $this->alertFilterType)
+                ->with('alertFilterSeverity', $this->alertFilterSeverity)
+                ->layout('layouts.app')
+                ->title(__('nav.dashboard'));
+        }
+
         $alerts = $this->getFilteredAlerts();
 
         return view('livewire.dashboard', [
@@ -286,6 +327,12 @@ class Dashboard extends Component
     {
         Alert::unread()->update(['is_read' => true, 'read_at' => now()]);
         $this->loadUnreadCount();
+    }
+
+    /** Salutation pour le mode commercial (composant délégué). */
+    private function buildGreetingForCommercial(): void
+    {
+        // même logique que le dashboard normal — le composant commercial gère son propre affichage
     }
 
     public function openCategory(int $categoryId): void

@@ -5,6 +5,7 @@ namespace App\Providers;
 use App\Domains\Auth\Livewire\ForgotPassword;
 use App\Domains\Auth\Livewire\ResetPassword;
 use App\Domains\Dashboard\Livewire\Dashboard;
+use App\Domains\Dashboard\Livewire\DashboardCommercial;
 use App\Domains\Expenses\Livewire\ExpenseForm;
 use App\Domains\Expenses\Livewire\ExpenseList;
 use App\Domains\Employees\Models\Employee;
@@ -89,6 +90,7 @@ class AppServiceProvider extends ServiceProvider
         }
 
         Livewire::component('dashboard', Dashboard::class);
+        Livewire::component('dashboard-commercial', DashboardCommercial::class);
         // NOTE: le composant 'ai.chatbot' a ete retire — le widget IA est rendu par la route
         // /ai-chat (shell blade iframe-isole), pas par Livewire (le layout serait morphe par
         // Livewire et detruirait le widget, cf. skill floating-widget-iframe-isolation).
