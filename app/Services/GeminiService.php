@@ -28,6 +28,164 @@ class GeminiService
         $this->temperature = min(1.0, max(0.0, (float) Setting::get('ai_temperature', 0.2)));
     }
 
+    /**
+     * Version STREAMING de chat() : renvoie q'un generator qui yield les chunks de texte
+     * au fur et à mesure (SSE côté contrôleur). La boucle tool-call est REJOUÉE à
+     * l'identique de chat(), mais pendant les tours où Gemini demande un tool, nothing
+     * est yieldé (pas de faux texte carrément) — seuls les chunks de la RÉPONSE FINALE
+     * (tour sans functionCall) font l'objet d'un yield.
+     * Le front reçoit le texte progressivement → sensation de latence divisée par ~10.
+     *
+     * @return \Generator|string  generator de tokens texte ; en cas d'erreur, le
+     *         generator yield UNE chaîne = message d'erreur (même convention i18n que chat()).
+     */
+    public function chatStream(array $messages, string $systemInstruction = '', ?array $tools = null, ?\Closure $toolHandler = null)
+    {
+        if (!$this->isConfigured()) {
+            yield __('ai.not_configured');
+            return;
+        }
+
+        $payload = $this->buildPayload($messages, $systemInstruction, $tools);
+        $url = $this->baseUrl . '/';
+
+        $models = array_unique([
+            $this->model,
+            'gemini-3.6-flash',
+            'gemini-flash-lite-latest',
+        ]);
+
+        $toolRounds = 0;
+        $maxToolRounds = 2;
+        $lastStatus = 0;
+        $lastBody = '';
+        $toolPending = true;
+
+        while (true) {
+            foreach ($models as $model) {
+                $response = Http::timeout(120)
+                    ->withHeaders(['Content-Type' => 'application/json'])
+                    ->withOptions([
+                        'verify' => base_path('resources/certs/cacert.pem'),
+                        'stream' => true,
+                    ])
+                    ->post($url . $model . ':streamGenerateContent?alt=sse&key=' . $this->apiKey, $payload);
+
+                if (!$response->successful()) {
+                    $lastStatus = $response->status();
+                    $lastBody = $response->body();
+                    // 429 / 404 → modèle suivant ; <500 → casse
+                    if ($response->status() === 429 || $response->status() === 404) {
+                        continue 2;
+                    }
+                    if ($response->status() < 500) {
+                        break 2;
+                    }
+                    continue 2;
+                }
+
+                // Read the stream chunk by chunk (SSE : data: {...}\n\n)
+                $body = $response->toPsrResponse()->getBody()->detach();
+                $buffer = '';
+                $parts = [];
+                $hasToolCall = false;
+                $lastChunk = null;
+
+                while (!feof($body)) {
+                    $line = fgets($body, 8192);
+                    if ($line === false) break;
+                    $line = trim($line);
+                    if ($line === '' || !str_starts_with($line, 'data: ')) continue;
+                    $json = json_decode(substr($line, 6), true);
+                    if (!is_array($json)) continue;
+                    $lastChunk = $json;
+
+                    $cparts = $json['candidates'][0]['content']['parts'] ?? [];
+                    foreach ($cparts as $part) {
+                        if (isset($part['functionCall']['name'])) {
+                            $hasToolCall = true;
+                            $parts[] = $part;
+                        } elseif (isset($part['text'])) {
+                            $parts[] = $part;
+                            yield $part['text'];
+                        }
+                    }
+                }
+                fclose($body);
+
+                // TOOL CALL : on rejoue (même logique que chat()) — pas de yield du faux
+                if ($hasToolCall && $tools !== null && $toolHandler !== null && $toolRounds < $maxToolRounds) {
+                    foreach ($parts as $part) {
+                        if (isset($part['functionCall']['name'])) {
+                            $fname = (string) $part['functionCall']['name'];
+                            $fargs = $part['functionCall']['args'] ?? [];
+                            $result = ($toolHandler)($fname, $fargs);
+                            $payload['contents'][] = ['role' => 'model', 'parts' => [$part]];
+                            $payload['contents'][] = ['role' => 'user', 'parts' => [['functionResponse' => [
+                                'name' => $fname,
+                                'response' => ['result' => $result],
+                            ]]]];
+                        }
+                    }
+                    $toolRounds++;
+                    continue 2; // retry with the tool results, next pass (non-streamed text is yet to come)
+                }
+
+                // IF stream yielded nothing useful (empty final text Saison), fallback extractText
+                if ($lastChunk !== null && $lastChunk['candidates'][0]['finishReason'] ?? null === null) {
+                    // stream finished without explicit finishReason: check if safety blocked
+                    $block = $lastChunk['promptFeedback']['blockReason'] ?? null;
+                    if ($block) {
+                        Log::warning('Gemini stream blocked', ['reason' => $block]);
+                        yield __('ai.no_response');
+                        return;
+                    }
+                }
+                if ($lastChunk === null) {
+                    yield __('ai.no_response');
+                }
+                return;
+            }
+            // tous les modèles épuisés
+            break;
+        }
+
+        Log::warning('Gemini stream error', ['status' => $lastStatus, 'body' => $lastBody]);
+        if ($lastStatus === 0) {
+            yield __('ai.timeout');
+        } elseif ($lastStatus === 429) {
+            yield __('ai.quota_exceeded');
+        } else {
+            yield __('ai.api_error');
+        }
+    }
+
+    /** Construit le payload (commun à chat() et chatStream()). */
+    protected function buildPayload(array $messages, string $systemInstruction = '', ?array $tools = null): array
+    {
+        $contents = [];
+        foreach ($messages as $msg) {
+            $contents[] = [
+                'role'    => $msg['role'] === 'assistant' ? 'model' : 'user',
+                'parts'   => [['text' => $msg['content']]],
+            ];
+        }
+
+        $payload = ['contents' => $contents];
+        if ($systemInstruction !== '') {
+            $payload['systemInstruction'] = ['parts' => [['text' => $systemInstruction]]];
+        }
+        $payload['generationConfig'] = [
+            'temperature'      => $this->temperature,
+            'topP'             => 0.9,
+            'maxOutputTokens'  => 2048,
+        ];
+        if ($tools !== null && $tools !== []) {
+            $payload['tools'] = [['functionDeclarations' => $tools]];
+        }
+        return $payload;
+    }
+
     public function isConfigured(): bool
     {
         return !empty($this->apiKey);

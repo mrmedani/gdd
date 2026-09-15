@@ -184,6 +184,64 @@ TXT;
         $service = new GeminiService();
         $tools = (new \App\Domains\AI\Tools\AiQueryService());
         $toolHandler = fn (string $name, array $args) => $tools->call($name, $args);
+
+        // ─── MODE STREAMING (SSE) ─────────────────────────────────────────────
+        // Le front demande ?stream=1 : réponse Server-Sent Events, texte envoyé chunk
+        // par chunk au fur et à mesure de la génération Gemini (latence perçue ~10x
+        // plus courte). Si le client n'est pas compatible ou une erreur survient
+        // avant le premier chunk, le flux envoi un événement error et le front
+        // affiche le message d'erreur standard.
+        if ($request->boolean('stream')) {
+            $knownErrors = [
+                __('ai.timeout'), __('ai.quota_exceeded'), __('ai.api_error'),
+                __('ai.no_response'), __('ai.rate_limited'), __('ai.not_configured'),
+            ];
+            $stream = $service->chatStream($context, $system, $tools->declarations(), $toolHandler);
+            $full = '';
+            $response = Response::streamDownload(function () use ($stream, $knownErrors, &$full) {
+                echo "retry: 3000\n\n"; // le front re-tente après une coupure réseau
+                foreach ($stream as $chunk) {
+                    if (in_array($chunk, $knownErrors, true)) {
+                        echo "event: error\ndata: ".json_encode(['error' => $chunk])."\n\n";
+                        return;
+                    }
+                    $full .= $chunk;
+                    // evenement « delta » : tel que la convention adoptée dans le widget
+                    echo "event: delta\ndata: ".json_encode(['text' => $chunk])."\n\n";
+                    // Flushing immédiat : nginx/fpm buffers par défaut ; les X-Accel bypass divers
+                    // NGINX, Apache, LiteSpeed utilisent et poussent byte par byte.
+                    if (function_exists('flush')) flush();
+                    if (ob_get_level() > 0) @ob_flush();
+                }
+                // Finish: client needs final msg status; we send the full text for
+                // the bubble's markdown rendering and history save.
+                echo "event: done\ndata: ".json_encode(['full' => $full])."\n\n";
+                if (function_exists('flush')) flush();
+            }, 'chat.txt', [
+                'Content-Type' => 'text/event-stream',
+                'Cache-Control' => 'no-cache',
+                'X-Accel-Buffering' => 'no', // nginx : pas de buffering côté proxy
+            ]);
+
+            // Sauvegarde dans la session active APRÈS le flux complet : si le client
+            // coupe la connexion, full() ne sera pas complet — on regarde si $full
+            // est rempli après le stream (le closure capture $full par référence)
+            register_shutdown_function(function () use ($userId, $message, &$full, $knownErrors) {
+                if ($full !== '' && !in_array($full, $knownErrors, true)) {
+                    \App\Domains\AI\Support\AiSessionService::append(
+                        $userId,
+                        $message,
+                        mb_substr($full, 0, 4000)
+                    );
+                    \Illuminate\Support\Facades\Cache::forget('ai_chat_history:user:' . $userId);
+                }
+            });
+
+            optional($lock)->release();
+            return $response;
+        }
+
+        // ─── MODE NON-STREAMING (fallback JSON classique) ─────────────────────
         $reply = $service->chat($context, $system, $tools->declarations(), $toolHandler);
 
         // FIX POLLUTION HISTORIQUE : les messages d'erreur (timeout/quota/api) ne sont PAS

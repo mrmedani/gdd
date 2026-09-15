@@ -378,36 +378,114 @@
         input.style.height = 'auto';
         sendBtn.disabled = true;
         var th = thinkingEl();
+        var controller = new AbortController();
+        var killed = false;
+        setTimeout(function () { if (!killed) controller.abort(); }, 180000);
 
-        fetch('/api/chatbot', {
+        // ─── STREAMING (SSE) ─────────────────────────────────────────────
+        // La réponse arrive chunk par chunk dans la bubble assistant — rendu
+        // progressif. En cas d'échec (SSE dispo pas, ancien PWA cache, réseau),
+        // on bascule automatiquement sur le fallback JSON classique.
+        fetch('/api/chatbot?stream=1', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': csrf() },
+            headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': csrf(), 'Accept': 'text/event-stream' },
             credentials: 'same-origin',
             body: JSON.stringify({ message: msg }),
-            // Timeout client 120s : couvre le pire cas serveur (2 fallbacks) sans pendre à l'infini
-            signal: (function () { var c = new AbortController(); setTimeout(function () { c.abort(); }, 120000); return c.signal; })()
+            signal: controller.signal
         })
-        .then(function (r) { return r.json(); })
-        .then(function (data) {
-            th.remove();
-            var reply = data.reply || data.error || '{{ __('ai.no_response') }}';
-            addBubble(reply, 'assistant');
-            if (!open) {
-                unreadPending = true;
-                toggle.classList.add('pulse');
+        .then(function (r) {
+            if (!r.ok || !(r.headers.get('content-type') || '').includes('event-stream')) {
+                // Serveur non-SSE (proxy, PWA obsolète) → fallback JSON
+                return fallbackJson(msg, th);
             }
+            var bubble = null;
+            var text = '';
+            var reader = r.body.getReader();
+            var decoder = new TextDecoder();
+            var buf = '';
+            var everDelta = false;
+
+            function process() {
+                return reader.read().then(function (res) {
+                    if (res.done) { finish(); return; }
+                    buf += decoder.decode(res.value, { stream: true });
+                    var idx;
+                    while ((idx = buf.indexOf('\n\n')) !== -1) {
+                        var block = buf.slice(0, idx);
+                        buf = buf.slice(idx + 2);
+                        var evt = 'delta', data = '';
+                        block.split('\n').forEach(function (ln) {
+                            if (ln.startsWith('event: ')) evt = ln.slice(7).trim();
+                            else if (ln.startsWith('data: ')) data += ln.slice(6);
+                        });
+                        if (!data) continue;
+                        try { data = JSON.parse(data); } catch (e) { continue; }
+                        if (evt === 'delta' && data.text) {
+                            everDelta = true;
+                            if (!bubble) { th.remove(); var wrap = bubbleEl('', ''); bubble = wrap.querySelector('.ai-bubble-ai'); }
+                            text += data.text;
+                            // Rendu raw progressif (markdown finalisé à la fin)
+                            bubble.innerHTML = md(text);
+                            scrollBtn.style.display = box.scrollTop + box.clientHeight < box.scrollHeight - 60 ? 'flex' : 'none';
+                        } else if (evt === 'error') {
+                            everDelta = false;
+                            th.remove();
+                            addBubble(data.error || '{{ __('ai.api_error') }}', 'assistant');
+                            killed = true; controller.abort(); finish(true); return;
+                        } else if (evt === 'done') {
+                            finish(true);
+                            return;
+                        }
+                    }
+                    return process();
+                });
+            }
+            function finish(keep) {
+                if (finished) return; finished = true;
+                killed = true;
+                th.remove();
+                if (bubble && text) {
+                    // Rendu final : markdown + bouton copier, comme un bubble normal
+                    bubble.innerHTML = md(text);
+                }
+                if (!open) { unreadPending = true; toggle.classList.add('pulse'); }
+                sendBtn.disabled = false;
+                scrollBtn.style.display = 'none';
+            }
+            var finished = false;
+            return process().catch(function (e) {
+                finish();
+            });
         })
-        .catch(function () {
+        .catch(function (e) {
+            // Fetch stream cassé (réseau, proxy) — si AUCUN delta reçu → fallback JSON
             th.remove();
-            addBubble('{{ __('ai.api_error') }}', 'assistant');
-            @if(!empty($cfg['offlineMessage']))
-            addBubble(@js($cfg['offlineMessage']), 'assistant');
-            @endif
-        })
-        .finally(function () {
-            sendBtn.disabled = false;
-            scrollBtn.style.display = 'none';
         });
+
+        function fallbackJson(msg, th) {
+            return fetch('/api/chatbot', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': csrf() },
+                credentials: 'same-origin',
+                body: JSON.stringify({ message: msg }),
+                signal: (function () { var c = new AbortController(); setTimeout(function () { c.abort(); }, 120000); return c.signal; })()
+            })
+            .then(function (r) { return r.json(); })
+            .then(function (data) {
+                th.remove();
+                var reply = data.reply || data.error || '{{ __('ai.no_response') }}';
+                addBubble(reply, 'assistant');
+                if (!open) {
+                    unreadPending = true;
+                    toggle.classList.add('pulse');
+                }
+                sendBtn.disabled = false;
+            })
+            .catch(function () {
+                th.remove();
+                addBubble('{{ __('ai.api_error') }}', 'assistant');
+            });
+        }
     }
 
     clearBtn.addEventListener('click', function () {
