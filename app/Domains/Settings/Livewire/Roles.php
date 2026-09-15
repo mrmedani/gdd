@@ -31,6 +31,7 @@ class Roles extends Component
         'incomes',
         'investments',
         'alerts',
+        'contracts',
     ];
 
     public ?int $roleId = null;
@@ -56,6 +57,7 @@ class Roles extends Component
     public bool $perm_incomes = false;
     public bool $perm_investments = false;
     public bool $perm_alerts = false;
+    public bool $perm_contracts = false;
 
     public bool $showForm = false;
 
