@@ -44,6 +44,9 @@ class ExpenseObserver
 
     public function created(Expense $expense): void
     {
+        // INVALIDATION IA : la saisie fraîche doit être visible à l'assistant immédiatement
+        \App\Domains\AI\Support\AiCacheInvalidator::invalidateExpenses();
+
         if ($userId = auth()->id()) {
             AuditLog::create([
                 'user_id' => $userId,
@@ -66,6 +69,8 @@ class ExpenseObserver
 
     public function updated(Expense $expense): void
     {
+        \App\Domains\AI\Support\AiCacheInvalidator::invalidateExpenses();
+
         if ($userId = auth()->id()) {
             AuditLog::create([
                 'user_id' => $userId,
@@ -87,6 +92,8 @@ class ExpenseObserver
 
     public function deleted(Expense $expense): void
     {
+        \App\Domains\AI\Support\AiCacheInvalidator::invalidateExpenses();
+
         if ($userId = auth()->id()) {
             AuditLog::create([
                 'user_id' => $userId,

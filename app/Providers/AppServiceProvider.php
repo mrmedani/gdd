@@ -66,6 +66,10 @@ class AppServiceProvider extends ServiceProvider
         MonthlyClosure::observe(MonthlyClosureObserver::class);
         User::observe(UserObserver::class);
         Role::observe(RoleObserver::class);
+        // INVALIDATION IA des contextes outils sur les nouveaux modules
+        \App\Domains\Alerts\Models\Commitment::observe(\App\Domains\Alerts\Observers\CommitmentObserver::class);
+        \App\Domains\Contracts\Models\Contract::observe(\App\Domains\Contracts\Observers\ContractObserver::class);
+        \App\Domains\Treasury\Models\Investment::observe(\App\Domains\Treasury\Observers\InvestmentObserver::class);
 
         try {
             $name = Setting::get('app_name');

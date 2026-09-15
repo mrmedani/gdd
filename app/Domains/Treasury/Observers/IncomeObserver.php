@@ -40,16 +40,19 @@ class IncomeObserver
 
     public function created(Income $income): void
     {
+        \App\Domains\AI\Support\AiCacheInvalidator::invalidateIncomes();
         $this->notifyIncomesRoles(new IncomeCreatedNotification($income));
     }
 
     public function updated(Income $income): void
     {
+        \App\Domains\AI\Support\AiCacheInvalidator::invalidateIncomes();
         $this->notifyIncomesRoles(new IncomeModifiedNotification($income));
     }
 
     public function deleted(Income $income): void
     {
+        \App\Domains\AI\Support\AiCacheInvalidator::invalidateIncomes();
         $this->notifyIncomesRoles(new IncomeDeletedNotification($income));
     }
 }

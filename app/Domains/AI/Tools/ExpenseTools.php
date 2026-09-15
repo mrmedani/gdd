@@ -37,10 +37,14 @@ class ExpenseTools
     /** Nombre de périodes passées incluses dans le contexte (overridable via /settings, defaut 6). */
     protected int $historyPeriods = 6;
 
+    /** Labels i18n du contexte (fr/ar/en) — chargés une fois à la construction. */
+    protected \App\Domains\AI\Tools\AiContextLabels $lb;
+
     public function __construct()
     {
         // Controle profond : le gerant choisit combien de periodes l IA connait (1-12)
         $this->historyPeriods = \App\Domains\AI\Support\WidgetConfig::get()['historyPeriods'];
+        $this->lb = new AiContextLabels(app()->getLocale());
     }
 
     public function buildContext(): string
@@ -101,7 +105,7 @@ class ExpenseTools
             if ($this->periodIsEmpty($p)) {
                 // Periode vide EXPLICITE : l IA doit dire "aucune donnee" au lieu de deduire
                 $range = getPeriodRange($p);
-                $lines[] = "Période {$p} (du {$range['start']->format('d/m/Y')} au {$range['end']->format('d/m/Y')}): AUCUNE donnée enregistrée (ni dépense ni entrée). Si on te demande cette période, réponds qu'elle est vide.";
+                $lines[] = $this->lb->get('empty_period', $p, $range['start']->format('d/m/Y'), $range['end']->format('d/m/Y'));
                 continue;
             }
             $lines[] = $this->periodSummary($p, $currency, $p === $currentPeriod, $recurring);
@@ -129,20 +133,17 @@ class ExpenseTools
         }
 
         // ---- 8. RAPPEL DE COUVERTURE ----
-        $cover = "COUVERTURE DE TES CONNAISSANCES : tu connais UNIQUEMENT ce qui précède. "
-            . "Ce que tu ne vois PAS : notes privées des dépenses, données supprimées (corbeille), "
-            . "mots de passe, données d'autres entreprises, périodes plus anciennes que celles listées. ";
+        $cover = $this->lb->get('coverage');
         // Sections de données SENSIBLES non incluses pour ce rôle : l'IA doit le savoir
         // pour répondre « permission refusée » au lieu de deviner.
         $hidden = [];
-        if (!$canTreasury) $hidden[] = "clôtures mensuelles / solde de caisse (permission trésorerie requise)";
-        if (!$canIncomes) $hidden[] = "entrées d'argent (permission incomes requise)";
-        if (!$canEmployees) $hidden[] = "employés et salaires (permission employees requise)";
+        if (!$canTreasury) $hidden[] = 'clôtures mensuelles / solde de caisse';
+        if (!$canIncomes) $hidden[] = 'entrées d\'argent';
+        if (!$canEmployees) $hidden[] = 'employés et salaires';
         if ($hidden) {
-            $cover .= "IMPORTANT : ton rôle ne donne PAS accès à : " . implode(' ; ', $hidden) . ". "
-                . "Si on te demande une de ces informations, réponds «Cette information nécessite une permission que ton compte n'a pas» — n'ESTIME jamais ces chiffres.";
+            $cover .= ' ' . $this->lb->get('hidden_warn', implode(' ; ', $hidden));
         }
-        $cover .= " Pour toute question hors couverture : « cette précision n'est pas dans mes données ».";
+        $cover .= $this->lb->get('out_of_scope');
         $lines[] = $cover;
 
         return implode("\n\n", $lines);
@@ -171,19 +172,19 @@ class ExpenseTools
         $nbExp = Expense::count();
         $nbInc = $canIncomes ? Income::count() : 0;
 
-        $s = "RÉSUMÉ EXÉCUTIF (chiffres officiels recalculés à l'instant) :\n";
-        $s .= "  - DATE D'AUJOURD'HUI : " . now()->translatedFormat('l d/m/Y') . " (les questions « aujourd'hui » portent sur cette date)\n";
-        $s .= "  - Dépenses période actuelle ({$currentPeriod}) : " . number_format($expTotal, 2, ',', ' ') . " $currency\n";
+        $s = $this->lb->get('summary') . "\n";
+        $s .= "  - " . $this->lb->get('today', now()->translatedFormat('l d/m/Y')) . "\n";
+        $s .= "  - " . $this->lb->get('exp_current', $currentPeriod) . number_format($expTotal, 2, ',', ' ') . " $currency\n";
         if ($canIncomes) {
-            $s .= "  - Entrées période actuelle : " . number_format($incTotal, 2, ',', ' ') . " $currency\n";
-            $s .= "  - Dépenses TOUTES PÉRIODES confondues : " . number_format($expAll, 2, ',', ' ') . " $currency (sur {$nbExp} dépenses enregistrées)\n";
-            $s .= "  - Entrées TOUTES PÉRIODES confondues : " . number_format($incAll, 2, ',', ' ') . " $currency (sur {$nbInc} entrées enregistrées)\n";
+            $s .= "  - " . $this->lb->get('inc_current') . number_format($incTotal, 2, ',', ' ') . " $currency\n";
+            $s .= "  - " . $this->lb->get('exp_all') . number_format($expAll, 2, ',', ' ') . " $currency ({$nbExp})\n";
+            $s .= "  - " . $this->lb->get('inc_all') . number_format($incAll, 2, ',', ' ') . " $currency ({$nbInc})\n";
         } else {
-            $s .= "  - Dépenses TOUTES PÉRIODES confondues : " . number_format($expAll, 2, ',', ' ') . " $currency (sur {$nbExp} dépenses enregistrées)\n";
+            $s .= "  - " . $this->lb->get('exp_all') . number_format($expAll, 2, ',', ' ') . " $currency ({$nbExp})\n";
         }
         // Aperçu JOURNALIER (les 10 derniers jours actifs de la période actuelle) :
         // répond exactement aux questions « dépenses d'aujourd'hui / d'hier / du 27 août ».
-        $s .= "\n  DÉPENSES PAR JOUR (10 derniers jours ayant des dépenses dans la période actuelle) :\n";
+        $s .= "\n  " . $this->lb->get('daily_header') . "\n";
         $daily = Expense::whereBetween('date', [$start, $end])
             ->selectRaw('DATE(date) as d, SUM(amount) as s, COUNT(*) as n')
             ->groupByRaw('DATE(date)')
@@ -191,14 +192,14 @@ class ExpenseTools
             ->limit(10)
             ->get();
         if ($daily->isEmpty()) {
-            $s .= "  - Aucune dépense enregistrée à ce jour dans la période actuelle (\"aujourd'hui\" = 0 DZD si aucune saisie).\n";
+            $s .= "  - " . $this->lb->get('no_daily') . "\n";
         } else {
             $todayYmd = now()->format('Y-m-d');
             $todayRow = $daily->firstWhere('d', $todayYmd);
-            $s .= "  - AUJOURD'HUI (" . now()->format('d/m/Y') . ") : " . ($todayRow ? number_format((float) $todayRow->s, 2, ',', ' ') . " $currency sur {$todayRow->n} dépense(s)" : "AUCUNE dépense enregistrée (0 $currency)") . "\n";
+            $s .= "  - " . $this->lb->get('today_label') . " (" . now()->format('d/m/Y') . ") : " . ($todayRow ? number_format((float) $todayRow->s, 2, ',', ' ') . " $currency ({$todayRow->n})" : $this->lb->get('none_today')) . "\n";
             foreach ($daily as $d) {
                 if ($d->d === $todayYmd) continue;
-                $s .= "  - " . \Carbon\Carbon::parse($d->d)->format('d/m/Y') . " : " . number_format((float) $d->s, 2, ',', ' ') . " $currency ({$d->n} dépense(s))\n";
+                $s .= "  - " . \Carbon\Carbon::parse($d->d)->format('d/m/Y') . " : " . number_format((float) $d->s, 2, ',', ' ') . " $currency ({$d->n})\n";
             }
         }
         return $s;
@@ -294,12 +295,12 @@ class ExpenseTools
         $incomesTotal = $canIncomes ? (float) Income::whereBetween('date', [$start, $end])->sum('amount') : 0.0;
         $gain = $canIncomes ? ($incomesTotal - $expensesTotal) : null;
 
-        $label = $isCurrent ? 'Période ACTUELLE' : 'Période';
+        $label = $isCurrent ? $this->lb->get('period_current') : $this->lb->get('period');
         $s = "$label $period (du {$range['start']->format('d/m/Y')} au {$range['end']->format('d/m/Y')}):\n";
-        $s .= "  - Dépenses TOTAL: " . number_format($expensesTotal, 2, ',', ' ') . " $currency\n";
+        $s .= "  - " . $this->lb->get('exp_total') . " " . number_format($expensesTotal, 2, ',', ' ') . " $currency\n";
         if ($canIncomes) {
-            $s .= "  - Entrées d'argent TOTAL: " . number_format($incomesTotal, 2, ',', ' ') . " $currency\n";
-            $s .= "  - GAIN NET de la période (entrées - dépenses): " . number_format($gain, 2, ',', ' ') . " $currency\n";
+            $s .= "  - " . $this->lb->get('inc_total') . " " . number_format($incomesTotal, 2, ',', ' ') . " $currency\n";
+            $s .= "  - " . $this->lb->get('net_gain') . " " . number_format($gain, 2, ',', ' ') . " $currency\n";
         }
 
         // TOUTES les catégories de la période (pas juste top 3) : couvre "combien en X ?"
@@ -309,7 +310,7 @@ class ExpenseTools
             ->orderByDesc('total')
             ->get();
         if ($byCat->isNotEmpty()) {
-            $s .= "  - Détail COMPLET par catégorie (catégorie: total sur N dépenses): ";
+            $s .= "  - " . $this->lb->get('by_category') . " ";
             $s .= $byCat->map(fn ($c) => ($c->category_key ?: 'other') . ': ' . number_format((float) $c->total, 0, ',', ' ') . " ({$c->n})")
                 ->implode(', ') . "\n";
         }
@@ -322,7 +323,7 @@ class ExpenseTools
             }
         }
         if ($seen) {
-            $s .= "  - Dépenses RÉCURRENTES payées DANS cette période: " . implode('; ', $seen) . "\n";
+            $s .= "  - " . $this->lb->get('recurring_in') . implode('; ', $seen) . "\n";
         }
 
         return rtrim($s);
