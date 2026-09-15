@@ -43,6 +43,7 @@ class Dashboard extends Component
     public string $alertFilterSeverity = '';
 
     public array $upcomingCommitments = [];
+    public array $expiringContracts = [];
 
     // MODE COMMERCIAL : le rôle n'a aucune permission financière → délègue au
     // composant DashboardCommercial (voir render()). Déterminé dans mount().
@@ -211,6 +212,25 @@ class Dashboard extends Component
                     'due_date' => $c->nextDueDate()->format('d/m/Y'),
                     'days_left' => $c->daysUntilDue(),
                     'urgent' => $c->isDueSoon(),
+                ])
+                ->toArray();
+        }
+
+        // Contrats arrivant à échéance (personnels au créateur, même règle que /contracts)
+        if (auth()->user()?->hasPermission('contracts')) {
+            $this->expiringContracts = \App\Domains\Contracts\Models\Contract::visibleTo(auth()->id())
+                ->whereDate('end_date', '>=', now()->startOfDay())
+                ->orderBy('end_date')
+                ->get()
+                ->filter(fn ($c) => $c->isExpiringSoon())
+                ->take(6)
+                ->map(fn ($c) => [
+                    'id' => $c->id,
+                    'title' => $c->title,
+                    'party' => $c->party,
+                    'end_date' => $c->end_date->format('d/m/Y'),
+                    'days_left' => $c->daysUntilExpiry(),
+                    'urgent' => $c->daysUntilExpiry() <= 1,
                 ])
                 ->toArray();
         }
