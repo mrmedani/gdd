@@ -24,15 +24,22 @@ class CommitmentReminders extends Command
             return self::SUCCESS;
         }
 
-        // Destinataires : rôles autorisés à voir /alerts + WhatsApp activé
-        $recipients = User::where('notify_whatsapp', true)
-            ->whereNotNull('whatsapp_phone')
-            ->where('whatsapp_phone', '<>', '')
-            ->with('role')
-            ->get()
-            ->filter(fn (User $u) => $u->role && $u->role->hasPermission('alerts'));
-
         foreach ($dueSoon as $commitment) {
+            // Destinataire : le CRÉATEUR de l'engagement uniquement (pas tous les
+            // utilisateurs qui ont la permission /alerts)
+            $creator = $commitment->creator;
+            $recipients = collect([$creator])->filter(
+                fn (?User $u) => $u
+                    && $u->notify_whatsapp
+                    && $u->whatsapp_phone
+                    && $u->whatsapp_phone !== ''
+            );
+
+            if ($recipients->isEmpty()) {
+                $this->line("No WhatsApp recipient for: {$commitment->label} (creator disabled or missing phone) — skip");
+                continue;
+            }
+
             if (!Alert::alreadySentToday('commitment_reminder', ['commitment_id' => $commitment->id])) {
                 Alert::create([
                     'type' => 'commitment_reminder',
@@ -48,7 +55,7 @@ class CommitmentReminders extends Command
             }
 
             Notification::send($recipients, new CommitmentReminderNotification($commitment));
-            $this->info("Reminder sent for: {$commitment->label} (J-{$commitment->daysUntilDue()})");
+            $this->info("Reminder sent for: {$commitment->label} (J-{$commitment->daysUntilDue()}) to creator #{$creator->id}");
         }
 
         return self::SUCCESS;

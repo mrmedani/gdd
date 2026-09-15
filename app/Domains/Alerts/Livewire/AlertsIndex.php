@@ -41,7 +41,8 @@ class AlertsIndex extends Component
 
     public function edit(int $id): void
     {
-        $c = Commitment::findOrFail($id);
+        // Un utilisateur ne peut éditer que SES engagements
+        $c = Commitment::where('created_by', auth()->id())->findOrFail($id);
         $this->commitmentId = $c->id;
         $this->label = $c->label;
         $this->day = (string) $c->day;
@@ -67,7 +68,7 @@ class AlertsIndex extends Component
         ];
 
         if ($this->commitmentId) {
-            Commitment::findOrFail($this->commitmentId)->update($data);
+            Commitment::where('created_by', auth()->id())->findOrFail($this->commitmentId)->update($data);
             $this->notify(__('common.updated'));
         } else {
             Commitment::create($data);
@@ -79,13 +80,14 @@ class AlertsIndex extends Component
 
     public function delete(int $id): void
     {
-        Commitment::findOrFail($id)->delete();
+        // Suppression : uniquement SES engagements
+        Commitment::where('created_by', auth()->id())->findOrFail($id)->delete();
         $this->notify(__('common.deleted'));
     }
 
     public function toggleActive(int $id): void
     {
-        $c = Commitment::findOrFail($id);
+        $c = Commitment::where('created_by', auth()->id())->findOrFail($id);
         $c->update(['is_active' => !$c->is_active]);
     }
 
@@ -101,9 +103,10 @@ class AlertsIndex extends Component
 
     public function render()
     {
-        $commitments = Commitment::orderBy('day')->paginate(15);
+        // Chaque utilisateur ne voit QUE les engagements qu'il a créés lui-même
+        $commitments = Commitment::visibleTo(auth()->id())->orderBy('day')->paginate(15);
 
-        $upcoming = Commitment::where('is_active', true)->get()
+        $upcoming = Commitment::visibleTo(auth()->id())->where('is_active', true)->get()
             ->filter(fn ($c) => $c->isDueSoon())
             ->sortBy(fn ($c) => $c->daysUntilDue())
             ->values();

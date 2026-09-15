@@ -179,8 +179,10 @@ class Dashboard extends Component
         // Engagements dus prochainement uniquement : le widget dashboard ne
         // s'affiche que si au moins une échéance tombe dans sa fenêtre
         // d'alerte (lead_days, ex : 3 jours avant la date déclarée).
+        // ÉCHÉANCES PERSONNELLES : chaque utilisateur ne voit que celles qu'il a créées
         if (auth()->user()?->hasPermission('alerts')) {
-            $this->upcomingCommitments = \App\Domains\Alerts\Models\Commitment::where('is_active', true)
+            $this->upcomingCommitments = \App\Domains\Alerts\Models\Commitment::visibleTo(auth()->id())
+                ->where('is_active', true)
                 ->get()
                 ->filter(fn ($c) => $c->isDueSoon())
                 ->sortBy(fn ($c) => $c->daysUntilDue())

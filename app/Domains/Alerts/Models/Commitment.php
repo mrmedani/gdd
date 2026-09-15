@@ -33,6 +33,12 @@ class Commitment extends Model
         return $this->belongsTo(User::class, 'created_by');
     }
 
+    /** Échéances d'un utilisateur donné uniquement (sa liste personnelle). */
+    public function scopeVisibleTo($query, $userId)
+    {
+        return $query->where('created_by', $userId);
+    }
+
     /**
      * Prochaine échéance (aujourd'hui inclus). Le jour est ramené au dernier
      * jour du mois si le mois est plus court (ex : 31 -> 28 février).
