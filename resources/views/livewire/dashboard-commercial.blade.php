@@ -62,7 +62,7 @@
                     <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
                 </a>
             </div>
-            <div class="space-y-2.5">
+            <div class="space-y-4">
                 @foreach($expiringContracts as $ec)
                 @php
                     $dueC = \Carbon\Carbon::createFromFormat('d/m/Y', $ec['end_date']);
@@ -87,64 +87,7 @@
         </div>
     </div>
     @endif
-
-    {{-- Hero de bienvenue --}}
-    <div class="overflow-hidden rounded-2xl border border-slate-200/70 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm">
-        <div class="p-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-5">
-            <div class="flex items-center gap-4">
-                <div class="flex h-12 w-12 items-center justify-center rounded-xl text-white bg-gradient-to-br {{ $greetingGradient }} shadow-md">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                </div>
-                <div>
-                    <p class="text-xs font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">{{ $greeting }}</p>
-                    <h2 class="text-2xl font-black text-slate-900 dark:text-white font-heading">{{ auth()->user()->name }}</h2>
-                    @if($roleLabel)
-                    <span class="mt-1 inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-black bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300">{{ $roleLabel }}</span>
-                    @endif
-                </div>
-            </div>
-        </div>
-    </div>
-
-    {{-- Alertes (liste simple en lecture) --}}
-    <div class="bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-slate-200/50 dark:border-slate-800/60 overflow-hidden">
-        <div class="p-6 border-b border-slate-100 dark:border-slate-800/60">
-            <h3 class="text-lg font-bold text-slate-800 dark:text-white flex items-center gap-2">
-                <svg class="w-5 h-5 text-rose-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg>
-                {{ __('settings.recent_alerts') }}
-            </h3>
-        </div>
-        <div class="divide-y divide-slate-100 dark:divide-slate-800/60">
-            @forelse($alertsPaginated as $alert)
-                <div class="p-4 hover:bg-slate-50/60 dark:hover:bg-slate-800/40 transition-colors">
-                    <div class="flex items-start gap-3">
-                        <div class="shrink-0 mt-1.5">
-                            @if($alert->severity === 'warning')
-                            <span class="block w-2.5 h-2.5 rounded-full bg-amber-500"></span>
-                            @elseif($alert->severity === 'error')
-                            <span class="block w-2.5 h-2.5 rounded-full bg-rose-500"></span>
-                            @elseif($alert->severity === 'success')
-                            <span class="block w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
-                            @else
-                            <span class="block w-2.5 h-2.5 rounded-full bg-blue-500"></span>
-                            @endif
-                        </div>
-                        <div class="flex-1 min-w-0">
-                            <p class="text-sm font-semibold text-slate-700 dark:text-slate-200">{{ app()->isLocale('ar') ? $alert->message_ar : (app()->isLocale('en') ? ($alert->message_en ?? $alert->message_fr) : $alert->message_fr) }}</p>
-                            <span class="text-[10px] font-bold text-slate-400 dark:text-slate-500">{{ $alert->created_at->diffForHumans() }}</span>
-                        </div>
-                    </div>
-                </div>
-            @empty
-                <div class="p-8 text-center text-slate-400 dark:text-slate-500">
-                    <p class="font-semibold text-sm">{{ __('settings.no_alerts') }}</p>
-                </div>
-            @endforelse
-        </div>
-        <div class="px-6 py-4">
-            {{ $alertsPaginated->links() }}
-        </div>
-    </div>
-
 </div>
+</div>
+
 </div>
