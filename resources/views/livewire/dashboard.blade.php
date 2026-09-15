@@ -81,6 +81,60 @@
     </div>
     @endif
 
+    @if(auth()->user()->hasPermission('contracts') && count($expiringContracts) > 0)
+    @php
+        $hasUrgentC = collect($expiringContracts)->contains(fn($u) => $u['urgent']);
+    @endphp
+    <div class="overflow-hidden rounded-2xl border {{ $hasUrgentC ? 'border-red-200 dark:border-red-800/60' : 'border-amber-200/50 dark:border-amber-900/40' }} bg-white dark:bg-slate-900 shadow-sm">
+        <div class="h-1 w-full {{ $hasUrgentC ? 'bg-gradient-to-r from-rose-500 via-red-500 to-pink-400' : 'bg-gradient-to-r from-amber-400 via-orange-400 to-amber-500' }}"></div>
+        <div class="p-5 sm:p-6">
+            <div class="flex flex-wrap items-center justify-between gap-3 mb-5">
+                <div class="flex items-center gap-3">
+                    <div class="relative flex h-11 w-11 items-center justify-center rounded-xl text-white shadow-sm {{ $hasUrgentC ? 'bg-gradient-to-br from-rose-500 to-red-600' : 'bg-gradient-to-br from-amber-400 to-orange-500' }}">
+                        @if($hasUrgentC)
+                        <span class="absolute -top-1 -end-1 flex h-3 w-3">
+                            <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-rose-400 opacity-75"></span>
+                            <span class="relative inline-flex rounded-full h-3 w-3 bg-rose-600 border-2 border-white dark:border-slate-900"></span>
+                        </span>
+                        @endif
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                    </div>
+                    <div>
+                        <h2 class="text-base font-extrabold text-slate-900 dark:text-white">{{ __('contracts.widget_title') }}</h2>
+                        <p class="text-xs font-medium text-slate-500 dark:text-slate-400">{{ __('contracts.subtitle') }}</p>
+                    </div>
+                </div>
+                <a href="{{ route('contracts.index') }}" class="inline-flex items-center gap-1 text-xs font-bold text-blue-600 dark:text-blue-400 hover:underline whitespace-nowrap">
+                    {{ __('alerts.view_all') }}
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+                </a>
+            </div>
+            <div class="space-y-2.5">
+                @foreach($expiringContracts as $ec)
+                @php
+                    $dueC = \Carbon\Carbon::createFromFormat('d/m/Y', $ec['end_date']);
+                    $toneC = $ec['urgent'] ? 'red' : 'amber';
+                    $pillC = $ec['days_left'] === 0 ? __('alerts.today') : ($ec['days_left'] === 1 ? __('alerts.tomorrow') : 'J-' . $ec['days_left']);
+                @endphp
+                <div class="group flex items-center gap-3 sm:gap-4 rounded-xl border px-3 py-2.5 transition-all hover:shadow-sm {{ $toneC === 'red' ? 'border-red-300/60 dark:border-red-800/60 bg-red-50/60 dark:bg-red-950/20' : 'border-amber-300/60 dark:border-amber-700/50 bg-amber-50/50 dark:bg-amber-900/15' }}">
+                    <div class="flex shrink-0 flex-col items-center justify-center rounded-lg border py-1.5 px-2 {{ $toneC === 'red' ? 'border-red-300 dark:border-red-700/60 bg-white dark:bg-red-950/40 text-red-600 dark:text-red-300' : 'border-amber-300 dark:border-amber-600/60 bg-white dark:bg-amber-900/30 text-amber-600 dark:text-amber-300' }}" style="min-width:3.25rem;min-height:3.25rem">
+                        <span class="text-lg font-black leading-none">{{ $dueC->format('d') }}</span>
+                        <span class="text-[10px] font-bold uppercase leading-tight">{{ $dueC->translatedFormat('M') }}</span>
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <p class="text-sm font-bold text-slate-800 dark:text-slate-100 truncate">📄 {{ $ec['title'] }}</p>
+                        <p class="text-xs text-slate-600 dark:text-slate-300 truncate">
+                            {{ $ec['party'] ?? '' }}{{ $ec['party'] ? ' · ' : '' }}{{ $dueC->translatedFormat('l d F Y') }}
+                        </p>
+                    </div>
+                    <span class="shrink-0 inline-flex items-center px-3 py-1.5 rounded-full text-xs font-black {{ $toneC === 'red' ? 'bg-red-600 text-white animate-pulse shadow-sm' : 'bg-amber-400 text-amber-950 dark:bg-amber-500/80 dark:text-amber-950 shadow-sm' }}">{{ $pillC }}</span>
+                </div>
+                @endforeach
+            </div>
+        </div>
+    </div>
+    @endif
+
     {{-- WELCOME CARD --}}
     <div x-data="{
             greeting: '{{ $greeting }}',
