@@ -86,6 +86,52 @@ class DatabaseBackup extends Component
         $this->notify(__('common.deleted'));
     }
 
+    public array $selectedBackups = [];
+    public bool $showBulkDeleteModal = false;
+
+    public function toggleSelect(string $filename): void
+    {
+        if (in_array($filename, $this->selectedBackups)) {
+            $this->selectedBackups = array_values(array_diff($this->selectedBackups, [$filename]));
+        } else {
+            $this->selectedBackups[] = $filename;
+        }
+    }
+
+    public function toggleSelectAll(): void
+    {
+        $names = array_column($this->backups, 'name');
+        if (count($this->selectedBackups) === count($names) && count($names) > 0) {
+            $this->selectedBackups = [];
+        } else {
+            $this->selectedBackups = $names;
+        }
+    }
+
+    public function confirmBulkDelete(): void
+    {
+        if (count($this->selectedBackups) === 0) {
+            return;
+        }
+        $this->showBulkDeleteModal = true;
+    }
+
+    public function deleteSelected(): void
+    {
+        $deleted = 0;
+        foreach ($this->selectedBackups as $filename) {
+            $path = storage_path('app/backups/' . basename((string) $filename));
+            if (file_exists($path)) {
+                @unlink($path);
+                $deleted++;
+            }
+        }
+        $this->selectedBackups = [];
+        $this->showBulkDeleteModal = false;
+        $this->loadBackups();
+        $this->notify(__('settings.backup_bulk_deleted', ['count' => $deleted]));
+    }
+
     public function restoreBackup(string $filename): void
     {
         $filename = basename($filename);

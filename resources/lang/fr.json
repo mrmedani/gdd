@@ -819,5 +819,10 @@
     "caisse.closure_note": "Note de clôture (optionnel)",
     "caisse.closure_note_th": "Note",
     "caisse.closure_note_placeholder": "Remarques sur ce mois : événements particuliers, ajustements, contexte… (optionnel)",
-    "caisse.note_saved": "Note enregistrée."
+    "caisse.note_saved": "Note enregistrée.",
+    "settings.backup_selected": "{count} sauvegarde(s) sélectionnée(s)",
+    "settings.backup_delete_selected": "Supprimer la sélection",
+    "settings.backup_bulk_deleted": "{count} sauvegarde(s) supprimée(s)",
+    "settings.backup_bulk_delete_title": "Supprimer les sauvegardes sélectionnées",
+    "settings.backup_bulk_delete_desc": "Cette action est irréversible : {count} sauvegarde(s) seront définitivement supprimée(s)."
 }

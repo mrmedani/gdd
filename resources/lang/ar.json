@@ -818,5 +818,10 @@
     "caisse.closure_note": "ملاحظة الإقفال (اختياري)",
     "caisse.closure_note_th": "ملاحظة",
     "caisse.closure_note_placeholder": "ملاحظات هذا الشهر : أحداث خاصة، تعديلات… (اختياري)",
-    "caisse.note_saved": "تم حفظ الملاحظة."
+    "caisse.note_saved": "تم حفظ الملاحظة.",
+    "settings.backup_selected": "تم اختيار {count} نسخة احتياطية",
+    "settings.backup_delete_selected": "حذف المحدد",
+    "settings.backup_bulk_deleted": "تم حذف {count} نسخة احتياطية",
+    "settings.backup_bulk_delete_title": "حذف النسخ المحددة",
+    "settings.backup_bulk_delete_desc": "لا يمكن التراجع عن هذا الإجراء: سيتم حذف {count} نسخة نهائياً."
 }
