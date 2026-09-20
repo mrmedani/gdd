@@ -815,5 +815,9 @@
     "contracts.no_data": "Aucun contrat. Créez votre premier contrat.",
     "contracts.wa_title": "Rappel d'expiration de contrat",
     "contracts.widget_title": "Contrats arrivant à échéance",
-    "contracts.sidebar": "Contrats"
+    "contracts.sidebar": "Contrats",
+    "caisse.closure_note": "Note de clôture (optionnel)",
+    "caisse.closure_note_th": "Note",
+    "caisse.closure_note_placeholder": "Remarques sur ce mois : événements particuliers, ajustements, contexte… (optionnel)",
+    "caisse.note_saved": "Note enregistrée."
 }

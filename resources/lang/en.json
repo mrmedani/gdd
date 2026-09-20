@@ -815,5 +815,9 @@
     "contracts.no_data": "No contracts yet. Create your first one.",
     "contracts.wa_title": "Contract expiry reminder",
     "contracts.widget_title": "Contracts expiring soon",
-    "contracts.sidebar": "Contracts"
+    "contracts.sidebar": "Contracts",
+    "caisse.closure_note": "Closure note (optional)",
+    "caisse.closure_note_th": "Note",
+    "caisse.closure_note_placeholder": "Notes about this month: particular events, adjustments, context… (optional)",
+    "caisse.note_saved": "Note saved."
 }

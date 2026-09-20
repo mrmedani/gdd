@@ -814,5 +814,9 @@
     "contracts.no_data": "لا توجد عقود. أنشئ أول عقد.",
     "contracts.wa_title": "تنبيه انتهاء عقد",
     "contracts.widget_title": "عقود على وشك الانتهاء",
-    "contracts.sidebar": "العقود"
+    "contracts.sidebar": "العقود",
+    "caisse.closure_note": "ملاحظة الإقفال (اختياري)",
+    "caisse.closure_note_th": "ملاحظة",
+    "caisse.closure_note_placeholder": "ملاحظات هذا الشهر : أحداث خاصة، تعديلات… (اختياري)",
+    "caisse.note_saved": "تم حفظ الملاحظة."
 }
