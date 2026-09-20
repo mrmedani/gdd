@@ -30,6 +30,11 @@ class TreasuryIndex extends Component
     public string $calculatedExpenses = '0';
     public string $calculatedIncomes = '0';
     public string $calculatedInvestments = '0';
+    public string $closeNote = '';
+
+    // Inline note editing (tableau historique)
+    public ?int $editingNoteId = null;
+    public string $editingNote = '';
 
     public function mount()
     {
@@ -82,6 +87,7 @@ class TreasuryIndex extends Component
                 'investments' => $this->calculatedInvestments,
                 'balance' => $balance,
                 'closed_by' => auth()->id(),
+                'closure_note' => trim($this->closeNote) !== '' ? mb_substr(trim($this->closeNote), 0, 2000) : null,
             ]);
         } catch (\Illuminate\Database\QueryException $e) {
             if (str_contains($e->getMessage(), 'Duplicate entry')) {
@@ -113,6 +119,37 @@ class TreasuryIndex extends Component
         $this->deleteClosureId = $id;
         $this->deletePassword = '';
         $this->showDeleteModal = true;
+    }
+
+    /** Éditer une note de clôture existante (in-place). */
+    public function startEditNote(int $id)
+    {
+        Gate::authorize('manage-treasury');
+        $closure = MonthlyClosure::findOrFail($id);
+        $this->editingNoteId = $closure->id;
+        $this->editingNote = (string) ($closure->closure_note ?? '');
+        $this->resetValidation('editingNote');
+    }
+
+    public function saveNote(): void
+    {
+        Gate::authorize('manage-treasury');
+        $this->validate([
+            'editingNote' => 'nullable|string|max:2000',
+        ]);
+        $c = MonthlyClosure::findOrFail($this->editingNoteId);
+        $c->update([
+            'closure_note' => trim($this->editingNote) !== '' ? mb_substr(trim($this->editingNote), 0, 2000) : null,
+        ]);
+        $this->editingNoteId = null;
+        $this->editingNote = '';
+        $this->notify(__('caisse.note_saved', ['default' => 'Note enregistrée.']));
+    }
+
+    public function cancelEditNote(): void
+    {
+        $this->editingNoteId = null;
+        $this->editingNote = '';
     }
 
     public function deleteClosure()

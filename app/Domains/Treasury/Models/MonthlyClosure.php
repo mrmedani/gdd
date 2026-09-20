@@ -14,6 +14,7 @@ class MonthlyClosure extends Model
         'investments',
         'balance',
         'closed_by',
+        'closure_note',
     ];
 
     protected function casts(): array

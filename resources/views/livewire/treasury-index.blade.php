@@ -81,6 +81,7 @@
                         <th class="py-4 px-6 text-center">{{ __('caisse.growth') }}</th>
                         <th class="py-4 px-6">{{ __('caisse.close_date') }}</th>
                         <th class="py-4 px-6">{{ __('caisse.closed_by') }}</th>
+                        <th class="py-4 px-6">{{ __('caisse.closure_note_th', ['default' => 'Note']) }}</th>
                         @can('manage-delete-closure')
                             <th class="py-4 px-6 text-center">{{ __('common.actions') }}</th>
                         @endcan
@@ -121,6 +122,31 @@
                                     <span class="font-semibold text-slate-700 dark:text-slate-300">{{ $closure->closer->name ?? '-' }}</span>
                                 </div>
                             </td>
+                            {{-- NOTE DE CLÔTURE — affichage + édition inline --}}
+                            <td class="py-4 px-6 align-top">
+                                @if($editingNoteId === $closure->id)
+                                    <div class="min-w-[220px] max-w-md">
+                                        <textarea wire:model="editingNote" rows="3" maxlength="2000" id="note-input-{{ $closure->id }}"
+                                            class="w-full px-3 py-2 bg-white dark:bg-slate-950/60 border border-blue-300 dark:border-blue-700 rounded-lg focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 dark:text-white outline-none transition-all text-xs"></textarea>
+                                        @error('editingNote') <span class="text-red-500 text-[10px] block">{{ $message }}</span> @enderror
+                                        <div class="flex gap-2 mt-2 justify-end">
+                                            <button type="button" wire:click="cancelEditNote" class="px-3 py-1.5 text-xs font-bold rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 cursor-pointer border border-slate-200/60 dark:border-slate-700/60">{{ __('common.cancel') }}</button>
+                                            <button type="button" wire:click="saveNote"
+                                                class="px-3 py-1.5 text-xs font-bold rounded-lg bg-blue-600 text-white hover:bg-blue-700 cursor-pointer">{{ __('common.save') }}</button>
+                                        </div>
+                                    </div>
+                                @elseif($closure->closure_note)
+                                    <div class="group flex items-start gap-2 min-w-[220px] max-w-md">
+                                        <p class="text-xs text-slate-600 dark:text-slate-300 leading-relaxed pe-0" dir="auto">{{ $closure->closure_note }}</p>
+                                        <button type="button" wire:click="startEditNote({{ $closure->id }})"
+                                                class="shrink-0 mt-0.5 p-1 rounded hover:bg-blue-50 dark:hover:bg-blue-900/20 text-blue-500 hover:text-blue-600 cursor-pointer transition-colors" title="Modifier la note">
+                                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+                                        </button>
+                                    </div>
+                                @else
+                                    <span class="text-slate-300 dark:text-slate-600 text-xs">—</span>
+                                @endif
+                            </td>
                             @can('manage-delete-closure')
                                 <td class="py-4 px-6 text-center">
                                     <button wire:click="confirmDelete({{ $closure->id }})"
@@ -133,7 +159,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="9" class="py-16 text-center">
+                            <td colspan="10" class="py-16 text-center">
                                 <div class="flex flex-col items-center justify-center">
                                     <div class="w-16 h-16 bg-slate-50 dark:bg-slate-900/50 rounded-full flex items-center justify-center mb-4">
                                         <svg class="w-10 h-10 text-slate-300 dark:text-slate-700" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path></svg>
@@ -304,6 +330,15 @@
                         <span class="absolute top-1/2 -translate-y-1/2 {{ session('locale', 'ar') === 'ar' ? 'left-4' : 'right-4' }} text-slate-400 dark:text-slate-500 font-bold text-sm">{{ getCurrency() }}</span>
                     </div>
                     @error('closeGains') <span class="text-red-500 dark:text-red-400 text-xs mt-1 block">{{ $message }}</span> @enderror
+                </div>
+
+                <!-- Note de clôture (optionnel) -->
+                <div>
+                    <label class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">{{ __('caisse.closure_note', ['default' => 'Note de clôture (optionnel)']) }}</label>
+                    <textarea wire:model="closeNote" rows="2" maxlength="2000"
+                        class="w-full px-4 py-3 bg-slate-50/50 dark:bg-slate-950/50 border border-slate-200 dark:border-slate-800 rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 dark:text-white outline-none transition-all text-sm"
+                        placeholder="{{ __('caisse.closure_note_placeholder', ['default' => 'Remarques sur ce mois : événements particuliers, ajustements, contexte… (optionnel)']) }}"></textarea>
+                    @error('closeNote') <span class="text-red-500 dark:text-red-400 text-xs mt-1 block">{{ $message }}</span> @enderror
                 </div>
 
                 <!-- Live Balance Preview -->
