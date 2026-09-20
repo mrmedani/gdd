@@ -62,12 +62,18 @@ class TreasuryIndex extends Component
     public function closeMonthSubmit()
     {
         if (is_string($this->closeGains)) {
-            $this->closeGains = str_replace([' ', ','], ['', '.'], $this->closeGains);
+            // Normalisation robuste : espaces ASCII, insécables (U+00A0), étroits (U+202F),
+            // virgules décimales et séparateurs de milliers — tout est retiré sauf chiffres, . et -
+            $this->closeGains = trim(preg_replace('/[^\d.\-]/', '', str_replace(',', '.', preg_replace('/[\s\x{00A0}\x{202F}]/u', '', $this->closeGains))) ?? '');
         }
 
         $this->validate([
             'closeMonth' => 'required|date_format:Y-m|before_or_equal:' . now()->format('Y-m'),
             'closeGains' => 'required|numeric|min:0',
+        ], [
+            'closeGains.required' => __('validation.amount_required'),
+            'closeGains.numeric' => __('validation.amount_required'),
+            'closeGains.min' => __('validation.amount_min'),
         ]);
 
         if (MonthlyClosure::where('month', $this->closeMonth)->exists()) {
