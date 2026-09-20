@@ -10,6 +10,7 @@ class MonthlyClosure extends Model
     protected $fillable = [
         'month',
         'gains',
+        'incomes',
         'expenses',
         'investments',
         'balance',

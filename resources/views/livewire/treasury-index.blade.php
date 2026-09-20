@@ -75,6 +75,7 @@
                     <tr>
                         <th class="py-4 px-6">{{ __('caisse.month') }}</th>
                         <th class="py-4 px-6">{{ __('caisse.gains') }}</th>
+                        <th class="py-4 px-6">{{ __('caisse.total_incomes_auto') }}</th>
                         <th class="py-4 px-6">{{ __('caisse.expenses') }}</th>
                         <th class="py-4 px-6">{{ __('caisse.investments') }}</th>
                         <th class="py-4 px-6">{{ __('caisse.balance') }}</th>
@@ -101,6 +102,7 @@
                                 </div>
                             </td>
                             <td class="py-4 px-6 whitespace-nowrap"><span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold bg-emerald-50 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border border-emerald-100 dark:border-emerald-800/40"><span dir="ltr">+ {{ number_format($closure->gains, 2, ',', ' ') }} {{ getCurrency() }}</span></span></td>
+                            <td class="py-4 px-6 whitespace-nowrap"><span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold bg-sky-50 dark:bg-sky-500/10 text-sky-700 dark:text-sky-300 border border-sky-100 dark:border-sky-800/40"><span dir="ltr">+ {{ number_format($closure->incomes ?? 0, 2, ',', ' ') }} {{ getCurrency() }}</span></span></td>
                             <td class="py-4 px-6 whitespace-nowrap"><span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold bg-rose-50 dark:bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-100 dark:border-rose-800/40"><span dir="ltr">− {{ number_format($closure->expenses, 2, ',', ' ') }} {{ getCurrency() }}</span></span></td>
                             <td class="py-4 px-6 whitespace-nowrap"><span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold bg-amber-50 dark:bg-amber-500/10 text-amber-700 dark:text-amber-300 border border-amber-100 dark:border-amber-800/40"><span dir="ltr">− {{ number_format($closure->investments ?? 0, 2, ',', ' ') }} {{ getCurrency() }}</span></span></td>
                             <td class="py-4 px-6 whitespace-nowrap"><span class="inline-flex items-center px-3 py-1.5 rounded-full text-sm font-black {{ $closure->balance >= 0 ? 'bg-emerald-600 text-white shadow-sm' : 'bg-rose-600 text-white shadow-sm' }}"><span dir="ltr">{{ $closure->balance > 0 ? '+' : '' }}{{ number_format($closure->balance, 2, ',', ' ') }} {{ getCurrency() }}</span></span></td>

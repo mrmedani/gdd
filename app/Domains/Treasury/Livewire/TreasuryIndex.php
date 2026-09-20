@@ -89,6 +89,7 @@ class TreasuryIndex extends Component
             MonthlyClosure::create([
                 'month' => $this->closeMonth,
                 'gains' => $this->closeGains,
+                'incomes' => $this->calculatedIncomes,
                 'expenses' => $this->calculatedExpenses,
                 'investments' => $this->calculatedInvestments,
                 'balance' => $balance,
