@@ -63,7 +63,7 @@
             </div>
         </div>
 
-        <div id="ai-chat-messages" class="ai-scroll" style="flex:1;overflow-y:auto;padding:16px 14px 20px;display:flex;flex-direction:column;gap:12px;background:#f8fafc;justify-content:flex-end;">
+        <div id="ai-chat-messages" class="ai-scroll" style="flex:1;min-height:0;overflow-y:auto;overscroll-behavior:contain;padding:16px 14px 20px;display:flex;flex-direction:column;gap:12px;background:#f8fafc;">
             @if(!empty($authRequired))
             <div style="align-self:center;text-align:center;background:#fef3c7;color:#92400e;border-radius:16px;padding:14px 18px;font-size:13px;line-height:1.6;max-width:90%;">
                 ⏳ {{ __('ai.session_expired') }}<br>
