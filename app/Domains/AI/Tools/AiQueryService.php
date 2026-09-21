@@ -47,7 +47,7 @@ class AiQueryService
             ],
             [
                 'name' => 'expenses_range',
-                'description' => "Totaux de dépenses sur une PLAGE (from/to YYYY-MM-DD), répartis par catégorie. Permet le mois calendaire 1-30 (from=1er du mois, to=dernier jour) ou une semaine.",
+                'description' => "Totaux de dépenses sur une PLAGE (from/to YYYY-MM-DD), répartis par catégorie. Permet le mois calendaire 1-30 (from=1er du mois, to=dernier jour) ou une semaine. IMPORTANT : les données disponibles sont uniquement pour l'année en cours — quand l'utilisateur dit « juillet », « août », etc. sans préciser l'année, utilise l'année EN COURS (jamais une année passée arbitraire).",
                 'parameters' => [
                     'type' => 'OBJECT',
                     'properties' => [
@@ -70,7 +70,7 @@ class AiQueryService
             ],
             [
                 'name' => 'incomes_range',
-                'description' => "Entrées d'argent sur une plage (YYYY-MM-DD), détail lignes + total.",
+                'description' => "Entrées d'argent sur une plage (YYYY-MM-DD), détail lignes + total. Les données disponibles sont uniquement pour l'année en cours : sans année précisée par l'utilisateur, utilise l'année en cours.",
                 'parameters' => [
                     'type' => 'OBJECT',
                     'properties' => [

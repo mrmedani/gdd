@@ -56,7 +56,11 @@ class GeminiService
         ]);
 
         $toolRounds = 0;
-        $maxToolRounds = 2;
+        $maxToolRounds = 4; // FIX #3 : 2 rounds ne suffisaient pas — Gemini 3 enchaîne
+        // volontairement PLUSIEURS tool calls (ex. expenses_range juillet + août puis
+        // recent_expenses) avant de composer sa réponse. À 2, la 3e demande de tool
+        // n'était jamais exécutée → stream terminé SANS TEXTE (widget muet).
+        // 4 rounds couvre 3 tools + un tour final, borne anti-boucle conservée.
         $lastStatus = 0;
         $lastBody = '';
         $toolPending = true;
@@ -74,9 +78,11 @@ class GeminiService
                 if (!$response->successful()) {
                     $lastStatus = $response->status();
                     $lastBody = $response->body();
-                    // 429 / 404 → modèle suivant ; <500 → casse
+                    // 429 / 404 → modèle suivant (continue 1). ANCIEN BUG : « continue 2 »
+                    // repartait au while(true) externe → boucle INFINIE quand le 1er modèle
+                    // renvoyait 429 en persistant (le widget tournait sans jamais répondre).
                     if ($response->status() === 429 || $response->status() === 404) {
-                        continue 2;
+                        continue;
                     }
                     if ($response->status() < 500) {
                         break 2;
@@ -107,7 +113,9 @@ class GeminiService
                             $parts[] = $part;
                         } elseif (isset($part['text'])) {
                             $parts[] = $part;
-                            yield $part['text'];
+                            if ($part['text'] !== '') { // FIX : ne pas yielde du texte vide (pollue le flux SSE)
+                                yield $part['text'];
+                            }
                         }
                     }
                 }
@@ -115,20 +123,27 @@ class GeminiService
 
                 // TOOL CALL : on rejoue (même logique que chat()) — pas de yield du faux
                 if ($hasToolCall && $tools !== null && $toolHandler !== null && $toolRounds < $maxToolRounds) {
+                    $modelParts = []; // parts functionCall ORIGINAUX (thought_signature conservée — requise par Gemini 3, sinon 400 INVALID_ARGUMENT)
+                    $responses = [];  // functionResponse correspondantes
                     foreach ($parts as $part) {
                         if (isset($part['functionCall']['name'])) {
                             $fname = (string) $part['functionCall']['name'];
                             $fargs = $part['functionCall']['args'] ?? [];
                             $result = ($toolHandler)($fname, $fargs);
-                            $payload['contents'][] = ['role' => 'model', 'parts' => [$part]];
-                            $payload['contents'][] = ['role' => 'user', 'parts' => [['functionResponse' => [
+                            $modelParts[] = $part;
+                            $responses[] = ['functionResponse' => [
                                 'name' => $fname,
                                 'response' => ['result' => $result],
-                            ]]]];
+                            ]];
                         }
                     }
+                    if ($modelParts !== []) {
+                        // ORDRE OBLIGATOIRE : user(question) → model(functionCall) → user(functionResponse)
+                        $payload['contents'][] = ['role' => 'model', 'parts' => $modelParts];
+                        $payload['contents'][] = ['role' => 'user', 'parts' => $responses];
+                    }
                     $toolRounds++;
-                    continue 2; // retry with the tool results, next pass (non-streamed text is yet to come)
+                    continue 2; // retry avec les résultats de tools (borne par $maxToolRounds — pas de boucle infinie)
                 }
 
                 // IF stream yielded nothing useful (empty final text Saison), fallback extractText

@@ -160,6 +160,11 @@ TXT;
             . "Termine par une phrase courte de synthèse.";
 
         $system = $personality . "\n\n"
+            // FIX #4 : date du jour dans le prompt — sans elle le modèle devinait
+            // « août 2024 » quand l'utilisateur disait « août » sans année, et les tools
+            // interrogeaient des plages vides alors que les données sont en 2026.
+            . "CONTEXTE TEMPOREL : nous sommes aujourd'hui le " . now()->format('d/m/Y') . " (année ".date('Y')."). "
+            . "Les mois mentionnés sans année (juillet, août…) font référence à l'année en cours ou aux périodes couvertes par les données. S'IL N'Y A PAS de données pour le mois demandé de l'année en cours, dis-le — n'utilise JAMAIS une année passée.\n"
             // Nom du gerant : tronque et sans caracteres de structure — evite l'injection
             // de prompt via un nom d'utilisateur maison ("Ignore les regles...").
             . "Le gérant avec qui tu parles s'appelle " . mb_substr(trim((string) ($request->user()?->name ?? 'Utilisateur')), 0, 40) . ".\n"
