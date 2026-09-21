@@ -659,8 +659,9 @@
     (function () {
         var frame = document.getElementById('ai-chatbot-frame');
         if (!frame) return;
-        // ✅ FIX : taille de fenêtre cohérente avec le CSS du widget (520x560/640)
-        var W_OPEN = '520px', H_OPEN = '600px';
+        // ✅ FIX géométrie : l'iframe doit couvrir fenêtre (520×~600) + offset de position.
+        // Desktop : 560 de large (520+14 de marge latérale+ombre) × 700 de haut (600+88 offset+2).
+        var W_OPEN = '556px', H_OPEN = '700px';
         var isMobile = function () { return window.matchMedia('(max-width: 767px)').matches; };
         function sizeFor(mobile) {
             if (mobile) {

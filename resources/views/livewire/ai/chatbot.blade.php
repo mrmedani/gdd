@@ -42,26 +42,28 @@
     {{-- Fenêtre de chat (cachée par défaut) — Design 2026 : flat, accents solides, zéro dégradé --}}
     {{-- Fenêtre de chat — RESPONSIVE : plein écran sur mobile (<768px), fenêtre adaptée sur desktop --}}
     <div id="ai-chat-window" class="ai-window" style="position:fixed;bottom:88px;{{ $posSide }}:14px;width:520px;max-width:calc(100vw - 2rem);height:{{ $winLarge ? '640px' : '560px' }};max-height:calc(100vh - 120px);display:none;flex-direction:column;background:#ffffff;border-radius:20px;box-shadow:0 24px 70px -12px rgba(15,23,42,0.35);border:1px solid rgba(148,163,184,0.30);overflow:hidden;pointer-events:auto;z-index:10;">
-        <div style="display:flex;align-items:center;gap:12px;padding:12px 14px;background:#fff;border-bottom:1px solid rgba(148,163,184,0.22);">
-            <div class="ai-avatar" style="width:38px;height:38px;border-radius:14px;background:{{ $accent }};display:flex;align-items:center;justify-content:center;font-size:18px;box-shadow:0 4px 14px rgba({{$accentRgb}},0.35);">{{ $aiEmojiFinal }}</div>
-            <div style="flex:1;min-width:0;">
-                <div style="font-weight:800;font-size:15px;color:#0f172a;letter-spacing:-0.01em;">{{ $aiNameFinal }}</div>
-                <div style="font-size:11px;color:#10b981;font-weight:600;display:flex;align-items:center;gap:5px;">
-                    <span class="ai-status-dot"></span>{{ __('ai.subtitle') }}
+        <div style="display:flex;align-items:center;gap:10px;padding:12px 12px;background:#fff;border-bottom:1px solid rgba(148,163,184,0.22);">
+            <div class="ai-avatar" style="width:38px;height:38px;border-radius:14px;background:{{ $accent }};display:flex;align-items:center;justify-content:center;font-size:18px;box-shadow:0 4px 14px rgba({{$accentRgb}},0.35);flex-shrink:0;">{{ $aiEmojiFinal }}</div>
+            <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:2px;">
+                <div style="font-weight:800;font-size:15px;color:#0f172a;letter-spacing:-0.01em;line-height:1.2;">{{ $aiNameFinal }}</div>
+                <div style="font-size:11px;color:#10b981;font-weight:600;display:flex;align-items:center;gap:6px;line-height:1;">
+                    <span class="ai-status-dot" style="flex-shrink:0;"></span><span>{{ __('ai.subtitle') }}</span>
                 </div>
             </div>
-            <button id="ai-chat-sessions" type="button" title="{{ __('ai.sessions') }}" class="ai-iconbtn">
-                <svg style="width:17px;height:17px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 6h13M8 12h12M8 18h6M3.5 6h.01M3.5 12h.01M3.5 18h.01"/></svg>
-            </button>
-            <button id="ai-chat-clear" type="button" title="{{ __('ai.clear') }}" class="ai-iconbtn">
-                <svg style="width:17px;height:17px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
-            </button>
-            <button id="ai-chat-close" type="button" class="ai-iconbtn">
-                <svg style="width:18px;height:18px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
-            </button>
+            <div style="display:flex;align-items:center;gap:4px;flex-shrink:0;">
+                <button id="ai-chat-sessions" type="button" title="{{ __('ai.sessions') }}" class="ai-iconbtn">
+                    <svg style="width:17px;height:17px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 6h13M8 12h12M8 18h6M3.5 6h.01M3.5 12h.01M3.5 18h.01"/></svg>
+                </button>
+                <button id="ai-chat-clear" type="button" title="{{ __('ai.clear') }}" class="ai-iconbtn">
+                    <svg style="width:17px;height:17px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                </button>
+                <button id="ai-chat-close" type="button" class="ai-iconbtn">
+                    <svg style="width:18px;height:18px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                </button>
+            </div>
         </div>
 
-        <div id="ai-chat-messages" class="ai-scroll" style="flex:1;overflow-y:auto;padding:16px 14px;display:flex;flex-direction:column;gap:12px;background:#f8fafc;">
+        <div id="ai-chat-messages" class="ai-scroll" style="flex:1;overflow-y:auto;padding:16px 14px 20px;display:flex;flex-direction:column;gap:12px;background:#f8fafc;justify-content:flex-end;">
             @if(!empty($authRequired))
             <div style="align-self:center;text-align:center;background:#fef3c7;color:#92400e;border-radius:16px;padding:14px 18px;font-size:13px;line-height:1.6;max-width:90%;">
                 ⏳ {{ __('ai.session_expired') }}<br>
@@ -177,10 +179,12 @@
 
     /* ============ Bulles 2026 ============ */
     .ai-bubble-ai, .ai-bubble-user {
-        max-width:92%; padding:11px 15px; font-size:13.5px; line-height:1.6;
+        max-width:88%; padding:11px 15px; font-size:13.5px; line-height:1.6;
         border-radius:18px; word-wrap:break-word;
         unicode-bidi:plaintext;
     }
+    /* les tableaux méritent plus de largeur : la bulle contenant une table passe à 92% via JS-free CSS */
+    .ai-bubble-ai:has(.ai-table-wrap) { max-width:96%; }
     .ai-bubble-ai  { align-self:flex-start; background:#f1f5f9; color:#0f172a; border:1px solid rgba(148,163,184,0.28); border-bottom-left-radius:6px; }
     .ai-bubble-user{ align-self:flex-end; background:{{ $accent }}; color:#fff; border-bottom-right-radius:6px;
         white-space:pre-wrap; box-shadow:0 4px 14px -4px rgba({{$accentRgb}},0.45); }
@@ -405,10 +409,15 @@
         open = v;
         if (v) {
             win.classList.add('open');
+            // FIX : masque le FAB pendant que la fenêtre est ouverte (il chevauche l'input)
+            toggle.style.opacity = '0';
+            toggle.style.pointerEvents = 'none';
             unreadPending = false;
             setTimeout(function () { input.focus(); }, 120);
         } else {
             win.classList.remove('open');
+            toggle.style.opacity = '1';
+            toggle.style.pointerEvents = 'auto';
         }
         // Agrandit/reduit l iframe parent pour couvrir le chat (le bouton seul = 100x100)
         try {
