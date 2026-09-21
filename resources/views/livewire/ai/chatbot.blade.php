@@ -226,8 +226,10 @@
 
     /* ============ RESPONS — mobile : PLEIN ÉCRAN ; desktop : fenêtre adaptée ============ */
     @media (max-width: 767px) {
-        #ai-chat-window.ai-window.open {
-            position: fixed !important;
+        .app-layout, .app-container { overflow: hidden; }
+        .ai-window.ai-window.open {
+            /* plein écran vrai : couvre TOUT y compris fond de l'app hote */
+            background: var(--ai-bg, #0f1117) !important;
             inset: 0 !important;
             bottom: 0 !important; left: 0 !important; right: 0 !important;
             width: 100vw !important; height: 100dvh !important; max-height: 100dvh !important;
@@ -236,6 +238,32 @@
         }
         #ai-chatbot-toggle { bottom: 12px !important; }
         /* sur mobile le parent resize l'iframe lui-même (voir W/H dynamiques JS) */
+
+        /* ── Améliorations 2026-09-21 (analyse capture téléphone) ── */
+        /* Safe areas : l'input bar ne doit pas être collée à la barre de nav système */
+        #ai-chat-input-row, .ai-input-row {
+            padding-bottom: max(12px, env(safe-area-inset-bottom)) !important;
+        }
+        /* Header : marge droite + titre sur une ligne (ellipsis) */
+        .ai-header, header .ai-headrow { padding-top: max(10px, env(safe-area-inset-top)) !important; }
+        .ai-headrow span, header div[style*="font-weight"] {
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0;
+        }
+        /* Contraste : bulle vs fond + icônes plus lisibles */
+        .ai-bubble-ai { background: #232838 !important; border: 1px solid rgba(255,255,255,0.07); }
+        .ai-iconbtn { color: #aab3c5 !important; }
+        /* Input : cible tactile confortable */
+        #ai-chat-input, .ai-input {
+            min-height: 48px !important; font-size: 16px !important;
+        }
+        /* Tableaux DANS LES BULLES mobiles : jamais tronqués — scroll horizontal DANS la bulle */
+        .ai-bubble .ai-table-wrap, .ai-bubble .ai-table, .ai-bubble table.ai-table {
+            max-width: 100% !important; overflow-x: auto !important; -webkit-overflow-scrolling: touch;
+        }
+        .ai-bubble .ai-table { display: block; }
+        .ai-bubble .ai-table td, .ai-bubble .ai-table th {
+            padding: 8px 10px !important; white-space: nowrap;
+        }
     }
     @media (max-width: 767px) and (orientation: landscape) {
         #ai-chat-window.ai-window.open { height: 100dvh !important; }
