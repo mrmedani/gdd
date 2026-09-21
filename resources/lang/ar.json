@@ -823,5 +823,6 @@
     "settings.backup_delete_selected": "حذف المحدد",
     "settings.backup_bulk_deleted": "تم حذف {count} نسخة احتياطية",
     "settings.backup_bulk_delete_title": "حذف النسخ المحددة",
-    "settings.backup_bulk_delete_desc": "لا يمكن التراجع عن هذا الإجراء: سيتم حذف {count} نسخة نهائياً."
+    "settings.backup_bulk_delete_desc": "لا يمكن التراجع عن هذا الإجراء: سيتم حذف {count} نسخة نهائياً.",
+    "ai.stop_generation": "إيقاف التوليد"
 }

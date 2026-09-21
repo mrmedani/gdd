@@ -824,5 +824,6 @@
     "settings.backup_delete_selected": "Supprimer la sélection",
     "settings.backup_bulk_deleted": "{count} sauvegarde(s) supprimée(s)",
     "settings.backup_bulk_delete_title": "Supprimer les sauvegardes sélectionnées",
-    "settings.backup_bulk_delete_desc": "Cette action est irréversible : {count} sauvegarde(s) seront définitivement supprimée(s)."
+    "settings.backup_bulk_delete_desc": "Cette action est irréversible : {count} sauvegarde(s) seront définitivement supprimée(s).",
+    "ai.stop_generation": "Arrêter la génération"
 }

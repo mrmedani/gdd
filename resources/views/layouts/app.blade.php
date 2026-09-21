@@ -659,19 +659,52 @@
     (function () {
         var frame = document.getElementById('ai-chatbot-frame');
         if (!frame) return;
+        // ✅ FIX : taille de fenêtre cohérente avec le CSS du widget (520x560/640)
+        var W_OPEN = '520px', H_OPEN = '600px';
+        var isMobile = function () { return window.matchMedia('(max-width: 767px)').matches; };
+        function sizeFor(mobile) {
+            if (mobile) {
+                // PLEIN ÉCRAN sur téléphone : l'iframe couvre tout, le widget à l'intérieur aussi
+                frame.style.width = '100vw';
+                frame.style.height = '100dvh';
+                frame.style.borderRadius = '0';
+            } else {
+                frame.style.width = W_OPEN;
+                frame.style.height = H_OPEN;
+            }
+        }
+        // Si le viewport change (rotation), l'ouverture en cours se re-size
+        var mq = window.matchMedia('(max-width: 767px)');
+        if (mq.addEventListener) mq.addEventListener('change', function () { if (frame.style.width !== '100px') sizeFor(mq.matches); });
         window.addEventListener('message', function (e) {
             // Securite : n'accepter les ordres que de notre propre origine
             if (e.origin !== window.location.origin) return;
             var d = e.data || {};
-            if (d.aiChatbot === 'open') { frame.style.width = '400px'; frame.style.height = '540px'; }
+            if (d.aiChatbot === 'open') sizeFor(mq.matches);
             if (d.aiChatbot === 'close') { frame.style.width = '100px'; frame.style.height = '100px'; }
             @if($aiCfg['autoOpen'])
-            if (d.aiChatbot === 'openAuto') { frame.style.width = '400px'; frame.style.height = '540px'; }
+            if (d.aiChatbot === 'openAuto') sizeFor(mq.matches);
             @endif
         });
+        // ═════ SYNC DARK MODE : le widget vit dans un iframe = son localStorage est SEPARÉ.
+        // Quand le parent bascule le thème, on réplique la classe .dark dans l'iframe.
+        function pushThemeToFrame() {
+            try {
+                var isDark = document.documentElement.classList.contains('dark');
+                frame.contentWindow.postMessage({ aiChatbot: 'theme', dark: isDark }, window.location.origin);
+                // Le localStorage de l'iframe = MÊME origine que la page -> le widget lit localStorage.theme :
+                // on le met à jour ici pour que le prochain chargement de l'iframe parte déjà bon.
+                try { frame.contentWindow.localStorage.theme = isDark ? 'dark' : 'light'; } catch (e) {}
+            } catch (er) {}
+        }
+        // Observer toute bascule de .dark sur <html> du parent (boutons header + sidebar)
+        new MutationObserver(pushThemeToFrame).observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
+        // + push immédiat au chargement de l'iframe (prime le state, même avant le premier toggle)
+        frame.addEventListener('load', pushThemeToFrame);
         @if($aiCfg['autoOpen'])
         // Ouverture automatique : transmet l'ordre au widget apres son chargement
         frame.addEventListener('load', function () {
+            pushThemeToFrame();
             try { frame.contentWindow.postMessage({ aiChatbot: 'openAuto' }, window.location.origin); } catch (e) {}
         });
         @endif

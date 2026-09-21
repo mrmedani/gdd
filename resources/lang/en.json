@@ -824,5 +824,6 @@
     "settings.backup_delete_selected": "Delete selected",
     "settings.backup_bulk_deleted": "{count} backup(s) deleted",
     "settings.backup_bulk_delete_title": "Delete selected backups",
-    "settings.backup_bulk_delete_desc": "This action cannot be undone: {count} backup(s) will be permanently deleted."
+    "settings.backup_bulk_delete_desc": "This action cannot be undone: {count} backup(s) will be permanently deleted.",
+    "ai.stop_generation": "Stop generating"
 }

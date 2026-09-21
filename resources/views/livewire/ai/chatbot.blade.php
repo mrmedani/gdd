@@ -39,30 +39,33 @@
         : [];
 @endphp
 <div id="ai-chatbot-root" style="background:transparent;">
-    {{-- Fenêtre de chat (cachée par défaut) --}}
-    <div id="ai-chat-window" class="ai-window" style="position:fixed;bottom:84px;{{ $posSide }}:14px;width:360px;max-width:calc(100vw - 2rem);height:{{ $winLarge ? '560px' : '460px' }};max-height:calc(100vh - 2rem);display:none;flex-direction:column;background:rgba(255,255,255,0.97);border-radius:24px;box-shadow:0 20px 60px rgba(15,23,42,0.25);border:1px solid rgba(148,163,184,0.35);overflow:hidden;pointer-events:auto;z-index:10;">
-        <div style="display:flex;align-items:center;gap:10px;padding:14px 16px;background:{{ $gradient }};color:#fff;">
-            <div style="width:36px;height:36px;border-radius:12px;background:rgba(255,255,255,0.2);display:flex;align-items:center;justify-content:center;font-size:18px;">{{ $aiEmojiFinal }}</div>
-            <div style="flex:1;">
-                <div style="font-weight:700;font-size:15px;">{{ $aiNameFinal }}</div>
-                <div style="font-size:11px;opacity:0.85;">{{ __('ai.subtitle') }}</div>
+    {{-- Fenêtre de chat (cachée par défaut) — Design 2026 : flat, accents solides, zéro dégradé --}}
+    {{-- Fenêtre de chat — RESPONSIVE : plein écran sur mobile (<768px), fenêtre adaptée sur desktop --}}
+    <div id="ai-chat-window" class="ai-window" style="position:fixed;bottom:88px;{{ $posSide }}:14px;width:520px;max-width:calc(100vw - 2rem);height:{{ $winLarge ? '640px' : '560px' }};max-height:calc(100vh - 120px);display:none;flex-direction:column;background:#ffffff;border-radius:20px;box-shadow:0 24px 70px -12px rgba(15,23,42,0.35);border:1px solid rgba(148,163,184,0.30);overflow:hidden;pointer-events:auto;z-index:10;">
+        <div style="display:flex;align-items:center;gap:12px;padding:12px 14px;background:#fff;border-bottom:1px solid rgba(148,163,184,0.22);">
+            <div class="ai-avatar" style="width:38px;height:38px;border-radius:14px;background:{{ $accent }};display:flex;align-items:center;justify-content:center;font-size:18px;box-shadow:0 4px 14px rgba({{$accentRgb}},0.35);">{{ $aiEmojiFinal }}</div>
+            <div style="flex:1;min-width:0;">
+                <div style="font-weight:800;font-size:15px;color:#0f172a;letter-spacing:-0.01em;">{{ $aiNameFinal }}</div>
+                <div style="font-size:11px;color:#10b981;font-weight:600;display:flex;align-items:center;gap:5px;">
+                    <span class="ai-status-dot"></span>{{ __('ai.subtitle') }}
+                </div>
             </div>
-            <button id="ai-chat-sessions" type="button" title="{{ __('ai.sessions') }}" style="background:none;border:0;color:#fff;cursor:pointer;padding:6px;border-radius:10px;display:flex;opacity:0.85;">
-                <svg style="width:16px;height:16px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 6h13M8 12h12M8 18h6M3.5 6h.01M3.5 12h.01M3.5 18h.01"/></svg>
+            <button id="ai-chat-sessions" type="button" title="{{ __('ai.sessions') }}" class="ai-iconbtn">
+                <svg style="width:17px;height:17px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 6h13M8 12h12M8 18h6M3.5 6h.01M3.5 12h.01M3.5 18h.01"/></svg>
             </button>
-            <button id="ai-chat-clear" type="button" title="{{ __('ai.clear') }}" style="background:none;border:0;color:#fff;cursor:pointer;padding:6px;border-radius:10px;display:flex;opacity:0.85;">
-                <svg style="width:16px;height:16px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+            <button id="ai-chat-clear" type="button" title="{{ __('ai.clear') }}" class="ai-iconbtn">
+                <svg style="width:17px;height:17px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
             </button>
-            <button id="ai-chat-close" type="button" style="background:none;border:0;color:#fff;cursor:pointer;padding:6px;border-radius:10px;display:flex;">
+            <button id="ai-chat-close" type="button" class="ai-iconbtn">
                 <svg style="width:18px;height:18px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
             </button>
         </div>
 
-        <div id="ai-chat-messages" class="ai-scroll" style="flex:1;overflow-y:auto;padding:14px;display:flex;flex-direction:column;gap:10px;background:transparent;">
+        <div id="ai-chat-messages" class="ai-scroll" style="flex:1;overflow-y:auto;padding:16px 14px;display:flex;flex-direction:column;gap:12px;background:#f8fafc;">
             @if(!empty($authRequired))
             <div style="align-self:center;text-align:center;background:#fef3c7;color:#92400e;border-radius:16px;padding:14px 18px;font-size:13px;line-height:1.6;max-width:90%;">
                 ⏳ {{ __('ai.session_expired') }}<br>
-                <button id="ai-chat-reload" type="button" style="margin-top:8px;border:0;background:linear-gradient(135deg,#4f46e5,#7c3aed);color:#fff;border-radius:10px;padding:7px 16px;font-size:12px;cursor:pointer;font-family:inherit;">{{ __('ai.reload_page') }}</button>
+                <button id="ai-chat-reload" type="button" style="margin-top:8px;border:0;background:{{ $accent }};color:#fff;border-radius:10px;padding:7px 16px;font-size:12px;cursor:pointer;font-family:inherit;box-shadow:0 2px 8px rgba({{$accentRgb}},0.35);">{{ __('ai.reload_page') }}</button>
             </div>
             @else
             @if(!empty($greeting))
@@ -71,7 +74,7 @@
             {{-- Chips de questions suggerees seulement si session VIDE (comme le greeting).
                  Sinon la conversation active reprend sans doublon. --}}
             @if(empty($chatHistory) && !empty($cfg['showSuggestions']))
-            <div id="ai-chat-suggestions" style="display:flex;flex-wrap:wrap;gap:6px;">
+            <div id="ai-chat-suggestions" style="display:flex;flex-wrap:wrap;gap:7px;">
                 @forelse(($cfg['suggestions'] ?? []) as $sug)
                 <button type="button" class="ai-sug" data-msg="{{ $sug }}">{{ $sug }}</button>
                 @empty
@@ -90,28 +93,29 @@
         </div>
 
         {{-- Scroll-to-bottom flottant --}}
-        <button id="ai-chat-scroll" type="button" title="↓" style="position:absolute;bottom:86px;right:16px;width:32px;height:32px;border-radius:50%;border:1px solid rgba(148,163,184,0.4);background:#fff;color:#4f46e5;box-shadow:0 4px 14px rgba(15,23,42,0.18);cursor:pointer;display:none;align-items:center;justify-content:center;z-index:5;">
-            <svg style="width:16px;height:16px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3"/></svg>
+        <button id="ai-chat-scroll" type="button" title="↓" class="ai-fab-scroll">
+            <svg style="width:15px;height:15px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 14l-7 7m0 0l-7-7m7 7V3"/></svg>
         </button>
 
-        <div style="padding:10px;border-top:1px solid rgba(148,163,184,0.25);background:#fff;" class="ai-inputbar">
+        <div style="padding:12px 14px 14px;border-top:1px solid rgba(148,163,184,0.22);background:#fff;" class="ai-inputbar">
             <form id="ai-chat-form" style="display:flex;gap:8px;align-items:flex-end;">
-                <textarea id="ai-chat-input" rows="1" maxlength="2000" placeholder="{{ __('ai.placeholder') }}" style="flex:1;resize:none;border:1px solid rgba(148,163,184,0.45);border-radius:14px;padding:10px 14px;font-size:13px;font-family:inherit;outline:none;background:#f8fafc;color:#334155;max-height:96px;"></textarea>
-                <button type="submit" id="ai-chat-send" style="width:40px;height:40px;border-radius:14px;border:0;background:linear-gradient(135deg,#4f46e5,#7c3aed);color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
-                    <svg style="width:18px;height:18px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19V5m0 0l-7 7m7-7l7 7"/></svg>
+                <textarea id="ai-chat-input" rows="1" maxlength="2000" placeholder="{{ __('ai.placeholder') }}" style="flex:1;resize:none;border:1.5px solid rgba(148,163,184,0.45);border-radius:18px;padding:11px 16px;font-size:13.5px;font-family:inherit;outline:none;background:#f8fafc;color:#0f172a;max-height:104px;transition:border-color .15s, box-shadow .15s;"></textarea>
+                <button type="submit" id="ai-chat-send" class="ai-send" aria-label="→">
+                    <svg id="ai-send-icon" style="width:18px;height:18px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 19V5m0 0l-7 7m7-7l7 7"/></svg>
+                    <svg id="ai-stop-icon" style="width:14px;height:14px;display:none;" fill="currentColor" viewBox="0 0 24 24"><rect x="6" y="6" width="12" height="12" rx="2"/></svg>
                 </button>
             </form>
         </div>
 
         {{-- Drawer des sessions (caché par défaut) --}}
-        <div id="ai-sessions-drawer" style="position:absolute;inset:0;z-index:20;display:none;flex-direction:column;background:rgba(255,255,255,0.98);">
-            <div style="display:flex;align-items:center;gap:8px;padding:12px 16px;background:{{ $gradient }};color:#fff;">
-                <button id="ai-sessions-back" type="button" style="background:none;border:0;color:#fff;cursor:pointer;padding:4px;display:flex;">
+        <div id="ai-sessions-drawer" style="position:absolute;inset:0;z-index:20;display:none;flex-direction:column;background:#f8fafc;">
+            <div style="display:flex;align-items:center;gap:8px;padding:12px 14px;background:#fff;border-bottom:1px solid rgba(148,163,184,0.22);">
+                <button id="ai-sessions-back" type="button" class="ai-iconbtn">
                     <svg style="width:18px;height:18px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
                 </button>
-                <div style="flex:1;font-weight:700;font-size:14px;">{{ __('ai.sessions') }}</div>
-                <button id="ai-sessions-new" type="button" title="{{ __('ai.new_session') }}" style="background:rgba(255,255,255,0.2);border:0;color:#fff;cursor:pointer;padding:6px 12px;border-radius:10px;font-size:12px;font-family:inherit;display:flex;align-items:center;gap:4px;">
-                    <svg style="width:14px;height:14px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"/></svg>
+                <div style="flex:1;font-weight:800;font-size:14px;color:#0f172a;">{{ __('ai.sessions') }}</div>
+                <button id="ai-sessions-new" type="button" title="{{ __('ai.new_session') }}" style="background:{{ $accent }};border:0;color:#fff;cursor:pointer;padding:7px 14px;border-radius:12px;font-size:12px;font-weight:700;font-family:inherit;display:flex;align-items:center;gap:5px;box-shadow:0 3px 10px rgba({{$accentRgb}},0.35);">
+                    <svg style="width:13px;height:13px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M12 4v16m8-8H4"/></svg>
                     {{ __('ai.new_session') }}
                 </button>
             </div>
@@ -119,73 +123,155 @@
         </div>
     </div>
 
-    {{-- Bouton flottant --}}
+    {{-- Bouton flottant — 2026 : accent solide + anneau lumineux au hover --}}
     <button id="ai-chatbot-toggle" type="button" aria-label="{{ __('ai.title') }}"
-        style="position:fixed;bottom:14px;{{ $posSide }}:14px;width:56px;height:56px;border-radius:50%;border:0;background:{{ $gradient }};box-shadow:0 10px 30px rgba({{$accentRgb}},0.45);cursor:pointer;display:flex;align-items:center;justify-content:center;pointer-events:auto;z-index:10;">
+        style="position:fixed;bottom:14px;{{ $posSide }}:14px;width:58px;height:58px;border-radius:18px;border:0;background:{{ $accent }};box-shadow:0 12px 34px -6px rgba({{$accentRgb}},0.55);cursor:pointer;display:flex;align-items:center;justify-content:center;pointer-events:auto;z-index:10;transition:transform .18s, box-shadow .18s;">
         <svg id="ai-chat-icon" style="width:26px;height:26px;color:#fff;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/></svg>
     </button>
 </div>
 
 <style>
-    /* ---------- Dark mode : .dark sur <html> pose par le shell (localStorage.theme) ---------- */
-    .dark #ai-chat-window { background:rgba(15,23,42,0.97) !important; border-color:rgba(51,65,85,0.6) !important; }
-    .dark .ai-bubble-ai  { background:#1e293b !important; color:#cbd5e1 !important; }
+    /* ============ DARK MODE (le shell pose .dark sur <html>) ============ */
+    .dark #ai-chat-window { background:#0f172a !important; border-color:rgba(51,65,85,0.65) !important; box-shadow:0 24px 70px -12px rgba(0,0,0,0.7) !important; }
+    .dark #ai-chat-window > div:first-child { background:#0f172a !important; border-bottom-color:rgba(51,65,85,0.55) !important; }
+    .dark .ai-avatar { filter:brightness(1.05) !important; }
+    .dark #ai-chat-window h1, .dark #ai-chat-window div { color-scheme:dark; }
+    .dark .ai-window-header-title { color:#f1f5f9 !important; }
+    .dark .ai-bubble-ai  { background:#1e293b !important; color:#cbd5e1 !important; border-color:rgba(51,65,85,0.5) !important; }
     .dark .ai-bubble-user{ color:#fff !important; }
-    .dark .ai-inputbar   { background:#0f172a !important; border-top-color:rgba(51,65,85,0.6) !important; }
-    .dark #ai-chat-input { background:#1e293b !important; color:#e2e8f0 !important; border-color:rgba(71,85,105,0.7) !important; }
-    .dark .ai-sug        { background:rgba(129,140,248,0.12) !important; color:#a5b4fc !important; border-color:rgba(129,140,248,0.35) !important; }
-    .dark .ai-scroll-wrap { background:transparent !important; }
-    .dark #ai-chat-scroll{ background:#1e293b !important; color:#a5b4fc !important; }
+    .dark .ai-inputbar   { background:#0f172a !important; border-top-color:rgba(51,65,85,0.55) !important; }
+    .dark #ai-chat-input { background:#1e293b !important; color:#e2e8f0 !important; border-color:rgba(71,85,105,0.8) !important; }
+    .dark .ai-sug        { background:rgba(129,140,248,0.10) !important; color:#a5b4fc !important; border-color:rgba(129,140,248,0.35) !important; }
+    .dark .ai-sug:hover  { background:rgba(129,140,248,0.2) !important; }
+    .dark .ai-fab-scroll { background:#1e293b !important; color:#a5b4fc !important; }
     .dark .ai-copy-btn   { background:#1e293b !important; color:#94a3b8 !important; }
     .dark .ai-copy-btn:hover { background:#334155 !important; color:#e2e8f0 !important; }
-    .dark .ai-table th   { background:rgba(99,102,241,0.25) !important; color:#c7d2fe !important; }
+    .dark .ai-table th   { background:rgba(99,102,241,0.22) !important; color:#c7d2fe !important; }
     .dark .ai-table td   { border-color:rgba(71,85,105,0.7) !important; color:#cbd5e1 !important; }
+    .dark #ai-sessions-drawer { background:#0f172a !important; }
+    .dark #ai-chat-messages   { background:#0b1220 !important; }
+    .dark .ai-status-dot { background:#10b981 !important; }
+    .dark .ai-iconbtn:hover { background:rgba(51,65,85,0.8) !important; color:#e2e8f0 !important; }
+    .dark .ai-session-row { background:#1e293b !important; }
+    .dark .ai-session-row .ai-session-title { color:#e2e8f0 !important; }
+    .dark .ai-session-row div { color:#94a3b8 !important; }  /* meta date lisible en dark */
+    .dark .ai-session-row .ai-session-title { color:#e2e8f0 !important; }
+    .dark .ai-msg-wrap { color:#cbd5e1; }
 
-    /* ---------- Bulles ---------- */
+    /* ============ HEADER FIX (titres clairs en dark via hook classe) ============ */
+    #ai-chat-window > div:first-child .ai-iconbtn { color:#475569; }
+    #ai-chat-window > div:first-child > div:nth-child(2) > div:first-child { color:#0f172a; }
+    .dark #ai-chat-window > div:first-child > div:nth-child(2) > div:first-child { color:#f1f5f9; }
+
+    /* ============ Icônes header ============ */
+    .ai-iconbtn { background:none;border:0;color:#64748b;cursor:pointer;padding:7px;border-radius:11px;display:flex;
+        transition:background .15s, color .15s; }
+    .ai-iconbtn:hover { background:rgba(148,163,184,0.18); color:#0f172a; }
+
+    /* ============ FAB scroll ============ */
+    .ai-fab-scroll { position:absolute;bottom:92px;right:16px;width:34px;height:34px;border-radius:12px;
+        border:1px solid rgba(148,163,184,0.35);background:#fff;color:{{ $accent }};
+        box-shadow:0 6px 18px rgba(15,23,42,0.18);cursor:pointer;display:none;align-items:center;justify-content:center;z-index:5;
+        transition:transform .15s; }
+    .ai-fab-scroll:hover { transform:translateY(-2px); }
+
+    /* ============ Bulles 2026 ============ */
     .ai-bubble-ai, .ai-bubble-user {
-        max-width:85%; padding:10px 14px; font-size:13px; line-height:1.55;
-        border-radius:16px; word-wrap:break-word;
-        /* dir=auto : le texte arabe s'affiche RTL automatiquement, le fr/en en LTR */
+        max-width:92%; padding:11px 15px; font-size:13.5px; line-height:1.6;
+        border-radius:18px; word-wrap:break-word;
         unicode-bidi:plaintext;
     }
-    .ai-bubble-ai  { align-self:flex-start; background:#f1f5f9; color:#334155; border-top-left-radius:4px; }
-    .ai-bubble-user{ align-self:flex-end; background:linear-gradient(135deg,#4f46e5,#7c3aed); color:#fff; border-top-right-radius:4px; white-space:pre-wrap; }
+    .ai-bubble-ai  { align-self:flex-start; background:#f1f5f9; color:#0f172a; border:1px solid rgba(148,163,184,0.28); border-bottom-left-radius:6px; }
+    .ai-bubble-user{ align-self:flex-end; background:{{ $accent }}; color:#fff; border-bottom-right-radius:6px;
+        white-space:pre-wrap; box-shadow:0 4px 14px -4px rgba({{$accentRgb}},0.45); }
+    .dark .ai-bubble-ai { border-bottom-left-radius:6px !important; border-color:rgba(51,65,85,0.5) !important; }
 
-    /* ---------- Chips suggestions ---------- */
-    .ai-sug { border:1px solid rgba(79,70,229,0.35); background:rgba(79,70,229,0.06); color:#4f46e5;
-        border-radius:14px; padding:6px 12px; font-size:12px; cursor:pointer; font-family:inherit;
-        transition:background .15s, transform .15s; }
-    .ai-sug:hover { background:rgba(79,70,229,0.14); transform:translateY(-1px); }
+    /* Status « en ligne » */
+    .ai-status-dot { width:7px;height:7px;border-radius:50%;background:#10b981;display:inline-block;box-shadow:0 0 0 3px rgba(16,185,129,0.18); }
 
-    /* ---------- Bouton copier ---------- */
-    .ai-msg-wrap { display:flex; flex-direction:column; max-width:85%; }
+    /* ============ Chips ============ */
+    .ai-sug { border:1.5px solid rgba(148,163,184,0.4); background:#fff; color:{{ $accent }};
+        border-radius:14px; padding:7px 13px; font-size:12.5px; font-weight:600; cursor:pointer; font-family:inherit;
+        transition:background .15s, border-color .15s, transform .15s, box-shadow .15s; }
+    .ai-sug:hover { background:rgba({{$accentRgb}},0.08); border-color:rgba({{$accentRgb}},0.5); transform:translateY(-1px); box-shadow:0 4px 12px -4px rgba({{$accentRgb}},0.3); }
+
+    /* ============ Copier ============ */
+    .ai-msg-wrap { display:flex; flex-direction:column; max-width:86%; }
     .ai-msg-wrap.left { align-self:flex-start; }
-    .ai-copy-btn { align-self:flex-start; margin-top:2px; border:0; background:transparent; color:#94a3b8;
-        font-size:11px; cursor:pointer; display:flex; align-items:center; gap:4px; padding:2px 6px;
-        border-radius:8px; opacity:0; transition:opacity .15s; font-family:inherit; }
+    .ai-copy-btn { align-self:flex-start; margin-top:3px; border:0; background:transparent; color:#94a3b8;
+        font-size:11px; font-weight:600; cursor:pointer; display:flex; align-items:center; gap:4px; padding:3px 7px;
+        border-radius:8px; opacity:0; transition:opacity .15s, background .15s; font-family:inherit; }
     .ai-msg-wrap:hover .ai-copy-btn { opacity:1; }
-    .ai-copy-btn:hover { background:#f1f5f9; }
+    .ai-copy-btn:hover { background:#f1f5f9; color:#475569; }
 
-    /* ---------- Tableaux scrollables horizontalement ---------- */
-    .ai-table-wrap { overflow-x:auto; max-width:100%; margin:6px 0; border-radius:10px; }
-    .ai-table { border-collapse:collapse; width:100%; min-width:280px; font-size:12px; }
-    .ai-table th, .ai-table td { border:1px solid rgba(148,163,184,0.4); padding:5px 8px; white-space:nowrap; }
-    .ai-table th { background:rgba(79,70,229,0.12); font-weight:700; color:#4f46e5; text-align:left; }
-    .ai-table td { text-align:right; }
-    .ai-table td:first-child { text-align:left; }
+    /* ============ Tables ============ */
+    /* Les tableaux de réponses financières ont besoin de largeur : max-width 100% de la
+       bulle SANS min-width forcé (evitait l'étirement), wrap autorisé pour les libellés. */
+    .ai-table-wrap { overflow-x:auto; max-width:100%; margin:8px 0 4px; border-radius:12px; border:1px solid rgba(148,163,184,0.25); }
+    .ai-table { border-collapse:collapse; width:100%; min-width:0; font-size:12.5px; table-layout:auto; }
+    .ai-table th, .ai-table td { border-bottom:1px solid rgba(148,163,184,0.25); padding:7px 10px; white-space:normal; word-break:keep-all; overflow-wrap:anywhere; border-right:0; border-left:0; vertical-align:top; }
+    .ai-table th { background:rgba({{$accentRgb}},0.10); font-weight:700; color:{{ $accent }}; text-align:left; font-size:11.5px; text-transform:uppercase; letter-spacing:0.04em; white-space:nowrap; }
+    .ai-table td { text-align:right; border-top:0; }
+    .ai-table td:first-child { text-align:left; font-weight:600; white-space:nowrap; }
+    /* les colonnes numériques restent nowrap pour aligner les montants */
+    .ai-table td:not(:first-child) { white-space:nowrap; }
+    .ai-table tr:last-child td { border-bottom:0; }
+    .ai-table tr { transition:background .12s; }
+    .ai-table tbody tr:nth-child(even) { background:rgba(148,163,184,0.05); }
+    .dark .ai-table th { background:rgba(99,102,241,0.2) !important; text-transform:none; letter-spacing:0; }
 
-    /* ---------- Animations ---------- */
-    @keyframes aiPop { from { opacity:0; transform:translateY(12px) scale(0.96); } to { opacity:1; transform:none; } }
-    .ai-window.open { display:flex !important; animation:aiPop .22s cubic-bezier(.2,.9,.3,1.2); }
-    @keyframes aiBubbleIn { from { opacity:0; transform:translateY(6px); } to { opacity:1; transform:none; } }
-    .ai-bubble-ai, .ai-bubble-user, .ai-msg-wrap { animation:aiBubbleIn .18s ease-out; }
-    @keyframes aiPulse { 0%,100% { box-shadow:0 10px 30px rgba({{$accentRgb}},0.45); } 50% { box-shadow:0 10px 30px rgba({{$accentRgb}},0.9); } }
-    #ai-chatbot-toggle.pulse { animation:aiPulse 1.4s ease-in-out 3; }
+    /* ============ RESPONS — mobile : PLEIN ÉCRAN ; desktop : fenêtre adaptée ============ */
+    @media (max-width: 767px) {
+        #ai-chat-window.ai-window.open {
+            position: fixed !important;
+            inset: 0 !important;
+            bottom: 0 !important; left: 0 !important; right: 0 !important;
+            width: 100vw !important; height: 100dvh !important; max-height: 100dvh !important;
+            border-radius: 0 !important; border: 0 !important;
+            box-shadow: none !important;
+        }
+        #ai-chatbot-toggle { bottom: 12px !important; }
+        /* sur mobile le parent resize l'iframe lui-même (voir W/H dynamiques JS) */
+    }
+    @media (max-width: 767px) and (orientation: landscape) {
+        #ai-chat-window.ai-window.open { height: 100dvh !important; }
+    }
+    /* Icônnes header plus grandes en tactile */
+    @media (pointer: coarse) {
+        .ai-iconbtn { padding: 9px; }
+        #ai-chat-send { width: 48px; height: 48px; }
+    }
+
+    /* ============ Animations ============ */
+    @keyframes aiPop { from { opacity:0; transform:translateY(16px) scale(0.93); } to { opacity:1; transform:none; } }
+    .ai-window.open { display:flex !important; animation:aiPop .26s cubic-bezier(.2,.9,.3,1.15); }
+    @keyframes aiBubbleIn { from { opacity:0; transform:translateY(7px) scale(0.98); } to { opacity:1; transform:none; } }
+    .ai-bubble-ai, .ai-bubble-user, .ai-msg-wrap { animation:aiBubbleIn .2s ease-out; }
+    #ai-chatbot-toggle:hover { transform:scale(1.06); box-shadow:0 16px 42px -6px rgba({{$accentRgb}},0.7); }
+    #ai-chatbot-toggle:active { transform:scale(0.97); }
+    @keyframes aiPulse { 0%,100% { box-shadow:0 0 0 0 rgba({{$accentRgb}},0.55); } 50% { box-shadow:0 0 0 12px rgba({{$accentRgb}},0); } }
+    #ai-chatbot-toggle.pulse { animation:aiPulse 1.3s ease-out 6; }
     @keyframes aiBlink { 0%,80%,100% { opacity:.25 } 40% { opacity:1 } }
 
-    /* ---------- Scrollbar discrete ---------- */
-    .ai-scroll::-webkit-scrollbar { width:6px; }
-    .ai-scroll::-webkit-scrollbar-thumb { background:rgba(148,163,184,0.5); border-radius:3px; }
+    /* ============ Focus input ring ============ */
+    #ai-chat-input:focus { border-color:rgba({{$accentRgb}},0.6) !important; background:#fff !important;
+        box-shadow:0 0 0 4px rgba({{$accentRgb}},0.10); }
+    .dark #ai-chat-input:focus { background:#1e293b !important; }
+    #ai-chat-send { width:44px;height:44px;border-radius:16px;border:0;background:{{ $accent }};color:#fff;cursor:pointer;
+        display:flex;align-items:center;justify-content:center;flex-shrink:0;
+        box-shadow:0 4px 14px -4px rgba({{$accentRgb}},0.5); transition:transform .15s, box-shadow .15s, opacity .15s; }
+    #ai-chat-send:hover { transform:translateY(-1px) scale(1.04); }
+    #ai-chat-send:disabled { opacity:0.45; cursor:wait; transform:none; }
+    .dark .ai-fab-scroll { background:#1e293b !important; color:#a5b4fc !important; }
+
+    /* ============ Scrollbar ============ */
+    .ai-scroll::-webkit-scrollbar { width:5px; }
+    .ai-scroll::-webkit-scrollbar-thumb { background:rgba(148,163,184,0.4); border-radius:3px; }
+    .ai-scroll::-webkit-scrollbar-thumb:hover { background:rgba(148,163,184,0.65); }
+    .ai-scroll::-webkit-scrollbar-track { background:transparent; }
+    .dark .ai-scroll::-webkit-scrollbar-thumb { background:rgba(71,85,105,0.6); }
+    .ai-scroll { scrollbar-width:thin; scrollbar-color:rgba(148,163,184,0.4) transparent; }
+    .ai-dot { width:6px;height:6px;border-radius:50%;background:#94a3b8;display:inline-block;animation:aiBlink 1.2s infinite; }
 </style>
 
 <script>
@@ -326,7 +412,9 @@
         }
         // Agrandit/reduit l iframe parent pour couvrir le chat (le bouton seul = 100x100)
         try {
-            parent.postMessage({ aiChatbot: v ? 'open' : 'close' }, '*');
+            // FIX mobile : annonce aussi le mode plein écran au parent (taille d'iframe 100vw/100dvh)
+            var isSmall = window.matchMedia('(max-width: 767px)').matches;
+            parent.postMessage({ aiChatbot: v ? 'open' : 'close', mobile: isSmall }, '*');
         } catch (e) {}
     }
 
@@ -334,11 +422,19 @@
     closeBtn.addEventListener('click', function () { setOpen(false); });
 
     // Ouverture automatique demandee par le layout (setting ai_auto_open)
+    // + SYNC DARK MODE : le parent pousse {aiChatbot:'theme', dark:bool} à chaque bascule
+    // (l'iframe a son propre localStorage — sans ce pont, le widget reste clair pendant
+    // que la platform est sombre).
     window.addEventListener('message', function (e) {
         // Securite : n'accepter les ordres que de notre propre origine (same-origin iframe)
         if (e.origin !== window.location.origin) return;
         var d = e.data || {};
         if (d.aiChatbot === 'openAuto' && !open) setOpen(true);
+        if (d.aiChatbot === 'theme') {
+            var isDark = !!d.dark;
+            document.documentElement.classList.toggle('dark', isDark);
+            try { localStorage.theme = isDark ? 'dark' : 'light'; } catch (er) {}
+        }
     });
 
     // Mode degrade : session expiree -> le bouton recharge la page PARENTE (l iframe est dedans)
@@ -372,6 +468,8 @@
     function send(msg) {
         msg = (msg || input.value).trim();
         if (!msg) return;
+        // FIX UX#1 : bloque le double envoi / la redefinition pendant le streaming en cours
+        if (typeof window.__aiStreaming !== 'undefined' && window.__aiStreaming) return;
         hideSuggestions();
         addBubble(msg, 'user');
         input.value = '';
@@ -380,7 +478,20 @@
         var th = thinkingEl();
         var controller = new AbortController();
         var killed = false;
-        setTimeout(function () { if (!killed) controller.abort(); }, 180000);
+        // Bouton STOP pendant le streaming : le bouton envoyer devient ⏹ (abort à la demande, comme ChatGPT)
+        var stopMode = false;
+        window.__aiStreaming = true;  // FIX UX#1 : flag global "un stream tourne"
+        function setStopMode(on) {
+            var si = document.getElementById('ai-stop-icon');
+            var ni = document.getElementById('ai-send-icon');
+            if (si && ni) { si.style.display = on ? 'block' : 'none'; ni.style.display = on ? 'none' : 'block'; }
+            sendBtn.disabled = !on;
+            sendBtn.title = on ? '{{ __('ai.stop_generation') }}' : '';
+        }
+        function doStop() { if (!killed && stopMode) { killed = true; controller.abort(); finish(); } }
+        sendBtn.addEventListener('click', function (e) {
+            if (window.__aiStreaming) { e.preventDefault(); e.stopPropagation(); if (typeof doStop === 'function') doStop(); }
+        }, true);
 
         // ─── STREAMING (SSE) ─────────────────────────────────────────────
         // La réponse arrive chunk par chunk dans la bubble assistant — rendu
@@ -404,6 +515,8 @@
             var decoder = new TextDecoder();
             var buf = '';
             var everDelta = false;
+            setStopMode(true); // streaming en cours → bouton = STOP
+            stopMode = true;
 
             function process() {
                 return reader.read().then(function (res) {
@@ -444,6 +557,9 @@
                 if (finished) return; finished = true;
                 killed = true;
                 th.remove();
+                stopMode = false;
+                window.__aiStreaming = false;  // FIX UX#1
+                setStopMode(false); // retour au bouton envoyer
                 if (bubble && text) {
                     // Rendu final : markdown + bouton copier, comme un bubble normal
                     bubble.innerHTML = md(text);
@@ -463,6 +579,10 @@
         });
 
         function fallbackJson(msg, th) {
+            // FIX UX#3 : en fallback JSON il n'y a pas de streaming -> etat bouton propre
+            window.__aiStreaming = false;
+            var si = document.getElementById('ai-stop-icon'); var ni = document.getElementById('ai-send-icon');
+            if (si && ni) { si.style.display = 'none'; ni.style.display = 'block'; }
             return fetch('/api/chatbot', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': csrf() },
@@ -548,7 +668,11 @@
 
     form.addEventListener('submit', function (e) { e.preventDefault(); send(); });
     input.addEventListener('keydown', function (e) {
-        if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send(); }
+        if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            if (window.__aiStreaming) { return; }  // FIX UX#1/4 : Enter pendant le streaming = ignoré (STOP via le bouton)
+            send();
+        }
     });
 
     // Historique serveur : rejoue les bulles au chargement; chips masquees si conversation existante
@@ -596,13 +720,15 @@
                 }
                 list.forEach(function (s) {
                     var row = document.createElement('div');
+                    row.className = 'ai-session-row';
                     var isActive = (s.id === activeId);
-                    row.style.cssText = 'display:flex;align-items:center;gap:8px;padding:10px 12px;border-radius:12px;margin-bottom:6px;cursor:pointer;border:1px solid ' + (isActive ? 'rgba(79,70,229,0.4)' : 'rgba(148,163,184,0.3)') + ' ;background:' + (isActive ? 'rgba(79,70,229,0.07)' : '#fff') + ';';
+                    row.style.cssText = 'display:flex;align-items:center;gap:8px;padding:11px 13px;border-radius:14px;margin-bottom:7px;cursor:pointer;border:1.5px solid ' + (isActive ? 'rgba({{$accentRgb}},0.5)' : 'rgba(148,163,184,0.3)') + ';background:' + (isActive ? 'rgba({{$accentRgb}},0.07)' : '#fff') + ';';
                     var main = document.createElement('div');
                     main.style.cssText = 'flex:1;min-width:0;cursor:pointer;';
                     var title = document.createElement('div');
+                    title.className = 'ai-session-title';
                     title.textContent = s.title || '{{ __('ai.title') }}';
-                    title.style.cssText = 'font-size:13px;font-weight:600;color:#334155;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;';
+                    title.style.cssText = 'font-size:13px;font-weight:700;color:#0f172a;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;';
                     var meta = document.createElement('div');
                     meta.textContent = new Date(s.last_activity).toLocaleString();
                     meta.style.cssText = 'font-size:11px;color:#94a3b8;margin-top:2px;';
@@ -612,7 +738,9 @@
                     del.type = 'button';
                     del.title = '{{ __('ai.delete_session') }}';
                     del.innerHTML = '<svg style="width:15px;height:15px;color:#f87171;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>';
-                    del.style.cssText = 'background:none;border:0;cursor:pointer;padding:4px;color:#f87171;display:flex;';
+                    del.style.cssText = 'background:none;border:0;cursor:pointer;padding:5px;border-radius:9px;color:#f87171;display:flex;transition:background .15s;';
+                    del.addEventListener('mouseenter', function () { del.style.background = 'rgba(239,68,68,0.12)'; });
+                    del.addEventListener('mouseleave', function () { del.style.background = 'none'; });
                     del.addEventListener('click', function (e) {
                         e.stopPropagation();
                         if (!confirm(@js(__('ai.delete_session_confirm')))) return;
