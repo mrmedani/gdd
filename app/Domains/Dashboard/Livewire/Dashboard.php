@@ -169,15 +169,37 @@ class Dashboard extends Component
 
         $this->cashDeficit = (float) Setting::get('cash_deficit', 0);
 
-        // Taux de croissance mois par mois (dernière clôture vs précédente)
-        $lastTwo = MonthlyClosure::orderBy('month', 'desc')->take(2)->pluck('gains');
-        if ($lastTwo->count() === 2) {
-            $current = (float) $lastTwo->first();
-            $previous = (float) $lastTwo->last();
-            $this->growthRate = $previous > 0
-                ? round(($current - $previous) / $previous * 100, 1)
-                : null;
+        // ─── Taux de croissance : FIABLE, avec contiguïté vérifiée ────────────────
+        // ANCIEN BUG : on prenait les 2 dernières clôtures SANS vérifier qu'elles sont
+        // adjacentes. Si un mois n'est pas clôturé (ex. 2026-08 manquant), le widget
+        // comparait 2026-09 à 2026-07 = 2 mois d'écart affiché comme une variation
+        // mensuelle — trompeur. SOLUTION FIABLE :
+        //   1. comparaison UNIQUEMENT si la clôture précédente = période immédiatement
+        //      précédente (calendar Y-m −1 mois, en tenant compte du découpage 21→20) ;
+        //   2. sinon growthRate = null → le widget affiche « N/A » (pas de mensonge) ;
+        //   3. le mois "précédent" attendu est calculé depuis le mois de la clôture
+        //      courante, pas depuis now() (cohérent si la clôture la plus récente est
+        //      plus ancienne que la période courant).
+        $lastClosure = MonthlyClosure::orderBy('month', 'desc')->first();
+        if ($lastClosure) {
+            $prevMonth = \Carbon\Carbon::createFromFormat('Y-m', $lastClosure->month)
+                ->subMonthNoOverflow()->format('Y-m');
+            $prevClosure = MonthlyClosure::where('month', $prevMonth)->first();
+            if ($prevClosure) {
+                $current = (float) $lastClosure->gains;
+                $previous = (float) $prevClosure->gains;
+                if ($previous > 0) {
+                    $this->growthRate = round(($current - $previous) / $previous * 100, 1);
+                } elseif ($current === 0.0 && $previous === 0.0) {
+                    $this->growthRate = null; // 2 périodes vides = pas de signal
+                } elseif ($current !== 0.0 && $previous === 0.0) {
+                    // base précédente à zéro : variation infinie → non représentable en %
+                    $this->growthRate = null;
+                }
+            }
         }
+        // NOTE sémantique: "gains" = solde de caisse DÉCLARÉ à la clôture (champ saisi),
+        // la croissance mesure donc la variation de ce solde déclaré, pas un profit calculé.
 
         $this->recentExpenses = Expense::with('category')
             ->latest()

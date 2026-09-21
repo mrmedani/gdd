@@ -191,16 +191,27 @@ class TreasuryIndex extends Component
         $currentMonthClosed = MonthlyClosure::where('month', getPeriodFromDate(now()))->exists();
         $closedMonths = MonthlyClosure::pluck('month')->toArray();
 
-        // Calcul du taux de croissance mois par mois
+        // Calcul du taux de croissance mois par mois — CONTIGUÏTÉ VÉRIFIÉE :
+        // ne calcule que si la clôture précédente est la période immédiatement antérieure
+        // (sinon la colonne affiche null → "—"). Un mois non clôturé casse la chaîne :
+        // les périodes suivantes repartent de null jusqu'à retrouver l'adjacence.
         $allClosures = MonthlyClosure::orderBy('month', 'asc')->get(['month', 'gains']);
         $growthRates = [];
+        $prevMonth = null;
         $prevGains = null;
         foreach ($allClosures as $c) {
-            if ($prevGains !== null && $prevGains > 0) {
+            $contiguous = false;
+            if ($prevMonth !== null) {
+                // la clôture en cours doit être le mois SUIVANT de la précédente (ordre asc)
+                $expected = \Carbon\Carbon::createFromFormat('Y-m', $prevMonth)->addMonthNoOverflow()->format('Y-m');
+                $contiguous = ($c->month === $expected);
+            }
+            if ($contiguous && $prevGains > 0) {
                 $growthRates[$c->month] = round((($c->gains - $prevGains) / $prevGains) * 100, 1);
             } else {
                 $growthRates[$c->month] = null;
             }
+            $prevMonth = $c->month;
             $prevGains = $c->gains;
         }
 
