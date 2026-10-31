@@ -852,5 +852,8 @@
     "station_charges.deleted": "تم حذف العمولة.",
     "station_charges.future_warn": "فترة مستقبلية: ستتم التسوية عند انتهاء الفترة. يمكنك تسجيل العمولات منذ الآن.",
     "caisse.total_station_charges_auto": "عمولات المحطات (تلقائي)",
-    "caisse.station_charges_short": "عمولات المحطات"
+    "caisse.station_charges_short": "عمولات المحطات",
+    "station_charges.period_option": "الفترة :ym · من :start إلى :end",
+    "station_charges.period_future": "لا يمكن تسجيل عمولة لفترة مستقبلية.",
+    "station_charges.jump": "الانتقال إلى الفترة"
 }

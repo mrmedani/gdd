@@ -853,5 +853,8 @@
     "station_charges.deleted": "Commission supprimée.",
     "station_charges.future_warn": "Période future : la clôture se fera quand la période sera terminée. Tu peux pré-enregistrer les commissions dès maintenant.",
     "caisse.total_station_charges_auto": "Commissions stations (auto)",
-    "caisse.station_charges_short": "Commissions stations"
+    "caisse.station_charges_short": "Commissions stations",
+    "station_charges.period_option": "Période :ym · du :start au :end",
+    "station_charges.period_future": "Impossible d'enregistrer une commission pour une période future.",
+    "station_charges.jump": "Aller à la période"
 }

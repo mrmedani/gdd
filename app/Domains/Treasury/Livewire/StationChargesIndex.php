@@ -25,9 +25,11 @@ class StationChargesIndex extends Component
 
     public function rules(): array
     {
+        // Période bornée : <= période courante (une commission d'une période
+        // future n'a pas de sens pour la clôture — antérieures OK, clôturées ou pas).
         return [
             'station_name' => 'required|string|max:255',
-            'period' => 'required|date_format:Y-m',
+            'period' => 'required|date_format:Y-m|before_or_equal:' . getPeriodFromDate(now()),
             'amount' => 'required|numeric|min:0.01',
             'notes' => 'nullable|string|max:2000',
         ];
@@ -41,14 +43,17 @@ class StationChargesIndex extends Component
             'amount.numeric' => __('validation.amount_required', ['default' => 'Le montant est obligatoire.']),
             'amount.min' => __('validation.amount_min', ['default' => 'Le montant doit être supérieur à zéro.']),
             'period.date_format' => __('station_charges.period_invalid', ['default' => 'Période invalide.']),
+            'period.before_or_equal' => __('station_charges.period_future', ['default' => 'Impossible d\'enregistrer une commission pour une période future.']),
         ];
     }
 
     public function create(): void
     {
         $this->resetForm();
-        // pré-remplir la période courante du registre
-        $this->period = getPeriodFromDate(now());
+        // FIX : PRÉ-REMPLIT la période en cours de NAVIGATION (pas forcé « la
+        // période courante ») — sinon impossible d'ajouter pour une période
+        // antérieure non clôturée : le modal écrasait la période consultée.
+        $this->period = $this->period ?: getPeriodFromDate(now());
         $this->showForm = true;
     }
 
@@ -139,14 +144,33 @@ class StationChargesIndex extends Component
         $charges = StationCharge::period($this->period)->get();
         $total = StationCharge::totalFor($this->period);
 
+        // OPTIONS de saut rapide : la période courante + les 23 précédentes —
+        // label = la vraie PERIODE platform (21→20), pas un simple mois.
+        $current = getPeriodFromDate(now());
+        $availablePeriods = [];
+        $p = \Carbon\Carbon::createFromFormat('Y-m', $current);
+        for ($i = 0; $i < 24; $i++) {
+            $ym = $p->format('Y-m');
+            $r = getPeriodRange($ym);
+            $tag = $ym === $current ? __('station_charges.current', ['default' => 'en cours']) : '';
+            $availablePeriods[$ym] = trim(__('station_charges.period_option', [
+                'ym' => $ym,
+                'start' => $r['start']->format('d/m/Y'),
+                'end' => $r['end']->format('d/m/Y'),
+                'default' => 'Période :ym · du :start au :end',
+            ]) . ' ' . $tag);
+            $p->subMonthNoOverflow();
+        }
+
         return view('livewire.station-charges', [
             'charges' => $charges,
             'total' => $total,
             'knownStations' => StationCharge::knownStations(),
             'periodLabel' => formatPeriodLabel($this->period),
-            'currentPeriod' => getPeriodFromDate(now()),
+            'currentPeriod' => $current,
+            'availablePeriods' => $availablePeriods,
             'isFuture' => \Carbon\Carbon::createFromFormat('Y-m', $this->period)
-                ->gt(\Carbon\Carbon::createFromFormat('Y-m', getPeriodFromDate(now()))),
+                ->gt(\Carbon\Carbon::createFromFormat('Y-m', $current)),
             'clotureRange' => getPeriodRange($this->period),
         ]);
     }

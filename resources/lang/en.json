@@ -853,5 +853,8 @@
     "station_charges.deleted": "Commission deleted.",
     "station_charges.future_warn": "Future period: closing will happen when the period ends. You can pre-record commissions now.",
     "caisse.total_station_charges_auto": "Station commissions (auto)",
-    "caisse.station_charges_short": "Station commissions"
+    "caisse.station_charges_short": "Station commissions",
+    "station_charges.period_option": "Period :ym · from :start to :end",
+    "station_charges.period_future": "Cannot record a commission for a future period.",
+    "station_charges.jump": "Jump to period"
 }
