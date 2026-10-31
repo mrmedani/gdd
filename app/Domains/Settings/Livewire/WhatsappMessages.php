@@ -105,20 +105,22 @@ class WhatsappMessages extends Component
 
         foreach ($this->templates as $tpl) {
             $type = $tpl['type'];
-            $template = WhatsappMessageTemplate::where('type', $type)->first();
-            if (! $template) continue;
 
-            $previews[$type] = str_replace(["\r\n", "\n"], ' • ', $template->format($demo, 'fr'));
+            // PREVIEW LIVE : rendu du texte TEL QUE SAISI (pas la ligne DB),
+            // la prévisualisation suit l'édition après la maj Livewire
+            $liveFr = (string) ($tpl['message_fr'] ?? '');
+            $msgPreview = strtr($liveFr, array_combine(
+                array_map(fn ($k) => '{' . $k . '}', array_keys($demo)),
+                array_map(fn ($v) => (string) $v, $demo)
+            ));
+            $previews[$type] = str_replace("\r\n", "\n", $msgPreview); // le div preview est whitespace-pre-line
 
-            // WARN : une variable listée qui n'apparaît NI en FR NI en AR = template cassé
-            $missing = [];
-            foreach ($template->variables ?? [] as $var) {
-                if (! str_contains((string) $tpl['message_fr'], '{' . $var . '}')
-                    && ! str_contains((string) $tpl['message_ar'], '{' . $var . '}')) {
-                    $missing[] = $var;
-                }
-            }
-            $notFilled[$type] = $missing;
+            // WARN : placeholders dans le message qui ne sont PAS dans la liste
+            // variables[] du template (incompris par l'expéditeur => resteront
+            // affichés comme du texte brut {x} dans le WhatsApp).
+            preg_match_all('/\{([a-z_]+)\}/', (string) $tpl['message_fr'] . (string) ($tpl['message_ar'] ?? ''), $m);
+            $unknown = array_values(array_diff(array_unique($m[1]), (array) ($tpl['variables'] ?? [])));
+            $notFilled[$type] = $unknown;
         }
 
         return view('livewire.whatsapp-messages', [

@@ -51,7 +51,7 @@
                     <!-- WARN : variable listée absente du message (FR & AR) -->
                     @if(!empty($notFilled[$type]))
                         <div class="mb-3 px-4 py-2.5 rounded-xl bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800/50 text-amber-800 dark:text-amber-300 text-xs font-bold">
-                            ⚠️ {{ __('settings.whatsapp_missing_vars', ['default' => 'Variables absentes des messages :']) }} <code class="font-mono">{{ implode(', ', $notFilled[$type]) }}</code>
+                            ⚠️ {{ __('settings.whatsapp_unknown_vars', ['default' => 'Placeholders inconnus (resteront visibles en brut dans le WhatsApp) :']) }} <code class="font-mono">{{ implode(', ', $notFilled[$type]) }}</code>
                         </div>
                     @endif
 

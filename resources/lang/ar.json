@@ -878,5 +878,6 @@
     "settings.wa_demo.label": "فاتورة الكهرباء",
     "settings.wa_demo.title": "عقد ECOTRACK",
     "common.system": "النظام",
-    "incomes.source_type.sale": "بيع"
+    "incomes.source_type.sale": "بيع",
+    "settings.whatsapp_unknown_vars": "عناصر نائبة غير معروفة (ستظهر كنص خام في واتساب):"
 }

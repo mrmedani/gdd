@@ -136,6 +136,7 @@ class WhatsappMessageTemplateSeeder extends Seeder
     public function run(): void
     {
         foreach (self::defaults() as $template) {
+            $template = WhatsappMessageTemplate::normalize($template);
             WhatsappMessageTemplate::firstOrCreate(
                 ['type' => $template['type']],
                 $template

@@ -879,5 +879,6 @@
     "settings.wa_demo.label": "Electricity bill",
     "settings.wa_demo.title": "ECOTRACK contract",
     "common.system": "System",
-    "incomes.source_type.sale": "Sale"
+    "incomes.source_type.sale": "Sale",
+    "settings.whatsapp_unknown_vars": "Unknown placeholders (will show as raw in WhatsApp):"
 }
