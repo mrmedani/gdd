@@ -867,5 +867,17 @@
     "station_charges.month_sep": "September",
     "station_charges.month_oct": "October",
     "station_charges.month_nov": "November",
-    "station_charges.month_dec": "December"
+    "station_charges.month_dec": "December",
+    "settings.whatsapp_variables_hint": "click to copy",
+    "settings.whatsapp_missing_vars": "Variables missing from messages:",
+    "settings.whatsapp_preview": "Preview (WhatsApp)",
+    "settings.whatsapp_reset": "Restore factory text",
+    "settings.whatsapp_reset_confirm": "Restore factory text? Your FR/AR customizations will be lost.",
+    "settings.wa_demo.description": "Office rent",
+    "settings.wa_demo.category": "Rent",
+    "settings.wa_demo.source_name": "Station sale",
+    "settings.wa_demo.label": "Electricity bill",
+    "settings.wa_demo.title": "ECOTRACK contract",
+    "common.system": "System",
+    "incomes.source_type.sale": "Sale"
 }

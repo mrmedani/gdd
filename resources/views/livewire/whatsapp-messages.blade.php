@@ -37,15 +37,23 @@
                         </div>
                     </div>
 
-                    <!-- Variables -->
-                    <div class="mb-4 p-3 bg-slate-50/50 dark:bg-slate-950/40 rounded-xl border border-slate-200/40 dark:border-slate-800/60">
-                        <span class="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">{{ __('settings.whatsapp_messages_variables') }}</span>
+                    <!-- Variables : chips cliquables = copie dans le presse-papiers -->
+                    <div class="mb-3 p-3 bg-slate-50/50 dark:bg-slate-950/40 rounded-xl border border-slate-200/40 dark:border-slate-800/60">
+                        <span class="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">{{ __('settings.whatsapp_messages_variables') }} — <span class="lowercase normal-case">{{ __('settings.whatsapp_variables_hint', ['default' => 'clique pour copier']) }}</span></span>
                         <div class="flex flex-wrap gap-1.5 mt-2">
                             @foreach($template['variables'] ?? [] as $var)
-                                <code class="px-2 py-0.5 bg-white dark:bg-slate-800 text-emerald-600 dark:text-emerald-400 text-xs font-mono rounded-md border border-slate-200 dark:border-slate-700">{{ '{' . $var . '}' }}</code>
+                                <button type="button" onclick="navigator.clipboard.writeText('{{ '{' . $var . '}' }}'); this.setAttribute('data-copied','1'); setTimeout(() => this.removeAttribute('data-copied'), 1200);"
+                                        class="px-2 py-0.5 bg-white dark:bg-slate-800 text-emerald-600 dark:text-emerald-400 text-xs font-mono rounded-md border border-slate-200 dark:border-slate-700 hover:border-emerald-400 hover:text-emerald-500 transition-colors cursor-pointer" data-copy-chip>{{ '{' . $var . '}' }}</button>
                             @endforeach
                         </div>
                     </div>
+
+                    <!-- WARN : variable listée absente du message (FR & AR) -->
+                    @if(!empty($notFilled[$type]))
+                        <div class="mb-3 px-4 py-2.5 rounded-xl bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800/50 text-amber-800 dark:text-amber-300 text-xs font-bold">
+                            ⚠️ {{ __('settings.whatsapp_missing_vars', ['default' => 'Variables absentes des messages :']) }} <code class="font-mono">{{ implode(', ', $notFilled[$type]) }}</code>
+                        </div>
+                    @endif
 
                     <!-- FR -->
                     <div class="mb-3">
@@ -54,14 +62,26 @@
                     </div>
 
                     <!-- AR -->
-                    <div class="mb-4">
+                    <div class="mb-3">
                         <label class="block text-xs font-bold text-slate-500 dark:text-slate-400 mb-1.5 uppercase tracking-wider">{{ __('settings.whatsapp_messages_ar') }}</label>
                         <textarea wire:model="templates.{{ $index }}.message_ar" rows="4" dir="rtl" class="w-full px-4 py-3 bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl text-sm focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 outline-none transition-all text-slate-700 dark:text-slate-200 shadow-sm font-mono text-xs leading-relaxed"></textarea>
                     </div>
 
-                    <button wire:click="save('{{ $type }}')" wire:loading.class="opacity-50" class="px-6 py-2.5 bg-gradient-to-r from-emerald-500 to-emerald-600 text-white font-bold rounded-xl hover:from-emerald-600 hover:to-emerald-700 hover:shadow-emerald-500/30 transition-all shadow-md shadow-emerald-500/20 cursor-pointer text-sm">
-                        {{ __('common.save') }}
-                    </button>
+                    <!-- APERÇU WhatsApp en direct (valeurs de démo réalistes) -->
+                    <div class="mb-4">
+                        <label class="block text-xs font-bold text-slate-500 dark:text-slate-400 mb-1.5 uppercase tracking-wider">{{ __('settings.whatsapp_preview', ['default' => 'Aperçu (WhatsApp)']) }}</label>
+                        <div class="rounded-xl bg-emerald-950/95 border border-emerald-800/40 px-4 py-3 text-emerald-50 text-sm leading-relaxed shadow-inner whitespace-pre-line max-h-64 overflow-y-auto" dir="auto">{{ $previews[$type] ?? '—' }}</div>
+                    </div>
+
+                    <div class="flex items-center gap-3">
+                        <button wire:click="save('{{ $type }}')" wire:loading.class="opacity-50" class="px-6 py-2.5 bg-gradient-to-r from-emerald-500 to-emerald-600 text-white font-bold rounded-xl hover:from-emerald-600 hover:to-emerald-700 hover:shadow-emerald-500/30 transition-all shadow-md shadow-emerald-500/20 cursor-pointer text-sm">
+                            {{ __('common.save') }}
+                        </button>
+                        <button type="button" wire:click="resetTemplate('{{ $type }}')" wire:confirm="{{ __('settings.whatsapp_reset_confirm', ['default' => 'Revenir au texte d\'usine ? Tes personnalisations FR/AR seront perdues.']) }}"
+                                class="px-4 py-2.5 text-xs font-bold text-slate-500 dark:text-slate-400 hover:text-rose-500 dark:hover:text-rose-400 underline decoration-dotted cursor-pointer">
+                            {{ __('settings.whatsapp_reset', ['default' => 'Restaurer le texte d\'usine']) }}
+                        </button>
+                    </div>
                 </div>
             </div>
         @endforeach

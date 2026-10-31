@@ -866,5 +866,17 @@
     "station_charges.month_sep": "سبتمبر",
     "station_charges.month_oct": "أكتوبر",
     "station_charges.month_nov": "نوفمبر",
-    "station_charges.month_dec": "ديسمبر"
+    "station_charges.month_dec": "ديسمبر",
+    "settings.whatsapp_variables_hint": "انقر للنسخ",
+    "settings.whatsapp_missing_vars": "متغيرات غائبة عن الرسائل:",
+    "settings.whatsapp_preview": "معاينة (واتساب)",
+    "settings.whatsapp_reset": "استعادة النص الافتراضي",
+    "settings.whatsapp_reset_confirm": "هل تريد العودة إلى النص الافتراضي؟ ستفقد تخصيصاتك FR/AR.",
+    "settings.wa_demo.description": "إيجار المكاتب",
+    "settings.wa_demo.category": "الإيجار",
+    "settings.wa_demo.source_name": "بيع المحطة",
+    "settings.wa_demo.label": "فاتورة الكهرباء",
+    "settings.wa_demo.title": "عقد ECOTRACK",
+    "common.system": "النظام",
+    "incomes.source_type.sale": "بيع"
 }

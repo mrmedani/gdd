@@ -867,5 +867,17 @@
     "station_charges.month_sep": "Sep",
     "station_charges.month_oct": "Octobre",
     "station_charges.month_nov": "Novembre",
-    "station_charges.month_dec": "Décembre"
+    "station_charges.month_dec": "Décembre",
+    "settings.whatsapp_variables_hint": "clique pour copier",
+    "settings.whatsapp_missing_vars": "Variables absentes des messages :",
+    "settings.whatsapp_preview": "Aperçu (WhatsApp)",
+    "settings.whatsapp_reset": "Restaurer le texte d'usine",
+    "settings.whatsapp_reset_confirm": "Revenir au texte d'usine ? Tes personnalisations FR/AR seront perdues.",
+    "settings.wa_demo.description": "Loyer bureaux",
+    "settings.wa_demo.category": "Loyer",
+    "settings.wa_demo.source_name": "Vente station",
+    "settings.wa_demo.label": "Facture électricité",
+    "settings.wa_demo.title": "Contrat ECOTRACK",
+    "common.system": "Système",
+    "incomes.source_type.sale": "Vente"
 }

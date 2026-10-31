@@ -7,9 +7,9 @@ use Illuminate\Database\Seeder;
 
 class WhatsappMessageTemplateSeeder extends Seeder
 {
-    public function run(): void
+    public static function defaults(): array
     {
-        $templates = [
+        return [
             [
                 'type' => 'expense_created',
                 'label_fr' => 'Nouvelle dépense',
@@ -115,6 +115,14 @@ class WhatsappMessageTemplateSeeder extends Seeder
                 'variables' => ['source_name', 'source_type', 'amount', 'currency', 'date', 'user', 'company_name'],
             ],
             [
+                'type' => 'contract_expiry',
+                'label_fr' => 'Expiration de contrat',
+                'label_ar' => 'انتهاء العقد',
+                'message_fr' => "📄 Expiration de contrat\n──────────────\n📌 {title}\n👤 Contrepartie : {party}\n📅 Échéance : {end_date} ({due_in})\n🏢 {company_name}",
+                'message_ar' => "📄 انتهاء العقد\n──────────────\n📌 {title}\n👤 الطرف الآخر : {party}\n📅 الموعد : {end_date} ({due_in})\n🏢 {company_name}",
+                'variables' => ['title', 'party', 'end_date', 'due_in', 'company_name'],
+            ],
+            [
                 'type' => 'commitment_reminder',
                 'label_fr' => 'Rappel d\'échéance',
                 'label_ar' => 'تذكير بالاستحقاق',
@@ -123,8 +131,11 @@ class WhatsappMessageTemplateSeeder extends Seeder
                 'variables' => ['label', 'due_date', 'due_in', 'amount', 'currency', 'company_name'],
             ],
         ];
+    }
 
-        foreach ($templates as $template) {
+    public function run(): void
+    {
+        foreach (self::defaults() as $template) {
             WhatsappMessageTemplate::firstOrCreate(
                 ['type' => $template['type']],
                 $template
