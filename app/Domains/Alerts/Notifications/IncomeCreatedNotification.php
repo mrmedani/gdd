@@ -30,6 +30,7 @@ class IncomeCreatedNotification extends Notification
                 'amount' => number_format((float) $this->income->amount, 2, ',', ' '),
                 'currency' => $currency,
                 'date' => $this->income->date,
+                'user' => e(auth()->user()?->name ?? __('common.system', ['default' => 'Système'])),
                 'company_name' => Setting::get('app_name', config('app.name')),
             ]);
         }

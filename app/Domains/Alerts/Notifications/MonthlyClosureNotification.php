@@ -29,6 +29,7 @@ class MonthlyClosureNotification extends Notification
                 'currency' => $currency,
                 'expenses' => number_format($this->closure->expenses, 2),
                 'balance' => number_format($this->closure->balance, 2),
+                'user' => e($this->closure->closer?->name ?? __('common.system', ['default' => 'Système'])),
                 'company_name' => Setting::get('app_name', config('app.name')),
             ]);
         }

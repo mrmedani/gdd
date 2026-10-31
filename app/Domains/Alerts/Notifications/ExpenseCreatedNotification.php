@@ -32,6 +32,7 @@ class ExpenseCreatedNotification extends Notification
                 'category' => $category,
                 'date' => $this->expense->date,
                 'payment_method' => __('payment_methods.' . $this->expense->payment_method),
+                'user' => e(auth()->user()?->name ?? __('common.system', ['default' => 'Système'])),
                 'company_name' => Setting::get('app_name', config('app.name')),
             ]);
         }
