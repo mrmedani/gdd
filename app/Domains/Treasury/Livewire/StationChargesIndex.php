@@ -144,21 +144,18 @@ class StationChargesIndex extends Component
         $charges = StationCharge::period($this->period)->get();
         $total = StationCharge::totalFor($this->period);
 
-        // OPTIONS de saut rapide : la période courante + les 23 précédentes —
-        // label = la vraie PERIODE platform (21→20), pas un simple mois.
+        // OPTIONS de saut rapide : label SIMPLE = nom du mois + petit range.
+        // (l'utilisateur demande « juste la période par mois », pas la notation
+        // technique « Période 2026-11 · du … au … »)
         $current = getPeriodFromDate(now());
         $availablePeriods = [];
-        $p = \Carbon\Carbon::createFromFormat('Y-m', $current);
+        $p = \Carbon\Carbon::createFromFormat('Y-m', $current)->locale(app()->getLocale());
         for ($i = 0; $i < 24; $i++) {
             $ym = $p->format('Y-m');
             $r = getPeriodRange($ym);
+            $month = mb_convert_case($p->translatedFormat('F Y'), MB_CASE_TITLE, 'UTF-8'); // « Novembre 2026 »
             $tag = $ym === $current ? __('station_charges.current', ['default' => 'en cours']) : '';
-            $availablePeriods[$ym] = trim(__('station_charges.period_option', [
-                'ym' => $ym,
-                'start' => $r['start']->format('d/m/Y'),
-                'end' => $r['end']->format('d/m/Y'),
-                'default' => 'Période :ym · du :start au :end',
-            ]) . ' ' . $tag);
+            $availablePeriods[$ym] = trim($month . ' (' . $r['start']->format('d/m') . ' → ' . $r['end']->format('d/m') . ')' . ($tag !== '' ? ' — ' . __('station_charges.current', ['default' => 'en cours']) : ''));
             $p->subMonthNoOverflow();
         }
 
@@ -167,6 +164,9 @@ class StationChargesIndex extends Component
             'total' => $total,
             'knownStations' => StationCharge::knownStations(),
             'periodLabel' => formatPeriodLabel($this->period),
+            'periodTitle' => mb_convert_case(\Carbon\Carbon::createFromFormat('Y-m', $this->period)
+                ->locale(app()->getLocale())->translatedFormat('F Y'), MB_CASE_TITLE, 'UTF-8'),
+            'periodRange' => getPeriodRange($this->period),
             'currentPeriod' => $current,
             'availablePeriods' => $availablePeriods,
             'isFuture' => \Carbon\Carbon::createFromFormat('Y-m', $this->period)
