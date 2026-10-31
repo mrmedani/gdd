@@ -8,6 +8,7 @@ use App\Domains\Expenses\Models\Expense;
 use App\Domains\Expenses\Models\ExpenseCategory;
 use App\Domains\Settings\Models\Setting;
 use Carbon\Carbon;
+use Database\Seeders\StationChargeTemplateSeeder;
 use Database\Seeders\WhatsappMessageTemplateSeeder;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
@@ -70,6 +71,7 @@ class DatabaseSeeder extends Seeder
         Setting::set('threshold', 10000);
 
         $this->call(WhatsappMessageTemplateSeeder::class);
+        $this->call(StationChargeTemplateSeeder::class);
         $this->call(DemoDataSeeder::class);
 
         $descriptions = [

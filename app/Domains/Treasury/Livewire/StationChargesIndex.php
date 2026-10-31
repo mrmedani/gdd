@@ -2,8 +2,12 @@
 
 namespace App\Domains\Treasury\Livewire;
 
+use App\Domains\Alerts\Notifications\StationChargeNotification;
+use App\Models\User;
 use App\Domains\Treasury\Models\StationCharge;
 use App\Shared\Livewire\WithToast;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Notification;
 use Livewire\Component;
 
 class StationChargesIndex extends Component
@@ -100,10 +104,15 @@ class StationChargesIndex extends Component
 
         if ($this->chargeId) {
             StationCharge::where('id', $this->chargeId)->update($data);
+            $charge = StationCharge::find($this->chargeId);
             $this->notify(__('station_charges.updated', ['default' => 'Commission mise à jour.']));
         } else {
-            StationCharge::create($data);
+            $charge = StationCharge::create($data);
             $this->notify(__('station_charges.saved', ['default' => 'Commission enregistrée.']));
+        }
+
+        if (isset($charge) && $charge) {
+            $this->notifyStations($charge, $this->chargeId ? 'updated' : 'created');
         }
 
         $this->resetForm();
@@ -112,14 +121,43 @@ class StationChargesIndex extends Component
 
     public function delete(int $id): void
     {
-        StationCharge::findOrFail($id)->delete();
+        // copie AVANT suppression : la notification doit énoncer station/période/montant
+        $charge = StationCharge::findOrFail($id);
+        $snapshot = new StationCharge([
+            'station_name' => $charge->station_name,
+            'period' => $charge->period,
+            'amount' => $charge->amount,
+        ]);
+        $snapshot->id = $charge->id;
+        $snapshot->created_by = $charge->created_by;
+        $charge->delete();
         $this->notify(__('station_charges.deleted', ['default' => 'Commission supprimée.']));
+        $this->notifyStations($snapshot, 'deleted');
     }
 
     public function prevPeriod(): void
     {
         $this->period = \Carbon\Carbon::createFromFormat('Y-m', $this->period)
             ->subMonthNoOverflow()->format('Y-m');
+    }
+
+    /** WhatsApp + in-app : admins + utilisateurs opt-in (pattern /expenses, jamais bloquant). */
+    private function notifyStations(StationCharge $charge, string $action): void
+    {
+        try {
+            $recipients = User::whereHas('role', fn ($q) => $q->where('name', 'admin'))
+                ->orWhere('notify_whatsapp', true)
+                ->get();
+            foreach ($recipients as $recipient) {
+                try {
+                    Notification::sendNow($recipient, new StationChargeNotification($charge, $action));
+                } catch (\Throwable $e) {
+                    Log::warning('StationCharge notification to user ' . $recipient->id . ': ' . $e->getMessage());
+                }
+            }
+        } catch (\Throwable $e) {
+            Log::warning('StationCharge notifications: ' . $e->getMessage());
+        }
     }
 
     public function nextPeriod(): void
