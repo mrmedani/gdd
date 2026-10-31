@@ -14,7 +14,7 @@ class StationChargesIndex extends Component
     public ?int $chargeId = null;
 
     public string $station_name = '';
-    public string $period;
+    public ?string $period = null;   // nullable : Livewire reset() assigne null, jamais un TypeError
     public string $amount = '';
     public string $notes = '';
 
@@ -125,7 +125,13 @@ class StationChargesIndex extends Component
 
     public function resetForm(): void
     {
-        $this->reset(['showForm', 'chargeId', 'station_name', 'period', 'amount', 'notes']);
+        // FIX 500 au clic « Annuler » : reset(['period']) remettait period à null
+        // (pas de valeur de défaut déclarée) → getPeriodRange(null) plantait le
+        // render suivant. On réétablit toujours la période courante.
+        $this->reset(['showForm', 'chargeId', 'station_name', 'amount', 'notes']);
+        if (!$this->period || !\Carbon\Carbon::canBeCreatedFromFormat($this->period, 'Y-m')) {
+            $this->period = getPeriodFromDate(now());
+        }
     }
 
     public function render()
