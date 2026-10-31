@@ -65,6 +65,7 @@
                             'investments' => __('investments.title'),
                             'alerts' => __('alerts.title'),
                             'contracts' => __('contracts.sidebar'),
+                            'station-charges' => __('nav.station_charges'),
                         ] as $key => $label)
                             @php $checked = $permValues[$key] ?? false; @endphp
                             <button type="button" wire:click="togglePermission('{{ $key }}')"

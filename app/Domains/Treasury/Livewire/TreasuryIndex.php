@@ -30,6 +30,7 @@ class TreasuryIndex extends Component
     public string $calculatedExpenses = '0';
     public string $calculatedIncomes = '0';
     public string $calculatedInvestments = '0';
+    public string $calculatedStationCharges = '0';
     public string $closeNote = '';
 
     // Inline note editing (tableau historique)
@@ -57,6 +58,9 @@ class TreasuryIndex extends Component
         $this->calculatedExpenses = Expense::whereBetween('date', [$range['start'], $range['end']])->sum('amount');
         $this->calculatedIncomes = \App\Domains\Treasury\Models\Income::whereBetween('date', [$range['start'], $range['end']])->sum('amount');
         $this->calculatedInvestments = \App\Domains\Treasury\Models\Investment::whereBetween('date', [$range['start'], $range['end']])->sum('amount');
+        // Commissions stations : registre /treasury/station-charges, ligne séparée
+        // dans la clôture (PAS une dépense du module /expenses)
+        $this->calculatedStationCharges = \App\Domains\Treasury\Models\StationCharge::totalFor($this->closeMonth);
     }
 
     public function closeMonthSubmit()
@@ -83,7 +87,7 @@ class TreasuryIndex extends Component
 
         $this->calculateExpensesForMonth();
         
-        $balance = (float) $this->closeGains + (float) $this->calculatedIncomes - (float) $this->calculatedExpenses - (float) $this->calculatedInvestments;
+        $balance = (float) $this->closeGains + (float) $this->calculatedIncomes - (float) $this->calculatedExpenses - (float) $this->calculatedInvestments - (float) $this->calculatedStationCharges;
 
         try {
             MonthlyClosure::create([
@@ -92,6 +96,7 @@ class TreasuryIndex extends Component
                 'incomes' => $this->calculatedIncomes,
                 'expenses' => $this->calculatedExpenses,
                 'investments' => $this->calculatedInvestments,
+                'station_charges' => $this->calculatedStationCharges,
                 'balance' => $balance,
                 'closed_by' => auth()->id(),
                 'closure_note' => trim($this->closeNote) !== '' ? mb_substr(trim($this->closeNote), 0, 2000) : null,

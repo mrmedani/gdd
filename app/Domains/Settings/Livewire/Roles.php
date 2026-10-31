@@ -32,6 +32,7 @@ class Roles extends Component
         'investments',
         'alerts',
         'contracts',
+        'station-charges',
     ];
 
     public ?int $roleId = null;
@@ -58,6 +59,7 @@ class Roles extends Component
     public bool $perm_investments = false;
     public bool $perm_alerts = false;
     public bool $perm_contracts = false;
+    public bool $perm_station_charges = false;
 
     public bool $showForm = false;
 

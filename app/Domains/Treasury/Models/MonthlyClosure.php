@@ -13,6 +13,7 @@ class MonthlyClosure extends Model
         'incomes',
         'expenses',
         'investments',
+        'station_charges',
         'balance',
         'closed_by',
         'closure_note',
@@ -24,6 +25,7 @@ class MonthlyClosure extends Model
             'gains' => 'decimal:2',
             'expenses' => 'decimal:2',
             'investments' => 'decimal:2',
+            'station_charges' => 'decimal:2',
             'balance' => 'decimal:2',
         ];
     }

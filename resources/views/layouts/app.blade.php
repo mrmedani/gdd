@@ -183,7 +183,15 @@
                                 </a>
                             </li>
                             @endif
-                            @if(auth()->user()->hasPermission('treasury'))
+@if(auth()->user()->hasPermission('station-charges'))
+                            <li>
+                                <a href="{{ route('treasury.station-charges') }}" class="flex items-center px-4 py-3 rounded-xl transition-colors duration-200 group {{ request()->routeIs('treasury.station-charges') ? 'bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-white font-semibold' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/50 hover:text-slate-900 dark:hover:text-white' }}">
+                                    <div class="{{ request()->routeIs('treasury.station-charges') ? 'bg-amber-600 text-white' : 'bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 group-hover:bg-slate-200 dark:group-hover:bg-slate-700' }} p-2 rounded-lg transition-colors me-3">
+                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path></svg>
+                                    </div>
+                                    <span class="text-sm">{{ __('nav.station_charges', ['default' => 'Commissions stations']) }}</span>
+                                </a>
+                            </li>
                             <li>
                                 <a href="{{ route('treasury.index') }}" class="flex items-center px-4 py-3 rounded-xl transition-colors duration-200 group {{ request()->routeIs('treasury.*') ? 'bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-white font-semibold' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/50 hover:text-slate-900 dark:hover:text-white' }}">
                                     <div class="{{ request()->routeIs('treasury.*') ? 'bg-blue-600 text-white' : 'bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 group-hover:bg-slate-200 dark:group-hover:bg-slate-700' }} p-2 rounded-lg transition-colors me-3">

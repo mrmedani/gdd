@@ -78,6 +78,7 @@
                         <th class="py-4 px-6">{{ __('caisse.total_incomes_auto') }}</th>
                         <th class="py-4 px-6">{{ __('caisse.expenses') }}</th>
                         <th class="py-4 px-6">{{ __('caisse.investments') }}</th>
+                        <th class="py-4 px-6">{{ __('caisse.station_charges_short', ['default' => 'Commissions stations']) }}</th>
                         <th class="py-4 px-6">{{ __('caisse.balance') }}</th>
                         <th class="py-4 px-6 text-center">{{ __('caisse.growth') }}</th>
                         <th class="py-4 px-6">{{ __('caisse.close_date') }}</th>
@@ -105,6 +106,7 @@
                             <td class="py-4 px-6 whitespace-nowrap"><span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold bg-sky-50 dark:bg-sky-500/10 text-sky-700 dark:text-sky-300 border border-sky-100 dark:border-sky-800/40"><span dir="ltr">+ {{ number_format($closure->incomes ?? 0, 2, ',', ' ') }} {{ getCurrency() }}</span></span></td>
                             <td class="py-4 px-6 whitespace-nowrap"><span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold bg-rose-50 dark:bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-100 dark:border-rose-800/40"><span dir="ltr">− {{ number_format($closure->expenses, 2, ',', ' ') }} {{ getCurrency() }}</span></span></td>
                             <td class="py-4 px-6 whitespace-nowrap"><span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold bg-amber-50 dark:bg-amber-500/10 text-amber-700 dark:text-amber-300 border border-amber-100 dark:border-amber-800/40"><span dir="ltr">− {{ number_format($closure->investments ?? 0, 2, ',', ' ') }} {{ getCurrency() }}</span></span></td>
+                            <td class="py-4 px-6 whitespace-nowrap"><span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold bg-violet-50 dark:bg-violet-500/10 text-violet-700 dark:text-violet-300 border border-violet-100 dark:border-violet-800/40"><span dir="ltr">− {{ number_format($closure->station_charges ?? 0, 2, ',', ' ') }} {{ getCurrency() }}</span></span></td>
                             <td class="py-4 px-6 whitespace-nowrap"><span class="inline-flex items-center px-3 py-1.5 rounded-full text-sm font-black {{ $closure->balance >= 0 ? 'bg-emerald-600 text-white shadow-sm' : 'bg-rose-600 text-white shadow-sm' }}"><span dir="ltr">{{ $closure->balance > 0 ? '+' : '' }}{{ number_format($closure->balance, 2, ',', ' ') }} {{ getCurrency() }}</span></span></td>
                             <td class="py-4 px-6 text-center whitespace-nowrap">
                                 @php $rate = $growthRates[$closure->month] ?? null; @endphp
@@ -324,6 +326,14 @@
                     </div>
                 </div>
 
+                <!-- Commissions stations Display (Readonly) -->
+                <div class="bg-violet-50/30 dark:bg-violet-950/20 border border-violet-100/50 dark:border-violet-900/30 p-4 rounded-xl">
+                    <label class="block text-xs font-semibold text-violet-800 dark:text-violet-400 mb-1.5">{{ __('caisse.total_station_charges_auto', ['default' => 'Commissions stations']) }}</label>
+                    <div class="text-2xl font-black text-violet-600 dark:text-violet-500 leading-none flex items-baseline gap-1">
+                        <span dir="ltr">− {{ number_format((float)$calculatedStationCharges, 2, ',', ' ') }}</span> <span class="text-sm font-bold">{{ getCurrency() }}</span>
+                    </div>
+                </div>
+
                 <!-- Gains Input -->
                 <div>
                     <label class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">{{ __('caisse.month_gains') }} <span class="text-red-500">*</span></label>
@@ -345,7 +355,7 @@
 
                 <!-- Live Balance Preview -->
                 @if($closeGains !== '')
-                @php $previewBalance = (float)str_replace([' ', ','], ['', '.'], $closeGains) + (float)$calculatedIncomes - (float)$calculatedExpenses - (float)$calculatedInvestments; @endphp
+                @php $previewBalance = (float)str_replace([' ', ','], ['', '.'], $closeGains) + (float)$calculatedIncomes - (float)$calculatedExpenses - (float)$calculatedInvestments - (float)$calculatedStationCharges; @endphp
                 <div class="pt-4 border-t border-slate-100 dark:border-slate-800/60">
                     <p class="text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1">{{ __('caisse.preview_balance') }}</p>
                     <div class="text-3xl font-black flex items-baseline gap-1 {{ $previewBalance >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-500' }}">
