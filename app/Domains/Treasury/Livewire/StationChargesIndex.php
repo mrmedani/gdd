@@ -139,12 +139,15 @@ class StationChargesIndex extends Component
     public function togglePaid(int $id): void
     {
         $charge = StationCharge::findOrFail($id);
-        // cohérivre : pas inversible sur une PÉRIODE CLÔTurée passée si besoin? — on tolère le toggle
         $charge->paid_at = $charge->paid_at !== null ? null : now();
         $charge->save();
         $this->notify($charge->paid_at !== null
             ? __('station_charges.marked_paid', ['default' => 'Station marquée payée.'])
             : __('station_charges.marked_unpaid', ['default' => 'Station marquée non payée.']));
+
+        // WhatsApp + in-app : réglé / remis en impayé (actions = respect du même
+        // destinataire : créateur + admins + opt-in)
+        $this->notifyStations($charge, $charge->paid_at !== null ? 'paid' : 'unpaid');
     }
 
     public function prevPeriod(): void

@@ -22,6 +22,8 @@ class StationChargeNotification extends Notification
         $action = match ($this->action) {
             'updated' => 'station_charge_updated',
             'deleted' => 'station_charge_deleted',
+            'paid' => 'station_charge_paid',
+            'unpaid' => 'station_charge_unpaid',
             default => 'station_charge_created',
         };
 
@@ -40,6 +42,8 @@ class StationChargeNotification extends Notification
         $head = match ($this->action) {
             'updated' => '✏️ Commission station modifiée',
             'deleted' => '🗑️ Commission station supprimée',
+            'paid' => '💰 Commission station réglée',
+            'unpaid' => '↩️ Commission station remise en impayé',
             default => '🆕 Nouvelle commission station',
         };
 
@@ -62,11 +66,15 @@ class StationChargeNotification extends Notification
             'message_fr' => match ($this->action) {
                 'updated' => "Commission station modifiée : {$this->charge->station_name} — {$label} ({$this->charge->amount} {$currency})",
                 'deleted' => "Commission station supprimée : {$this->charge->station_name} — {$label}",
+                'paid' => "Commission station réglée : {$this->charge->station_name} — {$label} ({$this->charge->amount} {$currency})",
+                'unpaid' => "Commission station remise en impayé : {$this->charge->station_name} — {$label} ({$this->charge->amount} {$currency})",
                 default => "Nouvelle commission station : {$this->charge->station_name} — {$label} ({$this->charge->amount} {$currency})",
             },
             'message_ar' => match ($this->action) {
                 'updated' => "تم تعديل عمولة المحطة: {$this->charge->station_name} — {$label} ({$this->charge->amount} {$currency})",
                 'deleted' => "تم حذف عمولة المحطة: {$this->charge->station_name} — {$label}",
+                'paid' => "تم تسجيل عمولة المحطة كمدفوعة: {$this->charge->station_name} — {$label} ({$this->charge->amount} {$currency})",
+                'unpaid' => "أُعيدت عمولة المحطة إلى غير مدفوعة: {$this->charge->station_name} — {$label} ({$this->charge->amount} {$currency})",
                 default => "عمولة محطة جديدة: {$this->charge->station_name} — {$label} ({$this->charge->amount} {$currency})",
             },
             'action_url' => route('treasury.station-charges'),

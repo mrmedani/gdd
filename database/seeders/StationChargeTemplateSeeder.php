@@ -6,46 +6,59 @@ use App\Domains\Settings\Models\WhatsappMessageTemplate;
 use Illuminate\Database\Seeder;
 
 /**
- * UNIVERS TEMPLATES COMMISSIONS STATIONS : ajoute les 3 templates pris en
- * charge par StationChargeNotification s'ils ne sont pas encore en base
- * (idempotent — en prod, un run du seeder via db:seed --class suffit).
+ * TEMPLATES COMMISSIONS STATIONS (5 états : created / updated / deleted /
+ * paid / unpaid). Idempotent — n'écrase jamais un template personnalisé en prod.
  */
 class StationChargeTemplateSeeder extends Seeder
 {
-    public function run(): void
+    public static function defaults(): array
     {
-        $templates = [
-            [
-                'type' => 'station_charge_created',
-                'label_fr' => 'Nouvelle commission station',
-                'label_ar' => 'عمولة محطة جديدة',
-                'message_fr' => "🆕 Nouvelle commission station\n──────────────\n🏢 Station : {station}\n📆 Période : {period}\n💰 Montant : {amount} {currency}\n👤 Par : {user}\n🏢 {company_name}",
-                'message_ar' => "🆕 عمولة محطة جديدة\n──────────────\n🏢 المحطة : {station}\n📆 الفترة : {period}\n💰 المبلغ : {amount} {currency}\n👤 بواسطة : {user}\n🏢 {company_name}",
-                'variables' => ['station', 'period', 'amount', 'currency', 'user', 'company_name'],
-            ],
-            [
-                'type' => 'station_charge_updated',
-                'label_fr' => 'Commission station modifiée',
-                'label_ar' => 'تم تعديل عمولة محطة',
-                'message_fr' => "✏️ Commission station modifiée\n──────────────\n🏢 Station : {station}\n📆 Période : {period}\n💰 Montant : {amount} {currency}\n👤 Par : {user}\n🏢 {company_name}",
-                'message_ar' => "✏️ تم تعديل عمولة محطة\n──────────────\n🏢 المحطة : {station}\n📆 الفترة : {period}\n💰 المبلغ : {amount} {currency}\n👤 بواسطة : {user}\n🏢 {company_name}",
-                'variables' => ['station', 'period', 'amount', 'currency', 'user', 'company_name'],
-            ],
-            [
-                'type' => 'station_charge_deleted',
-                'label_fr' => 'Commission station supprimée',
-                'label_ar' => 'تم حذف عمولة محطة',
-                'message_fr' => "🗑️ Commission station supprimée\n──────────────\n🏢 Station : {station}\n📆 Période : {period}\n💰 Montant : {amount} {currency}\n👤 Par : {user}\n🏢 {company_name}",
-                'message_ar' => "🗑️ تم حذف عمولة محطة\n──────────────\n🏢 المحطة : {station}\n📆 الفترة : {period}\n💰 المبلغ : {amount} {currency}\n👤 بواسطة : {user}\n🏢 {company_name}",
-                'variables' => ['station', 'period', 'amount', 'currency', 'user', 'company_name'],
-            ],
+        $states = [
+            'created' => ['🆕 Nouvelle commission station', 'عمولة محطة جديدة'],
+            'updated' => ['✏️ Commission station modifiée', 'تم تعديل عمولة محطة'],
+            'deleted' => ['🗑️ Commission station supprimée', 'تم حذف عمولة محطة'],
+            'paid'    => ['💰 Commission station réglée', 'تم تسجيل عمولة المحطة'],
+            'unpaid'  => ['↩️ Commission station remise en impayé', 'أُعيدت عمولة المحطة إلى غير مدفوعة'],
         ];
 
-        foreach ($templates as $t) {
-            if (WhatsappMessageTemplate::where('type', $t['type'])->exists()) {
-                continue; // idempotent : ne jamais écraser un template personnalisé en prod
-            }
-            WhatsappMessageTemplate::create($t);
+        $vars = ['station', 'period', 'amount', 'currency', 'user', 'company_name'];
+
+        $out = [];
+        foreach ($states as $state => [$lfr, $lar]) {
+            $prefix = match ($state) {
+                'created' => '🆕 Nouvelle commission station',
+                'updated' => '✏️ Commission station modifiée',
+                'deleted' => '🗑️ Commission station supprimée',
+                'paid' => '💰 Commission station réglée',
+                default => '↩️ Commission station remise en impayé',
+            };
+            $prefixAr = match ($state) {
+                'created' => '🆕 عمولة محطة جديدة',
+                'updated' => '✏️ تم تعديل عمولة محطة',
+                'deleted' => '🗑️ تم حذف عمولة محطة',
+                'paid' => '💰 تم تسجيل عمولة المحطة',
+                default => '↩️ أُعيدت عمولة المحطة إلى غير مدفوعة',
+            };
+            $out[] = [
+                'type' => 'station_charge_' . $state,
+                'label_fr' => $lfr,
+                'label_ar' => $lar,
+                'message_fr' => $prefix . "\n──────────────\n🏢 Station : {station}\n📆 Période : {period}\n💰 Montant : {amount} {currency}\n👤 Par : {user}\n🏢 {company_name}",
+                'message_ar' => $prefixAr . "\n──────────────\n🏢 المحطة : {station}\n📆 الفترة : {period}\n💰 المبلغ : {amount} {currency}\n👤 بواسطة : {user}\n🏢 {company_name}",
+                'variables' => $vars,
+            ];
+        }
+        return $out;
+    }
+
+    public function run(): void
+    {
+        foreach (self::defaults() as $template) {
+            $template = WhatsappMessageTemplate::normalize($template);
+            WhatsappMessageTemplate::firstOrCreate(
+                ['type' => $template['type']],
+                $template
+            );
         }
     }
 }
