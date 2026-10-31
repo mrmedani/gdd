@@ -128,9 +128,13 @@
             </div>
             {{-- FIX simplification : la période se choisit UNIQUEMENT sur la page
                  (sélecteur du haut). Dans le modal, c'est un simple TITRE affiché. --}}
-            <div class="bg-blue-50 dark:bg-blue-950/30 border border-blue-100 dark:border-blue-900/40 rounded-xl px-4 py-3">
-                <p class="text-xs font-semibold text-blue-700 dark:text-blue-400 mb-0.5">{{ __('station_charges.period', ['default' => 'Période']) }}</p>
-                <p class="font-bold text-slate-800 dark:text-slate-100">{{ $periodTitle }} <span class="text-slate-400 dark:text-slate-500 text-sm font-semibold">({{ $periodRange['start']->format('d/m') }} → {{ $periodRange['end']->format('d/m') }})</span></p>
+            {{-- FIX UI : le badge période hérite du mode sombre de la platform
+                 (dark:bg-blue-500/15 + texte et bordure adaptés) — avant il
+                 restait un bloc clair « fond bleu pâle / texte illisible » --}}
+            <div class="flex items-center justify-between gap-3 bg-blue-600/10 dark:bg-blue-500/15 border border-blue-200 dark:border-blue-500/30 rounded-xl px-4 py-3">
+                <p class="text-xs font-semibold text-blue-700 dark:text-blue-400">{{ __('station_charges.period', ['default' => 'Période']) }}</p>
+                <p class="font-bold text-slate-800 dark:text-white">{{ $periodTitle }}</p>
+                <span class="text-xs font-semibold text-slate-500 dark:text-slate-400"><span dir="ltr">{{ $periodRange['start']->format('d/m') }} → {{ $periodRange['end']->format('d/m') }}</span></span>
             </div>
             <div>
                 <label class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">{{ __('station_charges.amount', ['default' => 'Montant']) }} <span class="text-red-500">*</span></label>
