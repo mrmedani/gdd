@@ -880,5 +880,12 @@
     "settings.wa_demo.title": "ECOTRACK contract",
     "common.system": "System",
     "incomes.source_type.sale": "Sale",
-    "settings.whatsapp_unknown_vars": "Unknown placeholders (will show as raw in WhatsApp):"
+    "settings.whatsapp_unknown_vars": "Unknown placeholders (will show as raw in WhatsApp):",
+    "station_charges.status": "Status",
+    "station_charges.paid": "Paid",
+    "station_charges.unpaid": "Not yet",
+    "station_charges.paid_short": "Paid",
+    "station_charges.unpaid_short": "Remaining",
+    "station_charges.marked_paid": "Station marked paid.",
+    "station_charges.marked_unpaid": "Station marked unpaid."
 }

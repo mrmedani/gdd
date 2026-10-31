@@ -879,5 +879,12 @@
     "settings.wa_demo.title": "عقد ECOTRACK",
     "common.system": "النظام",
     "incomes.source_type.sale": "بيع",
-    "settings.whatsapp_unknown_vars": "عناصر نائبة غير معروفة (ستظهر كنص خام في واتساب):"
+    "settings.whatsapp_unknown_vars": "عناصر نائبة غير معروفة (ستظهر كنص خام في واتساب):",
+    "station_charges.status": "الحالة",
+    "station_charges.paid": "مدفوعة",
+    "station_charges.unpaid": "ليس بعد",
+    "station_charges.paid_short": "المدفوع",
+    "station_charges.unpaid_short": "المتبقي",
+    "station_charges.marked_paid": "تم تعيين_station كمدفوعة.",
+    "station_charges.marked_unpaid": "تم تعيين المحطة كغير مدفوعة."
 }

@@ -19,6 +19,7 @@ class StationCharge extends Model
         'station_name',
         'period',
         'amount',
+        'paid_at',
         'notes',
         'created_by',
     ];
@@ -27,12 +28,24 @@ class StationCharge extends Model
     {
         return [
             'amount' => 'decimal:2',
+            'paid_at' => 'datetime',
         ];
     }
 
     public function creator()
     {
         return $this->belongsTo(User::class, 'created_by');
+    }
+
+    public function isPaid(): bool
+    {
+        return $this->paid_at !== null;
+    }
+
+    /** Total RÈGLÉ pour une période. */
+    public static function paidTotalFor(string $period): float
+    {
+        return (float) static::where('period', $period)->whereNotNull('paid_at')->sum('amount');
     }
 
     /** Toutes les commissions d'une période (label Y-m). */

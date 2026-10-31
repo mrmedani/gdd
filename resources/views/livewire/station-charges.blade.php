@@ -62,6 +62,10 @@
         <div class="bg-amber-50/30 dark:bg-amber-950/20 border border-amber-100/50 dark:border-amber-900/30 p-4 rounded-xl">
             <p class="text-xs font-semibold text-amber-800 dark:text-amber-400 mb-1">{{ __('station_charges.total', ['default' => 'Total commissions']) }}</p>
             <p class="text-2xl font-black text-amber-600 dark:text-amber-500 leading-none"><span dir="ltr">{{ number_format($total, 2, ',', ' ') }}</span> <span class="text-sm font-bold">{{ getCurrency() }}</span></p>
+            <p class="text-[11px] text-slate-500 dark:text-slate-400 mt-1">
+                <span class="text-emerald-600 dark:text-emerald-400">{{ __('station_charges.paid_short', ['default' => 'Payé']) }}: <span dir="ltr">{{ number_format($paidTotal, 2, ',', ' ') }}</span></span>
+                · <span class="text-rose-600 dark:text-rose-400">{{ __('station_charges.unpaid_short', ['default' => 'Reste']) }}: <span dir="ltr">{{ number_format($unpaidTotal, 2, ',', ' ') }}</span></span>
+            </p>
         </div>
     </div>
     @if($isFuture)
@@ -78,6 +82,7 @@
                         <th class="py-4 px-6 text-start">{{ __('station_charges.station', ['default' => 'Station']) }}</th>
                         <th class="py-4 px-6 text-start">{{ __('station_charges.amount', ['default' => 'Montant']) }}</th>
                         <th class="py-4 px-6 text-start hidden md:table-cell">{{ __('station_charges.notes', ['default' => 'Notes']) }}</th>
+                        <th class="py-4 px-6 text-center">{{ __('station_charges.status', ['default' => 'Statut']) }}</th>
                         <th class="py-4 px-6 text-end">{{ __('common.actions') }}</th>
                     </tr>
                 </thead>
@@ -90,6 +95,12 @@
                             </td>
                             <td class="py-4 px-6 font-bold text-slate-700 dark:text-slate-300 whitespace-nowrap"><span dir="ltr">{{ number_format($c->amount, 2, ',', ' ') }} {{ getCurrency() }}</span></td>
                             <td class="py-4 px-6 text-slate-500 dark:text-slate-400 text-sm max-w-xs truncate hidden md:table-cell">{{ $c->notes ?? '—' }}</td>
+                            <td class="py-4 px-6 text-center whitespace-nowrap">
+                                <button wire:click="togglePaid({{ $c->id }})" wire:loading.class="opacity-40" wire:target="togglePaid"
+                                        class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold cursor-pointer transition-colors {{ $c->paid_at ? 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800' : 'bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-800' }}">
+                                    {{ $c->paid_at ? __('station_charges.paid', ['default' => 'Payée']) : __('station_charges.unpaid', ['default' => 'Pas encore']) }}
+                                </button>
+                            </td>
                             <td class="py-4 px-6 text-end whitespace-nowrap">
                                 <button wire:click="edit({{ $c->id }})" class="text-blue-600 dark:text-blue-400 font-semibold hover:underline cursor-pointer">{{ __('common.edit') }}</button>
                                 <button wire:click="delete({{ $c->id }})" wire:confirm="{{ __('station_charges.confirm_delete', ['default' => 'Supprimer cette commission ?']) }}" class="text-rose-500 dark:text-rose-400 font-semibold hover:underline ms-3 cursor-pointer">{{ __('common.delete') }}</button>
@@ -97,7 +108,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="4" class="py-10 text-center text-slate-400 dark:text-slate-500">
+                            <td colspan="5" class="py-10 text-center text-slate-400 dark:text-slate-500">
                                 {{ __('station_charges.no_data', ['default' => 'Aucune commission enregistrée pour cette période.']) }}
                             </td>
                         </tr>

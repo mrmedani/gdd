@@ -135,6 +135,18 @@ class StationChargesIndex extends Component
         $this->notifyStations($snapshot, 'deleted');
     }
 
+    /** STATUT : bascule la station entre Payée / Non payée (toggle direct dans le tableau). */
+    public function togglePaid(int $id): void
+    {
+        $charge = StationCharge::findOrFail($id);
+        // cohérivre : pas inversible sur une PÉRIODE CLÔTurée passée si besoin? — on tolère le toggle
+        $charge->paid_at = $charge->paid_at !== null ? null : now();
+        $charge->save();
+        $this->notify($charge->paid_at !== null
+            ? __('station_charges.marked_paid', ['default' => 'Station marquée payée.'])
+            : __('station_charges.marked_unpaid', ['default' => 'Station marquée non payée.']));
+    }
+
     public function prevPeriod(): void
     {
         $this->period = \Carbon\Carbon::createFromFormat('Y-m', $this->period)
@@ -195,6 +207,8 @@ class StationChargesIndex extends Component
     {
         $charges = StationCharge::period($this->period)->get();
         $total = StationCharge::totalFor($this->period);
+        $paidTotal = StationCharge::paidTotalFor($this->period);
+        $unpaidTotal = max(0, $total - $paidTotal);
 
         // OPTIONS de saut rapide : label SIMPLE = nom du mois + petit range.
         // (l'utilisateur demande « juste la période par mois », pas la notation
@@ -214,6 +228,8 @@ class StationChargesIndex extends Component
         return view('livewire.station-charges', [
             'charges' => $charges,
             'total' => $total,
+            'paidTotal' => $paidTotal,
+            'unpaidTotal' => $unpaidTotal,
             'knownStations' => StationCharge::knownStations(),
             'periodLabel' => formatPeriodLabel($this->period),
             'periodShortLabel' => getPeriodRange($this->period)['start']->locale(app()->getLocale())->translatedFormat('j M')
