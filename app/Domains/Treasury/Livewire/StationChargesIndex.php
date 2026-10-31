@@ -131,9 +131,13 @@ class StationChargesIndex extends Component
     /** Saut direct via le month-picker grid (comme la clôture de caisse). */
     public function goToPeriod(string $ym): void
     {
+        // FIX 500 clic picker : getPeriodFromDate() retourne une STRING 'Y-m' —
+        // il faut un Carbon AVANT addYearNoOverflow() (sinon « Call to member
+        // function addYearNoOverflow() on string » à chaque clic du grille).
+        $maxYm = \Carbon\Carbon::createFromFormat('Y-m', getPeriodFromDate(now()))
+            ->addYearNoOverflow()->format('Y-m');
         // bornage doux : accepte toute période ≤ période courante + 1 an
-        if (\Carbon\Carbon::canBeCreatedFromFormat($ym, 'Y-m')
-            && $ym <= \Carbon\Carbon::createFromFormat('Y-m', getPeriodFromDate(now())->addYearNoOverflow()->format('Y-m'))) {
+        if (\Carbon\Carbon::canBeCreatedFromFormat($ym, 'Y-m') && $ym <= $maxYm) {
             $this->period = $ym;
         }
     }
