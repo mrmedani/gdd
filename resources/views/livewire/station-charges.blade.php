@@ -34,14 +34,18 @@
                     </button>
                 </div>
                 <div class="grid grid-cols-3 gap-2">
+                    @php $closedMonthsJson = json_encode($closedMonths); @endphp
                     @foreach ([1 => __('station_charges.month_jan'), 2 => __('station_charges.month_feb'), 3 => __('station_charges.month_mar'), 4 => __('station_charges.month_apr'), 5 => __('station_charges.month_may'), 6 => __('station_charges.month_jun'), 7 => __('station_charges.month_jul'), 8 => __('station_charges.month_aug'), 9 => __('station_charges.month_sep'), 10 => __('station_charges.month_oct'), 11 => __('station_charges.month_nov'), 12 => __('station_charges.month_dec')] as $num => $monthLabel)
                         <button type="button"
-                                @click="$wire.goToPeriod(pickerYear + '-{{ str_pad($num, 2, '0', STR_PAD_LEFT) }}'); pickerOpen = false"
+                                @click="const p = pickerYear + '-{{ str_pad($num, 2, '0', STR_PAD_LEFT) }}'; if (!{{ $closedMonthsJson }}.includes(p)) { $wire.goToPeriod(p); pickerOpen = false; }"
                                 :class="{
                                     'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400 font-bold': $wire.period === (pickerYear + '-{{ str_pad($num, 2, '0', STR_PAD_LEFT) }}'),
-                                    'text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700/50': $wire.period !== (pickerYear + '-{{ str_pad($num, 2, '0', STR_PAD_LEFT) }}')
+                                    'text-slate-300 dark:text-slate-600 opacity-40 cursor-not-allowed line-through dark:opacity-40': {{ $closedMonthsJson }}.includes(pickerYear + '-{{ str_pad($num, 2, '0', STR_PAD_LEFT) }}'),
+                                    'text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700/50': $wire.period !== (pickerYear + '-{{ str_pad($num, 2, '0', STR_PAD_LEFT) }}') && !{{ $closedMonthsJson }}.includes(pickerYear + '-{{ str_pad($num, 2, '0', STR_PAD_LEFT) }}')
                                 }"
-                                class="px-2 py-2.5 rounded-lg text-sm font-medium transition-colors">
+                                class="px-2 py-2.5 rounded-lg text-sm font-medium transition-colors"
+                                :disabled="{{ $closedMonthsJson }}.includes(pickerYear + '-{{ str_pad($num, 2, '0', STR_PAD_LEFT) }}')"
+                                :title="{{ $closedMonthsJson }}.includes(pickerYear + '-{{ str_pad($num, 2, '0', STR_PAD_LEFT) }}') ? '{{ __('station_charges.month_closed', ['default' => 'Période déjà clôturée']) }}' : ''">
                             {{ $monthLabel }}
                         </button>
                     @endforeach

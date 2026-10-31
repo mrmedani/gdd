@@ -897,5 +897,6 @@
     "alerts.expired": "منتهية",
     "alerts.recurrence_invalid": "طريقة الاستحقاق غير صالحة.",
     "alerts.once_date_required": "تاريخ الاستحقاق الوحيد إلزامي.",
-    "alerts.once_date_past": "يجب أن يكون التاريخ اليوم أو بعده."
+    "alerts.once_date_past": "يجب أن يكون التاريخ اليوم أو بعده.",
+    "station_charges.month_closed": "فترة مغلقة بالفعل"
 }

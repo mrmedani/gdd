@@ -230,6 +230,7 @@ class StationChargesIndex extends Component
             'total' => $total,
             'paidTotal' => $paidTotal,
             'unpaidTotal' => $unpaidTotal,
+            'closedMonths' => \App\Domains\Treasury\Models\MonthlyClosure::pluck('month')->all(),
             'knownStations' => StationCharge::knownStations(),
             'periodLabel' => formatPeriodLabel($this->period),
             'periodShortLabel' => getPeriodRange($this->period)['start']->locale(app()->getLocale())->translatedFormat('j M')

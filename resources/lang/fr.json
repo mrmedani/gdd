@@ -898,5 +898,6 @@
     "alerts.expired": "Passée",
     "alerts.recurrence_invalid": "Mode d'échéance invalide.",
     "alerts.once_date_required": "La date de l'échéance unique est obligatoire.",
-    "alerts.once_date_past": "La date doit être aujourd'hui ou plus tard."
+    "alerts.once_date_past": "La date doit être aujourd'hui ou plus tard.",
+    "station_charges.month_closed": "Période déjà clôturée"
 }
