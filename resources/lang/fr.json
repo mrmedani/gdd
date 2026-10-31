@@ -382,7 +382,7 @@
     "alerts.label": "Libellé",
     "alerts.label_placeholder": "Ex : Loyer, Internet, ECOTRACK",
     "alerts.day": "Jour du mois",
-    "alerts.each_month_day": "Le {day} de chaque mois",
+    "alerts.each_month_day": "Le :day de chaque mois",
     "alerts.amount": "Montant habituel",
     "alerts.lead_days": "Alerter avant (jours)",
     "alerts.days": "jours",
@@ -825,5 +825,6 @@
     "settings.backup_bulk_deleted": "{count} sauvegarde(s) supprimée(s)",
     "settings.backup_bulk_delete_title": "Supprimer les sauvegardes sélectionnées",
     "settings.backup_bulk_delete_desc": "Cette action est irréversible : {count} sauvegarde(s) seront définitivement supprimée(s).",
-    "ai.stop_generation": "Arrêter la génération"
+    "ai.stop_generation": "Arrêter la génération",
+    "alerts.paid_this_month": "Payé ce mois"
 }

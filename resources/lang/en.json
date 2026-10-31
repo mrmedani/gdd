@@ -382,7 +382,7 @@
     "alerts.label": "Label",
     "alerts.label_placeholder": "E.g. Rent, Internet, ECOTRACK",
     "alerts.day": "Day of month",
-    "alerts.each_month_day": "The {day} of each month",
+    "alerts.each_month_day": "The :day of each month",
     "alerts.amount": "Usual amount",
     "alerts.lead_days": "Alert before (days)",
     "alerts.days": "days",
@@ -825,5 +825,6 @@
     "settings.backup_bulk_deleted": "{count} backup(s) deleted",
     "settings.backup_bulk_delete_title": "Delete selected backups",
     "settings.backup_bulk_delete_desc": "This action cannot be undone: {count} backup(s) will be permanently deleted.",
-    "ai.stop_generation": "Stop generating"
+    "ai.stop_generation": "Stop generating",
+    "alerts.paid_this_month": "Paid this month"
 }

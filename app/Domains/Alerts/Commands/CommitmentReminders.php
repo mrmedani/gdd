@@ -16,8 +16,10 @@ class CommitmentReminders extends Command
 
     public function handle(): int
     {
+        // CASCADE : WhatsApp uniquement à J-lead / J-7 / J-3 / J-1 / J-0
+        // (avant : envoi quotidien pendant toute la fenêtre = spam)
         $dueSoon = Commitment::where('is_active', true)->get()
-            ->filter(fn ($c) => $c->isDueSoon());
+            ->filter(fn ($c) => $c->isDueSoon() && $c->isReminderDay());
 
         if ($dueSoon->isEmpty()) {
             $this->info('No upcoming commitments.');
@@ -25,15 +27,18 @@ class CommitmentReminders extends Command
         }
 
         foreach ($dueSoon as $commitment) {
-            // Destinataire : le CRÉATEUR de l'engagement uniquement (pas tous les
-            // utilisateurs qui ont la permission /alerts)
-            $creator = $commitment->creator;
-            $recipients = collect([$creator])->filter(
-                fn (?User $u) => $u
-                    && $u->notify_whatsapp
-                    && $u->whatsapp_phone
-                    && $u->whatsapp_phone !== ''
-            );
+            // Destinataires : le CRÉATEUR + les ADMINISTRATEURS (secours si le
+            // créateur est absent / WhatsApp désactivé). Chacun filtré sur ses
+            // préférences notify_whatsapp + numéro renseigné.
+            $recipients = collect([$commitment->creator])
+                ->merge(User::whereHas('role', fn ($r) => $r->name === 'admin')->get())
+                ->unique('id')
+                ->filter(
+                    fn (?User $u) => $u
+                        && $u->notify_whatsapp
+                        && $u->whatsapp_phone
+                        && $u->whatsapp_phone !== ''
+                );
 
             if ($recipients->isEmpty()) {
                 $this->line("No WhatsApp recipient for: {$commitment->label} (creator disabled or missing phone) — skip");
@@ -55,7 +60,7 @@ class CommitmentReminders extends Command
             }
 
             Notification::send($recipients, new CommitmentReminderNotification($commitment));
-            $this->info("Reminder sent for: {$commitment->label} (J-{$commitment->daysUntilDue()}) to creator #{$creator->id}");
+            $this->info("Reminder sent for: {$commitment->label} (J-{$commitment->daysUntilDue()}) to " . $recipients->pluck('id')->implode(','));
         }
 
         return self::SUCCESS;

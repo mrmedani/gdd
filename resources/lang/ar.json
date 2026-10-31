@@ -381,7 +381,7 @@
     "alerts.label": "التسمية",
     "alerts.label_placeholder": "مثال: الإيجار، الإنترنت، ECOTRACK",
     "alerts.day": "يوم الشهر",
-    "alerts.each_month_day": "يوم {day} من كل شهر",
+    "alerts.each_month_day": "يوم :day من كل شهر",
     "alerts.amount": "المبلغ المعتاد",
     "alerts.lead_days": "التنبيه قبل (أيام)",
     "alerts.days": "أيام",
@@ -824,5 +824,6 @@
     "settings.backup_bulk_deleted": "تم حذف {count} نسخة احتياطية",
     "settings.backup_bulk_delete_title": "حذف النسخ المحددة",
     "settings.backup_bulk_delete_desc": "لا يمكن التراجع عن هذا الإجراء: سيتم حذف {count} نسخة نهائياً.",
-    "ai.stop_generation": "إيقاف التوليد"
+    "ai.stop_generation": "إيقاف التوليد",
+    "alerts.paid_this_month": "مدفوع هذا الشهر"
 }

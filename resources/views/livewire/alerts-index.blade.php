@@ -111,9 +111,15 @@
                         @php
                             $daysLeft = $c->daysUntilDue();
                             $dueSoon = $c->is_active && $c->isDueSoon();
+                            $paid = $c->wasPaidThisMonth();
                         @endphp
                         <tr class="hover:bg-blue-50/20 dark:hover:bg-slate-800/30 transition-colors">
-                            <td class="py-4 px-6 font-semibold text-slate-800 dark:text-slate-200">{{ $c->label }}</td>
+                            <td class="py-4 px-6 font-semibold text-slate-800 dark:text-slate-200">
+                                {{ $c->label }}
+                                @if($paid)
+                                    <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold ms-1 bg-emerald-50 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800">✓ {{ __('alerts.paid_this_month') }}</span>
+                                @endif
+                            </td>
                             <td class="py-4 px-6 text-slate-600 dark:text-slate-400">{{ __('alerts.each_month_day', ['day' => $c->day]) }}</td>
                             <td class="py-4 px-6 whitespace-nowrap">
                                 <span class="font-medium text-slate-700 dark:text-slate-300">{{ $c->nextDueDate()->format('d/m/Y') }}</span>
