@@ -853,7 +853,18 @@
     "station_charges.future_warn": "فترة مستقبلية: ستتم التسوية عند انتهاء الفترة. يمكنك تسجيل العمولات منذ الآن.",
     "caisse.total_station_charges_auto": "عمولات المحطات (تلقائي)",
     "caisse.station_charges_short": "عمولات المحطات",
-    "station_charges.period_option": "الفترة :ym · من :start إلى :end",
     "station_charges.period_future": "لا يمكن تسجيل عمولة لفترة مستقبلية.",
-    "station_charges.jump": "الانتقال إلى الفترة"
+    "station_charges.jump": "الانتقال إلى الفترة",
+    "station_charges.month_jan": "يناير",
+    "station_charges.month_feb": "فبراير",
+    "station_charges.month_mar": "مارس",
+    "station_charges.month_apr": "أبريل",
+    "station_charges.month_may": "مايو",
+    "station_charges.month_jun": "يونيو",
+    "station_charges.month_jul": "يوليو",
+    "station_charges.month_aug": "أغسطس",
+    "station_charges.month_sep": "سبتمبر",
+    "station_charges.month_oct": "أكتوبر",
+    "station_charges.month_nov": "نوفمبر",
+    "station_charges.month_dec": "ديسمبر"
 }

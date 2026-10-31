@@ -10,22 +10,44 @@
             {{ __('station_charges.add', ['default' => 'Ajouter une commission']) }}
         </button>
     </div>
-    <!-- Sélecteur de période : flèches + saut rapide (équipé d'un select natif) -->
-    <div class="flex flex-col sm:flex-row items-center justify-center gap-3 mb-6">
-        <button wire:click="prevPeriod" wire:target="prevPeriod, nextPeriod" class="p-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors cursor-pointer">
-            <svg wire:loading.remove wire:target="prevPeriod, nextPeriod" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
-            <svg wire:loading wire:target="prevPeriod, nextPeriod" class="w-5 h-5 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path></svg>
-        </button>
-        <select wire:model.live="period" title="{{ __('station_charges.jump', ['default' => 'Aller à la période']) }}"
-            class="px-4 py-2.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 font-bold text-slate-800 dark:text-slate-100 text-center min-w-[300px] cursor-pointer">
-            @foreach($availablePeriods as $ym => $label)
-                <option value="{{ $ym }}" {{ $period === $ym ? 'selected' : '' }}>{{ $label }}</option>
-            @endforeach
-        </select>
-        <button wire:click="nextPeriod" wire:target="prevPeriod, nextPeriod" class="p-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors cursor-pointer">
-            <svg wire:loading.remove wire:target="prevPeriod, nextPeriod" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
-            <svg wire:loading wire:target="prevPeriod, nextPeriod" class="w-5 h-5 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path></svg>
-        </button>
+    <!-- Sélecteur de période : month-picker grid (identique à la clôture de caisse) -->
+    <div class="flex justify-center mb-6">
+        <div x-data="{ pickerOpen: false, pickerYear: {{ \Carbon\Carbon::createFromFormat('Y-m', $period)->year }} }" class="relative w-full max-w-md">
+            <button type="button" @click="pickerOpen = !pickerOpen"
+                    class="w-full flex items-center gap-3 px-4 py-3 bg-slate-50/50 dark:bg-slate-950/50 border border-slate-200 dark:border-slate-800 rounded-xl font-semibold dark:text-white cursor-pointer text-left hover:bg-slate-100 dark:hover:bg-slate-900/50 transition-colors">
+                <svg wire:loading wire:target="prevPeriod, nextPeriod, goToPeriod" class="w-5 h-5 animate-spin text-blue-500 shrink-0" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path></svg>
+                <svg wire:loading.remove wire:target="prevPeriod, nextPeriod, goToPeriod" class="w-5 h-5 text-slate-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                </svg>
+                <span>{{ $periodShortLabel }}</span>
+            </button>
+
+            <div x-show="pickerOpen" @click.outside="pickerOpen = false" x-transition:enter="ease-out duration-200" x-transition:enter-start="opacity-0 -translate-y-2" x-transition:enter-end="opacity-100 translate-y-0"
+                 class="absolute z-50 mt-2 w-full bg-white dark:bg-slate-800 rounded-xl shadow-xl border border-slate-200 dark:border-slate-700 p-4" x-cloak>
+                <div class="flex items-center justify-between mb-3">
+                    <button type="button" @click="pickerYear--" class="p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 cursor-pointer">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+                    </button>
+                    <span class="font-bold text-slate-800 dark:text-white text-sm" x-text="pickerYear"></span>
+                    <button type="button" @click="pickerYear++" class="p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 cursor-pointer">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+                    </button>
+                </div>
+                <div class="grid grid-cols-3 gap-2">
+                    @foreach ([1 => __('station_charges.month_jan'), 2 => __('station_charges.month_feb'), 3 => __('station_charges.month_mar'), 4 => __('station_charges.month_apr'), 5 => __('station_charges.month_may'), 6 => __('station_charges.month_jun'), 7 => __('station_charges.month_jul'), 8 => __('station_charges.month_aug'), 9 => __('station_charges.month_sep'), 10 => __('station_charges.month_oct'), 11 => __('station_charges.month_nov'), 12 => __('station_charges.month_dec')] as $num => $monthLabel)
+                        <button type="button"
+                                @click="$wire.goToPeriod(pickerYear + '-{{ str_pad($num, 2, '0', STR_PAD_LEFT) }}'); pickerOpen = false"
+                                :class="{
+                                    'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400 font-bold': $wire.period === (pickerYear + '-{{ str_pad($num, 2, '0', STR_PAD_LEFT) }}'),
+                                    'text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700/50': $wire.period !== (pickerYear + '-{{ str_pad($num, 2, '0', STR_PAD_LEFT) }}')
+                                }"
+                                class="px-2 py-2.5 rounded-lg text-sm font-medium transition-colors">
+                            {{ $monthLabel }}
+                        </button>
+                    @endforeach
+                </div>
+            </div>
+        </div>
     </div>
     <!-- Bandeau période : range + total -->
     <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">

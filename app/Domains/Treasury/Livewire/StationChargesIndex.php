@@ -128,6 +128,16 @@ class StationChargesIndex extends Component
             ->addMonthNoOverflow()->format('Y-m');
     }
 
+    /** Saut direct via le month-picker grid (comme la clôture de caisse). */
+    public function goToPeriod(string $ym): void
+    {
+        // bornage doux : accepte toute période ≤ période courante + 1 an
+        if (\Carbon\Carbon::canBeCreatedFromFormat($ym, 'Y-m')
+            && $ym <= \Carbon\Carbon::createFromFormat('Y-m', getPeriodFromDate(now())->addYearNoOverflow()->format('Y-m'))) {
+            $this->period = $ym;
+        }
+    }
+
     public function resetForm(): void
     {
         // FIX 500 au clic « Annuler » : reset(['period']) remettait period à null
@@ -164,6 +174,8 @@ class StationChargesIndex extends Component
             'total' => $total,
             'knownStations' => StationCharge::knownStations(),
             'periodLabel' => formatPeriodLabel($this->period),
+            'periodShortLabel' => getPeriodRange($this->period)['start']->locale(app()->getLocale())->translatedFormat('j M')
+                . ' → ' . getPeriodRange($this->period)['end']->locale(app()->getLocale())->translatedFormat('j M Y'),
             'periodTitle' => mb_convert_case(\Carbon\Carbon::createFromFormat('Y-m', $this->period)
                 ->locale(app()->getLocale())->translatedFormat('F Y'), MB_CASE_TITLE, 'UTF-8'),
             'periodRange' => getPeriodRange($this->period),
