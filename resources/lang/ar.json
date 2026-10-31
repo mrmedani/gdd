@@ -886,5 +886,16 @@
     "station_charges.paid_short": "المدفوع",
     "station_charges.unpaid_short": "المتبقي",
     "station_charges.marked_paid": "تم تعيين_station كمدفوعة.",
-    "station_charges.marked_unpaid": "تم تعيين المحطة كغير مدفوعة."
+    "station_charges.marked_unpaid": "تم تعيين المحطة كغير مدفوعة.",
+    "alerts.recurrence": "طريقة الاستحقاق",
+    "alerts.recurrence_monthly": "كل شهر",
+    "alerts.recurrence_monthly_hint": "يكرر اليوم المحدد كل شهر",
+    "alerts.recurrence_once": "مرة واحدة",
+    "alerts.recurrence_once_hint": "تاريخ محدد، غير متكرر",
+    "alerts.once_date": "تاريخ الاستحقاق",
+    "alerts.once_on": "في :date (مرة واحدة)",
+    "alerts.expired": "منتهية",
+    "alerts.recurrence_invalid": "طريقة الاستحقاق غير صالحة.",
+    "alerts.once_date_required": "تاريخ الاستحقاق الوحيد إلزامي.",
+    "alerts.once_date_past": "يجب أن يكون التاريخ اليوم أو بعده."
 }

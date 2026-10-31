@@ -887,5 +887,16 @@
     "station_charges.paid_short": "Payé",
     "station_charges.unpaid_short": "Reste",
     "station_charges.marked_paid": "Station marquée payée.",
-    "station_charges.marked_unpaid": "Station marquée non payée."
+    "station_charges.marked_unpaid": "Station marquée non payée.",
+    "alerts.recurrence": "Mode d'échéance",
+    "alerts.recurrence_monthly": "Chaque mois",
+    "alerts.recurrence_monthly_hint": "Répète le jour choisi chaque mois",
+    "alerts.recurrence_once": "Une seule fois",
+    "alerts.recurrence_once_hint": "Une date précise, jamais répétée",
+    "alerts.once_date": "Date de l'échéance",
+    "alerts.once_on": "Le :date (une seule fois)",
+    "alerts.expired": "Passée",
+    "alerts.recurrence_invalid": "Mode d'échéance invalide.",
+    "alerts.once_date_required": "La date de l'échéance unique est obligatoire.",
+    "alerts.once_date_past": "La date doit être aujourd'hui ou plus tard."
 }

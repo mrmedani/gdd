@@ -887,5 +887,16 @@
     "station_charges.paid_short": "Paid",
     "station_charges.unpaid_short": "Remaining",
     "station_charges.marked_paid": "Station marked paid.",
-    "station_charges.marked_unpaid": "Station marked unpaid."
+    "station_charges.marked_unpaid": "Station marked unpaid.",
+    "alerts.recurrence": "Due mode",
+    "alerts.recurrence_monthly": "Every month",
+    "alerts.recurrence_monthly_hint": "Repeats the chosen day monthly",
+    "alerts.recurrence_once": "Once",
+    "alerts.recurrence_once_hint": "One specific date, never repeated",
+    "alerts.once_date": "Due date",
+    "alerts.once_on": "On :date (once)",
+    "alerts.expired": "Expired",
+    "alerts.recurrence_invalid": "Invalid due mode.",
+    "alerts.once_date_required": "The one-time due date is required.",
+    "alerts.once_date_past": "Date must be today or later."
 }

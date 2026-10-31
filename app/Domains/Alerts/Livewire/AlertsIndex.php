@@ -16,6 +16,8 @@ class AlertsIndex extends Component
 
     public string $label = '';
     public string $day = '1';
+    public string $recurrence = 'monthly';
+    public string $once_date = '';
     public string $amount = '';
     public string $lead_days = '3';
     public bool $is_active = true;
@@ -23,13 +25,31 @@ class AlertsIndex extends Component
 
     public function rules(): array
     {
-        return [
+        $rules = [
             'label' => 'required|string|max:255',
-            'day' => 'required|integer|min:1|max:31',
+            'recurrence' => 'required|in:monthly,once',
             'amount' => 'nullable|numeric|min:0',
             'lead_days' => 'required|integer|min:0|max:30',
             'is_active' => 'boolean',
             'notes' => 'nullable|string|max:2000',
+        ];
+        if ($this->recurrence === 'monthly') {
+            $rules['day'] = 'required|integer|min:1|max:31';
+        } else {
+            // échéance unique : date obligatoire, >= aujourd'hui (passée = inutile)
+            $rules['once_date'] = 'required|date|after_or_equal:today';
+            $rules['day'] = 'nullable';
+        }
+        return $rules;
+    }
+
+    public function messages(): array
+    {
+        return [
+            'recurrence.in' => __('alerts.recurrence_invalid', ['default' => "Mode d'échéance invalide."]),
+            'once_date.required' => __('alerts.once_date_required', ['default' => "La date de l'échéance unique est obligatoire."]),
+            'once_date.date' => __('alerts.once_date_required', ['default' => "La date de l'échéance unique est obligatoire."]),
+            'once_date.after_or_equal' => __('alerts.once_date_past', ['default' => "La date doit être aujourd'hui ou plus tard."]),
         ];
     }
 
@@ -46,6 +66,8 @@ class AlertsIndex extends Component
         $this->commitmentId = $c->id;
         $this->label = $c->label;
         $this->day = (string) $c->day;
+        $this->recurrence = $c->recurrence ?? 'monthly';
+        $this->once_date = $c->once_date ? $c->once_date->format('Y-m-d') : '';
         $this->amount = $c->amount !== null ? (string) $c->amount : '';
         $this->lead_days = (string) $c->lead_days;
         $this->is_active = (bool) $c->is_active;
@@ -59,7 +81,12 @@ class AlertsIndex extends Component
 
         $data = [
             'label' => $this->label,
-            'day' => (int) $this->day,
+            'recurrence' => $this->recurrence,
+            'once_date' => $this->recurrence === 'once' ? $this->once_date : null,
+            // jour du mois : en mode once on garde celui de la date (compat affichage)
+            'day' => (int) ($this->recurrence === 'once'
+                ? (\Carbon\Carbon::parse($this->once_date)->day)
+                : $this->day),
             'amount' => $this->amount !== '' ? str_replace(',', '.', $this->amount) : null,
             'lead_days' => (int) $this->lead_days,
             'is_active' => $this->is_active,

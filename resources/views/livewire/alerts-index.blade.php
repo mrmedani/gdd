@@ -112,6 +112,8 @@
                             $daysLeft = $c->daysUntilDue();
                             $dueSoon = $c->is_active && $c->isDueSoon();
                             $paid = $c->wasPaidThisMonth();
+                            $isOnce = $c->isOnce();
+                            $pastOnce = $isOnce && !$c->is_active ? false : ($isOnce && $daysLeft < 0);
                         @endphp
                         <tr class="hover:bg-blue-50/20 dark:hover:bg-slate-800/30 transition-colors">
                             <td class="py-4 px-6 font-semibold text-slate-800 dark:text-slate-200">
@@ -120,13 +122,21 @@
                                     <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold ms-1 bg-emerald-50 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800">✓ {{ __('alerts.paid_this_month') }}</span>
                                 @endif
                             </td>
-                            <td class="py-4 px-6 text-slate-600 dark:text-slate-400">{{ __('alerts.each_month_day', ['day' => $c->day]) }}</td>
+                            <td class="py-4 px-6 text-slate-600 dark:text-slate-400">
+                                @if($isOnce)
+                                    <span class="inline-flex items-center gap-1"><span class="text-purple-600 dark:text-purple-400">📅</span> {{ __('alerts.once_on', ['date' => $c->once_date ? $c->once_date->format('d/m/Y') : '—']) }}</span>
+                                @else
+                                    {{ __('alerts.each_month_day', ['day' => $c->day]) }}
+                                @endif
+                            </td>
                             <td class="py-4 px-6 whitespace-nowrap">
                                 <span class="font-medium text-slate-700 dark:text-slate-300">{{ $c->nextDueDate()->format('d/m/Y') }}</span>
                                 @if($dueSoon)
                                     <span class="ms-2 inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold {{ $daysLeft === 0 ? 'bg-rose-100 dark:bg-rose-900/30 text-rose-700 dark:text-rose-300' : 'bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300' }}">
                                         {{ $daysLeft === 0 ? __('alerts.today') : ($daysLeft === 1 ? __('alerts.tomorrow') : 'J-' . $daysLeft) }}
                                     </span>
+                                @elseif($pastOnce)
+                                    <span class="ms-2 inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold bg-slate-200 dark:bg-slate-800 text-slate-500 dark:text-slate-400">{{ __('alerts.expired', ['default' => 'Passée']) }}</span>
                                 @else
                                     <span class="ms-2 text-xs text-slate-400 dark:text-slate-500">J-{{ $daysLeft }}</span>
                                 @endif

@@ -11,6 +11,8 @@ class Commitment extends Model
     protected $fillable = [
         'label',
         'day',
+        'recurrence',
+        'once_date',
         'amount',
         'lead_days',
         'is_active',
@@ -22,6 +24,7 @@ class Commitment extends Model
     {
         return [
             'day' => 'integer',
+            'once_date' => 'date:Y-m-d',
             'amount' => 'decimal:2',
             'lead_days' => 'integer',
             'is_active' => 'boolean',
@@ -45,6 +48,10 @@ class Commitment extends Model
      */
     public function nextDueDate(?Carbon $from = null): Carbon
     {
+        // MODE PONCTUEL : l'échéance unique demandée, telle quelle
+        if ($this->recurrence === 'once' && $this->once_date) {
+            return \Carbon\Carbon::parse($this->once_date)->startOfDay();
+        }
         $from = ($from ?? now())->copy()->startOfDay();
         $candidate = $from->copy()->day(min($this->day, $from->daysInMonth));
         if ($candidate->lt($from)) {
@@ -57,6 +64,11 @@ class Commitment extends Model
         return $candidate->startOfDay();
     }
 
+    public function isOnce(): bool
+    {
+        return $this->recurrence === 'once';
+    }
+
     /** Jours restants avant l'échéance (0 = aujourd'hui). */
     public function daysUntilDue(): int
     {
@@ -67,6 +79,9 @@ class Commitment extends Model
     public function isDueSoon(): bool
     {
         $d = $this->daysUntilDue();
+        if ($this->recurrence === 'once' && $d < 0) {
+            return false; // échéance unique déjà passée : plus jamais d'alerte
+        }
         return $d >= 0 && $d <= (int) $this->lead_days;
     }
 
