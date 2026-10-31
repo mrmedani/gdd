@@ -33,15 +33,41 @@
                         @error('label') <span class="text-red-500 text-xs mt-1 block">{{ $message }}</span> @enderror
                     </div>
 
-                    <!-- Day -->
-                    <div>
-                        <label class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">{{ __('alerts.day') }} <span class="text-red-500">*</span></label>
-                        <select wire:model="day" class="w-full px-4 py-3 bg-slate-50/50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all text-slate-700 dark:text-slate-300">
-                            @for($d = 1; $d <= 31; $d++)
-                                <option value="{{ $d }}">{{ $d }}</option>
-                            @endfor
-                        </select>
-                        @error('day') <span class="text-red-500 text-xs mt-1 block">{{ $message }}</span> @enderror
+                    <!-- Mode d'échéance : MONTHLY (répète chaque mois) / ONCE (date précise) -->
+                    <div x-data="{ rec: $wire.recurrence }" class="sm:col-span-2">
+                        <label class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">{{ __('alerts.recurrence') }} <span class="text-red-500">*</span></label>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                            <button type="button" @click="rec = 'monthly'; $wire.recurrence = 'monthly'"
+                                    :class="rec === 'monthly' ? 'border-blue-500 bg-blue-500/10 text-blue-600 dark:text-blue-400' : 'border-slate-200 dark:border-slate-700 text-slate-500 dark:text-slate-400 hover:border-slate-300'"
+                                    class="px-4 py-3 rounded-xl border-2 font-semibold text-sm transition-all cursor-pointer text-start">
+                                🔁 {{ __('alerts.recurrence_monthly') }}
+                                <span class="block text-[11px] font-normal mt-0.5 opacity-75">{{ __('alerts.recurrence_monthly_hint') }}</span>
+                            </button>
+                            <button type="button" @click="rec = 'once'; $wire.recurrence = 'once'"
+                                    :class="rec === 'once' ? 'border-purple-500 bg-purple-500/10 text-purple-600 dark:text-purple-400' : 'border-slate-200 dark:border-slate-700 text-slate-500 dark:text-slate-400 hover:border-slate-300'"
+                                    class="px-4 py-3 rounded-xl border-2 font-semibold text-sm transition-all cursor-pointer text-start">
+                                📅 {{ __('alerts.recurrence_once') }}
+                                <span class="block text-[11px] font-normal mt-0.5 opacity-75">{{ __('alerts.recurrence_once_hint') }}</span>
+                            </button>
+                        </div>
+
+                        <div x-show="rec === 'monthly'" class="mt-4">
+                            <label class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">{{ __('alerts.day') }} <span class="text-red-500">*</span></label>
+                            <select wire:model="day" class="w-full px-4 py-3 bg-slate-50/50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all text-slate-700 dark:text-slate-300">
+                                @for($d = 1; $d <= 31; $d++)
+                                    <option value="{{ $d }}">{{ $d }}</option>
+                                @endfor
+                            </select>
+                            @error('day') <span class="text-red-500 text-xs mt-1 block">{{ $message }}</span> @enderror
+                        </div>
+
+                        <div x-show="rec === 'once'" x-cloak class="mt-4">
+                            <label class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">{{ __('alerts.once_date') }} <span class="text-red-500">*</span></label>
+                            <input type="date" wire:model="once_date" min="{{ now()->toDateString() }}"
+                                class="w-full px-4 py-3 bg-slate-50/50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 outline-none transition-all text-slate-700 dark:text-slate-300">
+                            @error('once_date') <span class="text-red-500 text-xs mt-1 block">{{ $message }}</span> @enderror
+                        </div>
+                        @error('recurrence') <span class="text-red-500 text-xs mt-1 block">{{ $message }}</span> @enderror
                     </div>
 
                     <!-- Amount -->
@@ -137,6 +163,8 @@
                                     </span>
                                 @elseif($pastOnce)
                                     <span class="ms-2 inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold bg-slate-200 dark:bg-slate-800 text-slate-500 dark:text-slate-400">{{ __('alerts.expired', ['default' => 'Passée']) }}</span>
+                                @elseif($pastOnce)
+                                    <span class="ms-2 inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold bg-slate-200 dark:bg-slate-800 text-slate-500 dark:text-slate-400">{{ __('alerts.expired') }}</span>
                                 @else
                                     <span class="ms-2 text-xs text-slate-400 dark:text-slate-500">J-{{ $daysLeft }}</span>
                                 @endif
