@@ -976,5 +976,6 @@
     "reports.date": "التاريخ",
     "reports.operation_count": "عدد العمليات",
     "reports.daily_breakdown": "التوزيع اليومي",
-    "reports.footer_generated_by": "أُنشئ بواسطة :name"
+    "reports.footer_generated_by": "أُنشئ بواسطة :name",
+    "expenses.current_period": "الفترة الحالية"
 }

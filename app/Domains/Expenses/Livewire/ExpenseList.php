@@ -53,6 +53,29 @@ class ExpenseList extends Component
         'searchCreator' => ['except' => ''],
     ];
 
+    /**
+     * FIX : le filtre de date démarre SUR LA PÉRIODE COMPTABLE COURANTE (21→20)
+     * si l'URL n'a aucun filtre de date. L'utilisateur peut librement éditer
+     * les 2 dates — les queryString continuent de les conserver.
+     */
+    public function mount(): void
+    {
+        if ($this->searchDateFrom === '' && $this->searchDateTo === '') {
+            $range = getPeriodRange(getPeriodFromDate(now()));
+            $this->searchDateFrom = $range['start']->format('Y-m-d');
+            $this->searchDateTo = $range['end']->format('Y-m-d');
+        }
+    }
+
+    /** Bouton rapide : revenir à la période courante (21→20). */
+    public function applyCurrentPeriod(): void
+    {
+        $range = getPeriodRange(getPeriodFromDate(now()));
+        $this->searchDateFrom = $range['start']->format('Y-m-d');
+        $this->searchDateTo = $range['end']->format('Y-m-d');
+        $this->resetPage();
+    }
+
     public function updated(string $property, mixed $value): void
     {
         if (str_starts_with($property, 'search')) {  // searchCreator compris

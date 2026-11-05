@@ -976,5 +976,6 @@
     "reports.date": "Date",
     "reports.operation_count": "Nb opérations",
     "reports.daily_breakdown": "Détail journalier",
-    "reports.footer_generated_by": "Généré par :name"
+    "reports.footer_generated_by": "Généré par :name",
+    "expenses.current_period": "Période courante"
 }
