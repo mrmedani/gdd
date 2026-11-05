@@ -205,7 +205,6 @@
                         </defs>
                         <circle cx="32" cy="32" r="22" fill="url(#g-sun-halo)"/>
                         <g>
-                            <animateTransform attributeName="transform" type="rotate" from="0 32 32" to="360 32 32" dur="22s" repeatCount="indefinite"/>
                             <g fill="url(#g-sun-ray)">
                                 <rect x="30.5" y="2" width="3" height="10" rx="1.5"/><rect x="30.5" y="52" width="3" height="10" rx="1.5"/>
                                 <rect x="2" y="30.5" width="10" height="3" rx="1.5"/><rect x="52" y="30.5" width="10" height="3" rx="1.5"/>
@@ -236,7 +235,6 @@
                         <circle cx="22" cy="23" r="10" fill="url(#g-cs-sun)"/>
                         <ellipse cx="18" cy="19" rx="3.5" ry="2.4" fill="#FFFDE7" opacity="0.5"/>
                         <g>
-                            <animateTransform attributeName="transform" type="translate" values="0 0; 0 -2.5; 0 0" dur="4s" repeatCount="indefinite"/>
                             <ellipse cx="33" cy="45" rx="20" ry="11" fill="#94A3B8" opacity="0.25"/>
                             <circle cx="24" cy="44" r="10" fill="url(#g-cs-cloud)"/>
                             <circle cx="36" cy="41" r="12" fill="url(#g-cs-cloud)"/>
@@ -261,13 +259,12 @@
                         </defs>
                         <circle cx="32" cy="34" r="20" fill="url(#g-ss-sky)" opacity="0.25"/>
                         <g>
-                            <animateTransform attributeName="transform" type="translate" values="0 0; 0 -2; 0 0" dur="5s" repeatCount="indefinite"/>
                             <path d="M10 44 A22 22 0 0 1 54 44 Z" fill="url(#g-ss-sun)"/>
                         </g>
                         <g stroke="#FFE0B2" stroke-width="2.5" stroke-linecap="round">
-                            <line x1="32" y1="8" x2="32" y2="16"><animate attributeName="opacity" values="0.3;1;0.3" dur="2.5s" repeatCount="indefinite"/></line>
-                            <line x1="20" y1="12" x2="23" y2="18"><animate attributeName="opacity" values="0.3;1;0.3" dur="2.5s" begin="0.5s" repeatCount="indefinite"/></line>
-                            <line x1="44" y1="12" x2="41" y2="18"><animate attributeName="opacity" values="0.3;1;0.3" dur="2.5s" begin="1s" repeatCount="indefinite"/></line>
+                            <line x1="32" y1="8" x2="32" y2="16"></line>
+                            <line x1="20" y1="12" x2="23" y2="18"></line>
+                            <line x1="44" y1="12" x2="41" y2="18"></line>
                         </g>
                         <rect x="6" y="43" width="52" height="4" rx="2" fill="url(#g-ss-horizon)"/>
                         <rect x="6" y="46" width="52" height="9" rx="3" fill="#2E1A14" opacity="0.6"/>
@@ -297,11 +294,11 @@
                         <circle cx="37" cy="35" r="4.2" fill="url(#g-crater)"/><circle cx="37.5" cy="35.6" r="3" fill="#78909C" opacity="0.35"/>
                         <circle cx="39" cy="23" r="2" fill="url(#g-crater)"/>
                         <circle cx="24" cy="38" r="2.4" fill="url(#g-crater)"/>
-                        <!-- twinkling stars -->
-                        <circle cx="12" cy="16" r="2.2" fill="#FFf" opacity="0.85"><animate attributeName="opacity" values="0.2;1;0.2" dur="2.4s" repeatCount="indefinite"/></circle>
-                        <circle cx="52" cy="14" r="1.6" fill="#FFf" opacity="0.8"><animate attributeName="opacity" values="0.2;1;0.2" dur="3s" begin="0.8s" repeatCount="indefinite"/></circle>
-                        <circle cx="50" cy="48" r="1.8" fill="#FFf" opacity="0.8"><animate attributeName="opacity" values="0.2;1;0.2" dur="2.8s" begin="1.4s" repeatCount="indefinite"/></circle>
-                        <circle cx="14" cy="48" r="1.4" fill="#FFf" opacity="0.7"><animate attributeName="opacity" values="0.2;1;0.2" dur="2.6s" begin="0.4s" repeatCount="indefinite"/></circle>
+                        <!-- étoiles STATIQUES (règle produit : pas d'animations décoratives) -->
+                        <circle cx="12" cy="16" r="2.2" fill="#FFF" opacity="0.85"/>
+                        <circle cx="52" cy="14" r="1.6" fill="#FFF" opacity="0.8"/>
+                        <circle cx="50" cy="48" r="1.8" fill="#FFF" opacity="0.8"/>
+                        <circle cx="14" cy="48" r="1.4" fill="#FFF" opacity="0.7"/>
                     </svg>
                 </div>
 
@@ -344,8 +341,20 @@
     </div>
 
 
+    <!-- Actions rapides : la tâche fréquente à 0 clic -->
+    <div class="flex flex-wrap items-center gap-3">
+        <a href="/expenses?action=create" class="inline-flex items-center gap-2 px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl transition-colors shadow-lg shadow-blue-600/20 text-sm cursor-pointer">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><path stroke-linecap="round" d="M12 4v16m8-8H4"/></svg>
+            {{ __('dashboard.quick_new_expense') }}
+        </a>
+        <a href="/alerts" class="inline-flex items-center gap-2 px-4 py-2.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 font-bold rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors text-sm cursor-pointer">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+            {{ __('dashboard.quick_alerts') }}
+        </a>
+    </div>
+
     <!-- KPIs -->
-    <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+    <div class="grid grid-cols-2 lg:grid-cols-5 gap-4 md:gap-6">
         <!-- Monthly Total -->
         <a href="{{ route('expenses.index', ['searchDateFrom' => $periodStartDate, 'searchDateTo' => $periodEndDate]) }}" class="relative overflow-hidden block bg-gradient-to-br from-blue-600 to-indigo-700 rounded-3xl p-6 shadow-premium dark:shadow-premium-dark text-white transition-all duration-300 hover:-translate-y-1 hover:shadow-premium-hover dark:hover:shadow-premium-dark-hover group cursor-pointer">
             <div class="absolute top-0 right-0 -mr-8 -mt-8 w-32 h-32 rounded-full bg-white opacity-10 blur-2xl group-hover:scale-110 transition-transform duration-500"></div>
@@ -415,6 +424,23 @@
                 <h3 class="text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-pink-500 dark:from-purple-400 dark:to-pink-300 font-heading">{{ $currentPeriodLabel }}</h3>
                 <p class="text-slate-400 dark:text-slate-400 font-semibold mt-1.5 text-xs flex items-center gap-1.5">
                     <span class="bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded">{{ $remainingDays }} {{ __('dashboard.remaining_days') }}</span>
+                </p>
+            </div>
+        </div>
+
+        <!-- Recettes de la période (équilibre trésorerie) -->
+        <div class="relative overflow-hidden bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border border-slate-200/50 dark:border-slate-800/60 rounded-3xl p-4 md:p-6 shadow-premium dark:shadow-premium-dark transition-all duration-300 hover:-translate-y-1 hover:shadow-premium-hover dark:hover:shadow-premium-dark-hover group">
+            <div class="absolute -right-6 -top-6 w-24 h-24 bg-teal-50 dark:bg-teal-500/5 rounded-full blur-2xl group-hover:scale-120 transition-transform duration-500"></div>
+            <div class="flex justify-between items-start mb-4 md:mb-6">
+                <div class="p-2 md:p-3 bg-teal-50 dark:bg-teal-500/10 text-teal-600 dark:text-teal-400 rounded-2xl border border-teal-100/50 dark:border-teal-500/20">
+                    <svg class="w-6 h-6 md:w-7 md:h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a4 4 0 00-8 0v2M3 9h18l-1 12H4L3 9z"/></svg>
+                </div>
+                <span class="text-slate-400 dark:text-slate-500 font-bold text-xs uppercase tracking-wider">{{ __('dashboard.period_incomes') }}</span>
+            </div>
+            <div>
+                <h3 class="text-lg md:text-3xl font-black text-teal-600 dark:text-teal-400 font-heading">{{ formatMoney($incomeTotal) }}</h3>
+                <p class="text-teal-600 dark:text-teal-400 font-semibold mt-1.5 text-xs flex items-center gap-1.5">
+                    <span class="bg-teal-50 dark:bg-teal-500/10 px-2 py-0.5 rounded">{{ $incomeCount }} {{ __('dashboard.incomes_count') }}</span>
                 </p>
             </div>
         </div>
@@ -488,6 +514,48 @@
                     <p class="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">{{ __('dashboard.total_audit_logs') }}</p>
                     <p class="text-2xl font-black text-orange-900 dark:text-white mt-1 font-heading">{{ $totalAuditLogs }}</p>
                 </div>
+            </div>
+        </div>
+    </div>
+    @endif
+
+    <!-- Budgets consommés (période courante) : visible SEULEMENT si des budgets sont configurés -->
+    @if(count($budgetBars) > 0)
+    <div class="bg-white/80 dark:bg-slate-900/80 backdrop-blur-md rounded-3xl shadow-premium dark:shadow-premium-dark border border-slate-200/50 dark:border-slate-800/60 p-6">
+        <h2 class="text-base font-bold text-slate-800 dark:text-white mb-4 flex items-center gap-2 font-heading">
+            <svg class="w-5 h-5 text-amber-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 6h18M3 12h12m-6 6h6"/></svg>
+            {{ __('dashboard.budget_title') }}
+        </h2>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-3">
+            @foreach($budgetBars as $bar)
+                @php $over = $bar['pct'] > 100; @endphp
+                <div>
+                    <div class="flex items-center justify-between text-xs font-semibold mb-1">
+                        <span class="text-slate-700 dark:text-slate-300 truncate">{{ $bar['label'] }}</span>
+                        <span class="{{ $over ? 'text-rose-600 dark:text-rose-400' : 'text-slate-500 dark:text-slate-400' }}">{{ $bar['pct'] }}%</span>
+                    </div>
+                    <div class="h-2.5 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
+                        <div class="h-full rounded-full {{ $over ? 'bg-rose-500' : ($bar['pct'] > 80 ? 'bg-amber-500' : 'bg-emerald-500') }}"
+                            style="width: {{ min(100, $bar['pct']) }}%; background-color: {{ $over ? '#f43f5e' : $bar['color'] }};"></div>
+                    </div>
+                    <p class="text-[10px] text-slate-400 dark:text-slate-500 mt-0.5">{{ formatMoney($bar['used']) }} / {{ formatMoney($bar['budget']) }}</p>
+                </div>
+            @endforeach
+        </div>
+    </div>
+    @endif
+
+    <!-- Prévision paie du mois (avant clôture) -->
+    @if(auth()->user()?->hasPermission('employees') && $payrollEmployees > 0)
+    <div class="bg-white/80 dark:bg-slate-900/80 backdrop-blur-md rounded-3xl shadow-premium dark:shadow-premium-dark border border-slate-200/50 dark:border-slate-800/60 p-6">
+        <div class="flex items-center gap-5">
+            <div class="p-4 bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 rounded-2xl border border-indigo-100/50 dark:border-indigo-500/20 shrink-0">
+                <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a4 4 0 00-3-3.87M9 20H4v-2a4 4 0 013-3.87M16 3.46a4 4 0 010 7.08M13 7a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
+            </div>
+            <div>
+                <p class="text-slate-500 dark:text-slate-400 font-bold text-xs uppercase tracking-wider mb-1">{{ __('dashboard.payroll_forecast') }}</p>
+                <h3 class="text-2xl font-black text-indigo-600 dark:text-indigo-400 font-heading">{{ formatMoney($payrollForecast) }}</h3>
+                <p class="text-slate-400 dark:text-slate-500 font-semibold mt-1 text-xs">{{ $payrollEmployees }} {{ __('dashboard.employees_active') }}</p>
             </div>
         </div>
     </div>
@@ -735,7 +803,12 @@
                 <span class="w-3.5 h-3.5 rounded-full shrink-0" style="background: {{ $categoryModalData['color'] }}"></span>
                 <div class="min-w-0">
                     <h3 class="text-lg font-bold text-slate-800 dark:text-white truncate">{{ $categoryModalData['label'] }}</h3>
-                    <p class="text-xs text-slate-500 dark:text-slate-400 font-semibold">{{ $categoryModalData['count'] }} {{ __('statistics.operations') }}</p>
+                    <p class="text-xs text-slate-500 dark:text-slate-400 font-semibold">
+                        {{ $categoryModalData['count'] }} {{ __('statistics.operations') }}
+                        @if($categoryModalData['pct'] > 0)
+                            &bull; {{ $categoryModalData['pct'] }}% {{ __('dashboard.of_period') }}
+                        @endif
+                    </p>
                 </div>
             </div>
             <button wire:click="closeCategory" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors cursor-pointer shrink-0">
@@ -763,7 +836,7 @@
             </div>
             <div>
                 <h4 class="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-2 flex items-center gap-2">
-                    <span class="w-1.5 h-4 rounded-full bg-blue-500"></span>{{ __('statistics.top3') }}
+                    <span class="w-1.5 h-4 rounded-full bg-blue-500"></span>{{ __('dashboard.top_expenses_title') }}
                 </h4>
                 <div class="space-y-2">
                     @forelse($categoryModalData['top3'] as $e)
@@ -894,8 +967,18 @@ function initCharts() {
     });
     @endif
 
+    // Clé de période par index du mois (navigation au clic sur la tendance)
+    const trendPeriods = {!! json_encode(array_column($monthlyTrend, 'period'), JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) !!};
     @if(count($monthlyTrend) > 0)
     chartInstances.trend = echarts.init(document.getElementById('trendChart'));
+    // Clic sur un mois de la tendance → ouvre /statistics sur cette période
+    chartInstances.trend.on('click', function (params) {
+        if (params.componentType === 'series') {
+            const url = '/statistics?period=' + trendPeriods[params.dataIndex];
+            if (window.Livewire && window.Livewire.navigate) { window.Livewire.navigate(url); }
+            else { window.location.href = url; }
+        }
+    });
     chartInstances.trend.setOption({
         tooltip: {
             trigger: 'axis',

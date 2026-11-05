@@ -931,5 +931,14 @@
     "alerts.mark_as_paid_confirm": "Marquer « :label » comme payé ce mois ? Une dépense sera créée automatiquement dans /expenses.",
     "alerts.marked_as_paid": "Dépense créée ✓ — engagement marqué payé.",
     "alerts.already_paid_this_month": "Cet engagement est déjà payé ce mois.",
-    "alerts.no_amount_for_expense": "Aucun montant défini pour cet engagement — renseignez-le d'abord dans l'alerte."
+    "alerts.no_amount_for_expense": "Aucun montant défini pour cet engagement — renseignez-le d'abord dans l'alerte.",
+    "dashboard.quick_new_expense": "Nouvelle dépense",
+    "dashboard.quick_alerts": "Alertes & engagements",
+    "dashboard.period_incomes": "Recettes de la période",
+    "dashboard.incomes_count": "entrées",
+    "dashboard.budget_title": "Budgets consommés (période)",
+    "dashboard.payroll_forecast": "Paie du mois estimée",
+    "dashboard.employees_active": "employés actifs",
+    "dashboard.top_expenses_title": "Principales dépenses",
+    "dashboard.of_period": "de la période"
 }

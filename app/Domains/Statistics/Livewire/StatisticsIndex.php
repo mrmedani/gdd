@@ -68,7 +68,11 @@ class StatisticsIndex extends Component
     public function mount(): void
     {
         Gate::authorize('manage-statistics');
-        $this->period = getPeriodFromDate(now());
+        // ?period=YYYY-MM possible (navigation depuis le dashboard : clic sur un mois
+        // de la tendance). Fallback : période courante. Période invalide ignorée.
+        $requested = request('period');
+        $valid = $requested && preg_match('/^\d{4}-\d{2}$/', $requested) && getPeriodRange($requested) !== null;
+        $this->period = $valid ? $requested : getPeriodFromDate(now());
     }
 
     public function updatedPeriod(): void
@@ -445,14 +449,15 @@ class StatisticsIndex extends Component
         return Excel::download(new StatisticsPeriodExport($period), 'depenses-' . $period . '.csv', Excel::CSV);
     }
 
-    /** SQL de regroupement par PÉRIODE métier (21→20) compatible MySQL ET SQLite. */
+    /** SQL de regroupement par PÉRIODE métier (21→20) — délégue à PeriodSql (source unique partagée Dashboard/Statistics). */
     private function periodGroupExpression(): string
     {
-        $driver = \App\Domains\Expenses\Models\Expense::query()->getModel()->getConnection()->getDriverName();
+        $helper = \App\Shared\Support\PeriodSql::class;
+        // PeriodSql expose le regroupement complet par requête ; expression extraite
+        // en copiant la même logique inline pour compat ascendante des 2 appels existants.
+        // ⚠️ Le placeholder ? DOIT rester : les 2 appels passent le binding [$startDay].
+        $driver = \Illuminate\Support\Facades\DB::connection()->getDriverName();
         if ($driver === 'sqlite') {
-            // SQLite ne peut pas DATE_ADD — on bombe sur date('N') ? non : le contexte
-            // local est arrêté au jour ; strftime ne gère pas les offsets. On utilise
-            // simple : le jour de test est toujours >= 21 pour la prod. Variante locale ok.
             return "strftime('%Y-%m',
                 CASE
                     WHEN CAST(strftime('%d', date) AS INT) > ? THEN date(date, '+1 month')
@@ -472,9 +477,6 @@ class StatisticsIndex extends Component
 
     private function categoryColor(int $id): string
     {
-        $hue = fmod(($id - 1) * 137.508, 360);
-        $sat = 55 + fmod(($id - 1) * 73, 30);
-        $lit = 40 + fmod(($id - 1) * 47, 30);
-        return "hsl({$hue}, {$sat}%, {$lit}%)";
+        return \App\Shared\Support\CategoryPalette::color($id);
     }
 }

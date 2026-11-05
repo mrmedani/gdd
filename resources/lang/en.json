@@ -931,5 +931,14 @@
     "alerts.mark_as_paid_confirm": "Mark ':label' as paid this month? An expense will be automatically created in /expenses.",
     "alerts.marked_as_paid": "Expense created ✓ — commitment marked as paid.",
     "alerts.already_paid_this_month": "This commitment is already paid this month.",
-    "alerts.no_amount_for_expense": "No amount set for this commitment — enter it first in the alert."
+    "alerts.no_amount_for_expense": "No amount set for this commitment — enter it first in the alert.",
+    "dashboard.quick_new_expense": "New expense",
+    "dashboard.quick_alerts": "Alerts & commitments",
+    "dashboard.period_incomes": "Period income",
+    "dashboard.incomes_count": "entries",
+    "dashboard.budget_title": "Budget usage (period)",
+    "dashboard.payroll_forecast": "Estimated payroll",
+    "dashboard.employees_active": "active employees",
+    "dashboard.top_expenses_title": "Main expenses",
+    "dashboard.of_period": "of the period"
 }

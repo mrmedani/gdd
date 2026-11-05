@@ -931,5 +931,14 @@
     "alerts.mark_as_paid_confirm": "تحديد « :label » كمدفوع هذا الشهر؟ سيتم إنشاء مصروف تلقائياً في /expenses.",
     "alerts.marked_as_paid": "تم إنشاء المصروف ✓ — حدد التزام كمدفوع.",
     "alerts.already_paid_this_month": "هذا الالتزام مدفوع بالفعل هذا الشهر.",
-    "alerts.no_amount_for_expense": "لم يتم تعيين مبلغ لهذا الالتزام — أدخل المبلغ أولاً في التنبيه."
+    "alerts.no_amount_for_expense": "لم يتم تعيين مبلغ لهذا الالتزام — أدخل المبلغ أولاً في التنبيه.",
+    "dashboard.quick_new_expense": "مصروف جديد",
+    "dashboard.quick_alerts": "التنبيهات والالتزامات",
+    "dashboard.period_incomes": "مداخيل الفترة",
+    "dashboard.incomes_count": "عملية إدخال",
+    "dashboard.budget_title": "الميزانيات المستهلكة (للفترة)",
+    "dashboard.payroll_forecast": "رواتب الشهر المتوقعة",
+    "dashboard.employees_active": "موظف نشط",
+    "dashboard.top_expenses_title": "المصاريف الرئيسية",
+    "dashboard.of_period": "من الفترة"
 }

@@ -3,6 +3,7 @@
 namespace App\Domains\Dashboard\Livewire;
 
 use App\Domains\Alerts\Models\Alert;
+use App\Domains\Employees\Models\Employee;
 use App\Domains\Expenses\Models\AuditLog;
 use App\Domains\Expenses\Models\Expense;
 use App\Domains\Expenses\Models\ExpenseCategory;
@@ -30,6 +31,14 @@ class Dashboard extends Component
     public int $remainingDays = 0;
     public float $cashDeficit = 0;
     public float $dailyTotal = 0;
+    // Recettes de la période 21→20 (équilibre trésorerie dans la bande KPI)
+    public float $incomeTotal = 0;
+    public int $incomeCount = 0;
+    // Prévision paie du mois (somme des salaires de base des employés actifs)
+    public float $payrollForecast = 0;
+    public int $payrollEmployees = 0;
+    // Budgets consommés par catégorie (Setting `category_budgets`)
+    public array $budgetBars = [];
     public string $periodStartDate = '';
     public string $periodEndDate = '';
     public ?float $growthRate = null;
@@ -105,101 +114,95 @@ class Dashboard extends Component
             return;
         }
 
-        $this->monthlyTotal = (float) Expense::whereBetween('date', [$range['start'], $range['end']])->sum('amount');
-        $this->monthlyCount = Expense::whereBetween('date', [$range['start'], $range['end']])->count();
-        $this->averagePerDay = $periodDays > 0 ? round($this->monthlyTotal / $periodDays, 2) : 0;
+        // ─── AGRÉGATS CACHÉS (versionnement StatsCacheInvalidator partagé) ─────────
+        // 12 requêtes par affichage avant → 1 bloc caché 1h, purge automatique
+        // par bump() sur toute mutation Expense/Income/Investment/Closure/Commission.
+        $cached = \Illuminate\Support\Facades\Cache::remember(
+            'gdd:dashboard:v' . \App\Domains\Statistics\Support\StatsCacheInvalidator::version(),
+            3600,
+            function () use ($range) {
+                $totals = Expense::whereBetween('date', [$range['start'], $range['end']]);
+                $categoryTotals = (clone $totals)
+                    ->selectRaw('category_id, SUM(amount) as total')
+                    ->groupBy('category_id')
+                    ->pluck('total', 'category_id');
+
+                $categories = ExpenseCategory::active()->get();
+
+                // Tendance 12 mois : 1 requête GROUP BY (multi-driver) au lieu de
+                // charger TOUTES les lignes de dépenses de 12 mois en mémoire PHP.
+                $periods12 = collect(range(0, 11))->map(fn ($i) => getPeriodFromDate(now()->copy()->subMonths($i)));
+                $first = getPeriodRange($periods12->last())['start'];
+                $last = getPeriodRange($periods12->first())['end'];
+                $expenseTotals = \App\Shared\Support\PeriodSql::expenseTotalsByPeriod($first, $last);
+
+                $closures = \App\Domains\Treasury\Models\MonthlyClosure::whereBetween('month', [
+                    now()->copy()->subMonths(11)->format('Y-m'),
+                    now()->format('Y-m'),
+                ])->get()->keyBy('month');
+
+                $trend = $periods12->map(function ($period, $i) use ($closures, $expenseTotals) {
+                    $calMonth = now()->copy()->subMonths($i)->format('Y-m');
+                    $closure = $closures->get($calMonth);
+                    $periodDate = \Carbon\Carbon::createFromFormat('Y-m', $period);
+                    return [
+                        'month' => $periodDate->translatedFormat('M Y'),
+                        'period' => $period, // clé de navigation → /statistics?period=
+                        'expenses' => (float) ($expenseTotals[$period] ?? 0),
+                        'gains' => $closure ? (float) $closure->gains : 0,
+                        'balance' => $closure ? (float) $closure->balance : 0,
+                    ];
+                })->reverse()->values()->toArray();
+
+                // Taux de croissance : adjacence vérifiée (code conservé, intégré au cache)
+                $growthRate = $this->computeGrowthRate();
+
+                return [
+                    'monthlyTotal' => (float) (clone $totals)->sum('amount'),
+                    'monthlyCount' => (clone $totals)->count(),
+                    'averagePerDay' => $this->periodDays() > 0 ? round((float) (clone $totals)->sum('amount') / $this->periodDays(), 2) : 0,
+                    'categoryData' => $categories->map(function ($cat) use ($categoryTotals) {
+                        $total = (float) ($categoryTotals[$cat->id] ?? 0);
+                        return [
+                            'id' => $cat->id,
+                            'label' => $cat->translated_name,
+                            'total' => $total,
+                            'color' => \App\Shared\Support\CategoryPalette::color($cat->id),
+                        ];
+                    })->filter(fn($c) => $c['total'] > 0)->values()->toArray(),
+                    'monthlyTrend' => $trend,
+                    'growthRate' => $growthRate,
+                    'incomeTotal' => (float) \App\Domains\Treasury\Models\Income::whereBetween('date', [$range['start'], $range['end']])->sum('amount'),
+                    'incomeCount' => \App\Domains\Treasury\Models\Income::whereBetween('date', [$range['start'], $range['end']])->count(),
+                ];
+            }
+        );
+        $this->monthlyTotal = $cached['monthlyTotal'];
+        $this->monthlyCount = $cached['monthlyCount'];
+        $this->averagePerDay = $cached['averagePerDay'];
+        $this->categoryData = $cached['categoryData'];
+        $this->monthlyTrend = $cached['monthlyTrend'];
+        $this->growthRate = $cached['growthRate'];
+        $this->incomeTotal = $cached['incomeTotal'];
+        $this->incomeCount = $cached['incomeCount'];
 
         $this->dailyTotal = (float) Expense::whereDate('date', today())->sum('amount');
 
-        $categoryTotals = Expense::whereBetween('date', [$range['start'], $range['end']])
-            ->selectRaw('category_id, SUM(amount) as total')
-            ->groupBy('category_id')
-            ->pluck('total', 'category_id');
-
-        $categories = ExpenseCategory::active()->get();
-        $this->categoryData = $categories->map(function ($cat) use ($categoryTotals) {
-            $total = (float) ($categoryTotals[$cat->id] ?? 0);
-            return [
-                'id' => $cat->id,
-                'label' => $cat->translated_name,
-                'total' => $total,
-                'color' => $this->categoryColor($cat->id),
-            ];
-        })->filter(fn($c) => $c['total'] > 0)->values()->toArray();
-
-        $monthlyClosures = MonthlyClosure::whereBetween('month', [
-            $now->copy()->subMonths(11)->format('Y-m'),
-            $now->format('Y-m'),
-        ])->get()->keyBy('month');
-
-        $periods12 = collect(range(0, 11))->map(function ($i) use ($now) {
-            $p = getPeriodFromDate($now->copy()->subMonths($i));
-            $r = getPeriodRange($p);
-            return ['key' => $p, 'start' => $r['start'], 'end' => $r['end']];
-        });
-
-        $startDay = getMonthPeriodStartDay();
-
-        // Regroupement par période comptable, compatible SQLite et MySQL.
-        // On calcule la clé de période en PHP (getPeriodFromDate) plutôt qu'en
-        // SQL brut, car DATE_FORMAT/DATE_ADD/DAY/INTERVAL sont MySQL-only.
-        $windowExpenses = Expense::whereBetween('date', [$periods12->last()['start'], $periods12->first()['end']])
-            ->get(['date', 'amount']);
-
-        $expenseTotals = [];
-        foreach ($windowExpenses as $e) {
-            $period = getPeriodFromDate($e->date);
-            $expenseTotals[$period] = ($expenseTotals[$period] ?? 0) + (float) $e->amount;
-        }
-
-        $this->monthlyTrend = $periods12->map(function ($p, $i) use ($now, $monthlyClosures, $expenseTotals) {
-            $expensesTotal = (float) ($expenseTotals[$p['key']] ?? 0);
-            $calMonth = $now->copy()->subMonths($i)->format('Y-m');
-            $closure = $monthlyClosures->get($calMonth);
-            $periodDate = \Carbon\Carbon::createFromFormat('Y-m', $p['key']);
-            return [
-                'month' => $periodDate->translatedFormat('M Y'),
-                'expenses' => $expensesTotal,
-                'gains' => $closure ? (float) $closure->gains : 0,
-                'balance' => $closure ? (float) $closure->balance : 0,
-            ];
-        })->reverse()->values()->toArray();
+        // (tendance 12 mois + gain + balance consolidés dans le CACHE au-dessus)
 
         $this->currentPeriodLabel = formatPeriodLabel($currentPeriod);
 
         $this->cashDeficit = (float) Setting::get('cash_deficit', 0);
 
-        // ─── Taux de croissance : FIABLE, avec contiguïté vérifiée ────────────────
-        // ANCIEN BUG : on prenait les 2 dernières clôtures SANS vérifier qu'elles sont
-        // adjacentes. Si un mois n'est pas clôturé (ex. 2026-08 manquant), le widget
-        // comparait 2026-09 à 2026-07 = 2 mois d'écart affiché comme une variation
-        // mensuelle — trompeur. SOLUTION FIABLE :
-        //   1. comparaison UNIQUEMENT si la clôture précédente = période immédiatement
-        //      précédente (calendar Y-m −1 mois, en tenant compte du découpage 21→20) ;
-        //   2. sinon growthRate = null → le widget affiche « N/A » (pas de mensonge) ;
-        //   3. le mois "précédent" attendu est calculé depuis le mois de la clôture
-        //      courante, pas depuis now() (cohérent si la clôture la plus récente est
-        //      plus ancienne que la période courant).
-        $lastClosure = MonthlyClosure::orderBy('month', 'desc')->first();
-        if ($lastClosure) {
-            $prevMonth = \Carbon\Carbon::createFromFormat('Y-m', $lastClosure->month)
-                ->subMonthNoOverflow()->format('Y-m');
-            $prevClosure = MonthlyClosure::where('month', $prevMonth)->first();
-            if ($prevClosure) {
-                $current = (float) $lastClosure->gains;
-                $previous = (float) $prevClosure->gains;
-                if ($previous > 0) {
-                    $this->growthRate = round(($current - $previous) / $previous * 100, 1);
-                } elseif ($current === 0.0 && $previous === 0.0) {
-                    $this->growthRate = null; // 2 périodes vides = pas de signal
-                } elseif ($current !== 0.0 && $previous === 0.0) {
-                    // base précédente à zéro : variation infinie → non représentable en %
-                    $this->growthRate = null;
-                }
-            }
+
+        // Prévision paie du mois courant — utile à la trésorerie avant clôture.
+        if (auth()->user()?->hasPermission('employees')) {
+            $this->payrollEmployees = Employee::where('status', 'active')->count();
+            $this->payrollForecast = (float) Employee::where('status', 'active')->sum('base_salary');
         }
-        // NOTE sémantique: "gains" = solde de caisse DÉCLARÉ à la clôture (champ saisi),
-        // la croissance mesure donc la variation de ce solde déclaré, pas un profit calculé.
+
+        // Budgets consommés (calculé APRÈS le cache des catégories, donne la barre)
+        $this->budgetBars = $this->buildBudgetBars($this->categoryData);
 
         $this->recentExpenses = Expense::with('category')
             ->latest()
@@ -261,6 +264,67 @@ class Dashboard extends Component
             $this->totalUsers = User::count();
             $this->totalAuditLogs = AuditLog::count();
         }
+    }
+
+    /** Nombre de jours réels de la période courante (pour la moyenne/jour). */
+    private function periodDays(): int
+    {
+        $range = getPeriodRange(getPeriodFromDate(now()));
+        return max(1, (int) $range['start']->diffInDays($range['end']));
+    }
+
+    /** Taux de croissance avec adjacence vérifiée — évité le cache d'une valeur trompeuse. */
+    private function computeGrowthRate(): ?float
+    {
+        $lastClosure = \App\Domains\Treasury\Models\MonthlyClosure::orderBy('month', 'desc')->first();
+        if (!$lastClosure) {
+            return null;
+        }
+
+        $prevMonth = \Carbon\Carbon::createFromFormat('Y-m', $lastClosure->month)
+            ->subMonthNoOverflow()->format('Y-m');
+        $prevClosure = \App\Domains\Treasury\Models\MonthlyClosure::where('month', $prevMonth)->first();
+        if (!$prevClosure) {
+            return null; // gap : pas de mensonge, le widget affiche « N/A »
+        }
+
+        $current = (float) $lastClosure->gains;
+        $previous = (float) $prevClosure->gains;
+        if ($previous > 0) {
+            return round(($current - $previous) / $previous * 100, 1);
+        }
+        return null; // base à zéro : variation infinie non représentable
+    }
+
+    /**
+     * Budgets consommés par catégorie pour la période courante (Setting `category_budgets`).
+     * Retourne [] si aucun budget configuré — le widget ne s'affiche pas.
+     */
+    private function buildBudgetBars(array $categoryData): array
+    {
+        $budgets = Setting::get('category_budgets', '{}');
+        $budgets = json_decode((string) $budgets, true) ?? [];
+        if (empty($budgets)) {
+            return [];
+        }
+
+        $spent = collect($categoryData)->keyBy('id');
+        $bars = [];
+        foreach ($budgets as $catId => $budget) {
+            $budget = (float) $budget;
+            if ($budget <= 0) continue;
+            $row = $spent->get($catId);
+            $used = (float) ($row['total'] ?? 0);
+            $bars[] = [
+                'id' => (int) $catId,
+                'label' => $row['label'] ?? '#' . $catId,
+                'color' => $row['color'] ?? \App\Shared\Support\CategoryPalette::color((int) $catId),
+                'budget' => $budget,
+                'used' => $used,
+                'pct' => min(150, $budget > 0 ? round($used / $budget * 100) : 0),
+            ];
+        }
+        return collect($bars)->sortByDesc('pct')->values()->take(8)->toArray();
     }
 
     public function render()
@@ -406,13 +470,16 @@ class Dashboard extends Component
             ->values()
             ->toArray();
 
+        // % réel de la catégorie dans les dépenses totales de la période
+        $grandTotal = (float) \App\Domains\Expenses\Models\Expense::whereBetween('date', [$range['start'], $range['end']])->sum('amount');
+
         $this->categoryModalData = [
             'id' => $cat->id,
             'label' => $cat->translated_name,
-            'color' => $this->categoryColor($cat->id),
+            'color' => \App\Shared\Support\CategoryPalette::color($cat->id),
             'total' => $total,
             'count' => $count,
-            'pct' => 0,
+            'pct' => $grandTotal > 0 ? round($total / $grandTotal * 100, 1) : 0,
             'avg' => $count > 0 ? round($total / $count, 2) : 0,
             'max' => $count > 0 ? (float) $expenses->max('amount') : 0,
             'min' => $count > 0 ? (float) $expenses->min('amount') : 0,
