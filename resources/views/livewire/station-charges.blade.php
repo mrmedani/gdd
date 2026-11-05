@@ -100,8 +100,7 @@
                             <td class="py-4 px-6 font-bold text-slate-700 dark:text-slate-300 whitespace-nowrap"><span dir="ltr">{{ number_format($c->amount, 2, ',', ' ') }} {{ getCurrency() }}</span></td>
                             <td class="py-4 px-6 text-slate-500 dark:text-slate-400 text-sm max-w-xs truncate hidden md:table-cell">{{ $c->notes ?? '—' }}</td>
                             <td class="py-4 px-6 text-center whitespace-nowrap">
-                                {{-- FIX : popup de confirmation avant bascule du STATUT
-                                     (une inversion accidentelle envoie un WhatsApp + fausse le suivi)}}
+                                <!-- FIX : popup de confirmation avant bascule du STATUT (une inversion accidentelle envoie un WhatsApp + fausse le suivi) -->
                                 <button wire:click="togglePaid({{ $c->id }})" wire:confirm="{{ __('station_charges.toggle_confirm', ['name' => $c->station_name, 'default' => 'Changer le statut de paiement de cette station ?']) }}"
                                         wire:loading.class="opacity-40" wire:target="togglePaid"
                                         class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold cursor-pointer transition-colors {{ $c->paid_at ? 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800' : 'bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-800' }}">
