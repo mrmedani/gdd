@@ -105,6 +105,61 @@ class AlertsIndex extends Component
         $this->resetForm();
     }
 
+    /**
+     * Marque l'engagement comme PAYÉ ce mois en créant AUTOMATIQUEMENT la dépense
+     * correspondante dans /expenses (le badge ✓ Payé devient vrai par construction).
+     */
+    public function markAsPaid(int $id): void
+    {
+        $c = Commitment::where('created_by', auth()->id())->findOrFail($id);
+
+        // Déjà payé ce mois ? (garde-fou anti-doublon)
+        if ($c->wasPaidThisMonth()) {
+            $this->dispatch('toast', type: 'info', message: __('alerts.already_paid_this_month'));
+            return;
+        }
+
+        if ((float) $c->amount <= 0) {
+            $this->dispatch('toast', type: 'warning', message: __('alerts.no_amount_for_expense'));
+            return;
+        }
+
+        // Catégorie : meilleure correspondance par mots du libellé, sinon 'other', sinon 1ère catégorie active
+        $tokens = array_values(array_filter(explode(' ', strtolower(trim($c->label))), fn ($t) => mb_strlen($t) >= 4));
+        $categoryId = null;
+        $categoryKey = null;
+        $categories = \App\Domains\Expenses\Models\ExpenseCategory::query()->orderBy('id')->get();
+        foreach ($categories as $cat) {
+            $name = strtolower(trim((string) $cat->translated_name));
+            foreach ($tokens as $t) {
+                if ($t !== '' && str_contains($name, $t)) {
+                    $categoryId = $cat->id;
+                    $categoryKey = $cat->key;
+                    break 2;
+                }
+            }
+        }
+        if ($categoryId === null) {
+            $other = $categories->firstWhere('key', 'other') ?? $categories->first();
+            $categoryId = $other?->id;
+            $categoryKey = $other?->key;
+        }
+
+        \App\Domains\Expenses\Models\Expense::create([
+            'date' => now()->toDateString(),
+            'amount' => $c->amount,
+            'category_id' => $categoryId,
+            'category_key' => $categoryKey,
+            'description' => $c->label, // description = libellé exact → la détection ✓ Payé matche par construction
+            'payment_method' => 'cash',
+            'notes' => 'Auto depuis /alerts (engagement #' . $c->id . ')',
+            'created_by' => auth()->id(),
+        ]);
+
+        // L'observeur Expense genere la notification WhatsApp + les invalidations de caches.
+        $this->dispatch('toast', type: 'success', message: __('alerts.marked_as_paid'));
+    }
+
     public function delete(int $id): void
     {
         // Suppression : uniquement SES engagements

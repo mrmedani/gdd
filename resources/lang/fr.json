@@ -926,5 +926,10 @@
     "settings.whatsapp_worker_started": "Démarrage du worker WhatsApp en cours…",
     "statistics.growth_trend": "Taux de croissance des gains",
     "dashboard.dashboard": "Tableau de bord",
-    "expenses.add_expense": "Nouvelle dépense"
+    "expenses.add_expense": "Nouvelle dépense",
+    "alerts.mark_as_paid": "Marquer payé",
+    "alerts.mark_as_paid_confirm": "Marquer « :label » comme payé ce mois ? Une dépense sera créée automatiquement dans /expenses.",
+    "alerts.marked_as_paid": "Dépense créée ✓ — engagement marqué payé.",
+    "alerts.already_paid_this_month": "Cet engagement est déjà payé ce mois.",
+    "alerts.no_amount_for_expense": "Aucun montant défini pour cet engagement — renseignez-le d'abord dans l'alerte."
 }

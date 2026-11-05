@@ -926,5 +926,10 @@
     "settings.whatsapp_worker_started": "WhatsApp worker starting…",
     "statistics.growth_trend": "Gains growth rate",
     "dashboard.dashboard": "Dashboard",
-    "expenses.add_expense": "New expense"
+    "expenses.add_expense": "New expense",
+    "alerts.mark_as_paid": "Mark as paid",
+    "alerts.mark_as_paid_confirm": "Mark ':label' as paid this month? An expense will be automatically created in /expenses.",
+    "alerts.marked_as_paid": "Expense created ✓ — commitment marked as paid.",
+    "alerts.already_paid_this_month": "This commitment is already paid this month.",
+    "alerts.no_amount_for_expense": "No amount set for this commitment — enter it first in the alert."
 }

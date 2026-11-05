@@ -146,6 +146,16 @@
                                 {{ $c->label }}
                                 @if($paid)
                                     <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold ms-1 bg-emerald-50 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800">✓ {{ __('alerts.paid_this_month') }}</span>
+                                @else
+                                    <!-- Marquer payé → crée la dépense /expenses avec le libellé exact (badge ✓ devient vrai par construction) -->
+                                    <button type="button" wire:click="markAsPaid({{ $c->id }})"
+                                        wire:confirm="{{ __('alerts.mark_as_paid_confirm', ['label' => $c->label]) }}"
+                                        class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold ms-1 bg-slate-50 dark:bg-slate-800/60 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700 hover:bg-emerald-50 dark:hover:bg-emerald-900/40 hover:text-emerald-700 dark:hover:text-emerald-300 hover:border-emerald-300 dark:hover:border-emerald-800 transition-colors cursor-pointer">
+                                        <svg class="w-3 h-3 me-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/>
+                                        </svg>
+                                        {{ __('alerts.mark_as_paid') }}
+                                    </button>
                                 @endif
                             </td>
                             <td class="py-4 px-6 text-slate-600 dark:text-slate-400">

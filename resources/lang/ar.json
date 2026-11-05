@@ -926,5 +926,10 @@
     "settings.whatsapp_worker_started": "جارٍ تشغيل عامل واتساب…",
     "statistics.growth_trend": "معدل نمو الأرباح",
     "dashboard.dashboard": "لوحة القيادة",
-    "expenses.add_expense": "مصروف جديد"
+    "expenses.add_expense": "مصروف جديد",
+    "alerts.mark_as_paid": "تم العبء على أنه مدفوع",
+    "alerts.mark_as_paid_confirm": "تحديد « :label » كمدفوع هذا الشهر؟ سيتم إنشاء مصروف تلقائياً في /expenses.",
+    "alerts.marked_as_paid": "تم إنشاء المصروف ✓ — حدد التزام كمدفوع.",
+    "alerts.already_paid_this_month": "هذا الالتزام مدفوع بالفعل هذا الشهر.",
+    "alerts.no_amount_for_expense": "لم يتم تعيين مبلغ لهذا الالتزام — أدخل المبلغ أولاً في التنبيه."
 }
