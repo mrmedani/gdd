@@ -10,6 +10,11 @@
                 <svg wire:loading.remove wire:target="exportCsv" class="w-4 h-4 me-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
                 CSV
             </button>
+            <button wire:click="exportExcel" wire:loading.attr="disabled" class="inline-flex items-center justify-center bg-white dark:bg-slate-900 text-emerald-600 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800 px-4 py-2.5 rounded-xl font-semibold hover:bg-emerald-50 dark:hover:bg-emerald-900/30 cursor-pointer text-sm transition-colors">
+                <svg wire:loading wire:target="exportExcel" class="w-4 h-4 me-2 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                <svg wire:loading.remove wire:target="exportExcel" class="w-4 h-4 me-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 10l5 5 5-5M12 15V3"/></svg>
+                Excel
+            </button>
             <button wire:click="$set('showImportModal', true)" class="inline-flex items-center justify-center bg-white dark:bg-slate-900 text-indigo-600 dark:text-indigo-400 border border-indigo-200 dark:border-indigo-800 px-4 py-2.5 rounded-xl font-semibold hover:bg-indigo-50 dark:hover:bg-indigo-900/30 cursor-pointer text-sm transition-colors">
                 <svg class="w-4 h-4 me-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 10l5 5 5-5M12 15V3"/></svg>
                 {{ __('expenses.import_csv') }}
@@ -21,6 +26,16 @@
         </div>
     </div>
 
+    <!-- Résumé du filtre (FIX #6) -->
+    <div class="flex flex-wrap items-center gap-3 mb-4">
+        <span class="inline-flex items-center gap-2 px-4 py-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-sm">
+            <span class="text-slate-500 dark:text-slate-400 font-semibold">{{ __('expenses.filter_count', ['n' => $countFiltered]) }}</span>
+            <span class="text-slate-300 dark:text-slate-600">•</span>
+            <span class="text-emerald-600 dark:text-emerald-400 font-black">{{ formatMoney($totalFiltered) }}</span>
+            <span class="text-slate-500 dark:text-slate-400 font-semibold">{{ __('expenses.filter_summary') }}</span>
+        </span>
+    </div>
+
     <!-- Filters -->
     <div class="bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 p-6">
         <div class="flex items-center justify-between mb-4">
@@ -28,8 +43,8 @@
                 <svg class="w-4 h-4 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"/></svg>
                 Filtres & Recherche
             </h2>
-            @if($searchDateFrom || $searchDateTo || $searchCategory || $searchAmountMin || $searchAmountMax || $searchKeyword)
-                <button wire:click="$set('searchDateFrom', ''); $set('searchDateTo', ''); $set('searchCategory', ''); $set('searchAmountMin', ''); $set('searchAmountMax', ''); $set('searchKeyword', '');" class="text-xs font-bold text-rose-500 hover:text-rose-600 dark:hover:text-rose-400 transition-colors flex items-center gap-1.5 cursor-pointer bg-rose-50 dark:bg-rose-950/40 px-3 py-1 rounded-full border border-rose-200/50 dark:border-rose-900/30">
+            @if($searchDateFrom || $searchDateTo || $searchCategory || $searchAmountMin || $searchAmountMax || $searchKeyword || $searchCreator)
+                <button wire:click="$set('searchDateFrom', ''); $set('searchDateTo', ''); $set('searchCategory', ''); $set('searchAmountMin', ''); $set('searchAmountMax', ''); $set('searchKeyword', ''); $set('searchCreator', '');" class="text-xs font-bold text-rose-500 hover:text-rose-600 dark:hover:text-rose-400 transition-colors flex items-center gap-1.5 cursor-pointer bg-rose-50 dark:bg-rose-950/40 px-3 py-1 rounded-full border border-rose-200/50 dark:border-rose-900/30">
                     <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
                     Réinitialiser les filtres
                 </button>
@@ -85,6 +100,21 @@
                     <svg class="w-4 h-4 text-slate-400 absolute start-3.5 top-1/2 -translate-y-1/2 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
                 </div>
             </div>
+            @if(auth()->user()?->isAdmin() && $creators->isNotEmpty())
+            <div>
+                <label class="block text-xs font-bold text-slate-400 dark:text-slate-400 mb-2 uppercase tracking-wider">{{ __('common.created_by') }}</label>
+                <div class="relative">
+                    <select wire:model="searchCreator" wire:change="$refresh" class="w-full ps-10 pe-10 py-2.5 bg-slate-50/50 dark:bg-slate-950/50 border border-slate-200 dark:border-slate-800 rounded-xl text-sm focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all outline-none text-slate-700 dark:text-slate-300 appearance-none shadow-inner dark:shadow-none font-semibold cursor-pointer">
+                        <option value="" class="bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-200 font-semibold">{{ __('common.all') }}</option>
+                        @foreach($creators as $creator)
+                            <option value="{{ $creator->id }}" class="bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-200 font-semibold">{{ $creator->name }}</option>
+                        @endforeach
+                    </select>
+                    <svg class="w-4 h-4 text-slate-400 absolute start-3.5 top-1/2 -translate-y-1/2 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
+                    <svg class="w-4 h-4 text-slate-400 absolute end-3.5 top-1/2 -translate-y-1/2 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                </div>
+            </div>
+            @endif
         </div>
     </div>
 
@@ -169,6 +199,9 @@
                             </td>
                             <td class="py-4 px-6 text-center">
                                 <div class="flex items-center justify-center gap-2 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-all duration-300 translate-y-0 md:translate-y-2 md:group-hover:translate-y-0">
+                                    <button type="button" wire:click="viewExpense({{ $expense->id }})" class="text-slate-500 hover:text-white transition-colors w-9 h-9 hover:bg-blue-500 rounded-full cursor-pointer inline-flex items-center justify-center" title="{{ __('expenses.view_details') }}">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+                                    </button>
                                     @can('update', $expense)
                                         <a href="{{ route('expenses.edit', $expense->id) }}" class="text-indigo-500 hover:text-white transition-colors w-9 h-9 hover:bg-indigo-500 rounded-full inline-flex items-center justify-center" title="{{ __('common.edit') }}">
                                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
@@ -217,6 +250,10 @@
                     <span class="text-sm font-semibold text-blue-400">{{ count($selectedExpenses) }} sélection(s)</span>
                 </div>
                 <div class="flex items-center gap-2 pr-2">
+                    <button type="button" wire:click="exportSelected" wire:loading.attr="disabled" class="px-5 py-2.5 bg-emerald-500 hover:bg-emerald-600 text-white text-sm font-semibold rounded-xl transition-colors cursor-pointer flex items-center gap-2">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                        {{ __('expenses.export_selected') }}
+                    </button>
                     <button type="button" wire:click="deleteSelected" wire:confirm="Supprimer définitivement ces {{ count($selectedExpenses) }} dépenses ?" class="px-5 py-2.5 bg-red-500 hover:bg-red-600 text-white text-sm font-semibold rounded-xl transition-colors cursor-pointer flex items-center gap-2">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
                         Supprimer
@@ -255,7 +292,7 @@
                         <thead class="sticky top-0 bg-slate-100/90 dark:bg-slate-800/90 backdrop-blur-md z-10"><tr class="text-slate-500 dark:text-slate-400 font-bold uppercase tracking-wider"><th class="py-3 px-4">Date</th><th class="py-3 px-4">Description</th><th class="py-3 px-4">Catégorie</th><th class="py-3 px-4 text-right">Montant</th></tr></thead>
                         <tbody class="divide-y divide-slate-100 dark:divide-slate-800 bg-white dark:bg-slate-900">
                             @foreach($importPreviewRows as $row)
-                            <tr class="text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors"><td class="py-3 px-4 whitespace-nowrap">{{ $row['date'] }}</td><td class="py-3 px-4 font-medium">{{ $row['description'] }}</td><td class="py-3 px-4">
+                            <tr class="text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors @if($row['duplicate']) opacity-60 @endif"><td class="py-3 px-4 whitespace-nowrap">{{ $row['date'] }}</td><td class="py-3 px-4 font-medium">{{ $row['description'] }} @if($row['duplicate'])<span class="ms-1 px-1.5 py-0.5 bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300 rounded text-[9px] font-bold">⏳ {{ __('expenses.duplicate_warning') }}</span>@endif</td><td class="py-3 px-4">
                                 <span class="px-2 py-1 bg-slate-100 dark:bg-slate-800 rounded text-[10px] font-bold">{{ $row['category'] }}</span>
                             </td><td class="py-3 px-4 text-right font-bold text-slate-800 dark:text-white">{{ number_format($row['amount'], 2) }}</td></tr>
                             @endforeach
@@ -313,4 +350,60 @@
     </div>
     @endif
 </div>
+
+<!-- Détail de la dépense (modal, FIX #11 + #12) -->
+@if($showExpenseModal && count($expenseDetails) > 0)
+<div class="fixed inset-0 z-50 flex items-end sm:items-center justify-center sm:p-4" x-data x-show="true" x-transition.opacity>
+    <div x-show="true" x-transition.opacity class="absolute inset-0 bg-slate-900/60" wire:click="closeExpenseModal"></div>
+    <div x-show="true" x-transition
+         x-transition:enter="transition ease-out duration-200"
+         x-transition:enter-start="opacity-0 translate-y-8 sm:translate-y-0 sm:scale-95"
+         x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100"
+         class="relative bg-white dark:bg-slate-900 rounded-t-3xl sm:rounded-3xl shadow-2xl w-full sm:w-auto sm:min-w-[420px] sm:max-w-lg border border-slate-200/50 dark:border-slate-800/60 overflow-hidden max-h-[92vh] sm:max-h-[85vh] flex flex-col">
+        <!-- Header -->
+        <div class="shrink-0 p-5 border-b border-slate-100 dark:border-slate-800/60 flex items-center justify-between bg-gradient-to-br from-blue-50 to-transparent dark:from-blue-950/20">
+            <div class="min-w-0">
+                <p class="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-0.5">{{ __('expenses.expense_details') }}</p>
+                <h3 class="text-base font-bold text-slate-800 dark:text-white truncate">{{ $expenseDetails['description'] }}</h3>
+                <p class="text-xs text-emerald-600 dark:text-emerald-400 font-black mt-0.5">{{ formatMoney($expenseDetails['amount']) }} {{ getCurrency() }}</p>
+            </div>
+            <button wire:click="closeExpenseModal" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 p-1 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg cursor-pointer shrink-0">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+            </button>
+        </div>
+        <!-- Corps -->
+        <div class="p-5 overflow-y-auto space-y-4">
+            <div class="grid grid-cols-2 gap-3 text-sm">
+                <div><p class="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1">{{ __('expenses.date') }}</p><p class="font-semibold text-slate-700 dark:text-slate-300">{{ $expenseDetails['date'] }}</p></div>
+                <div><p class="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1">{{ __('expenses.category') }}</p><p class="font-semibold text-slate-700 dark:text-slate-300">{{ $expenseDetails['category'] }}</p></div>
+                <div><p class="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1">{{ __('expenses.payment_method') }}</p><p class="font-semibold text-slate-700 dark:text-slate-300">{{ __("payment_methods.{$expenseDetails['payment_method']}") }}</p></div>
+                <div><p class="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1">{{ __('common.created_by') }}</p><p class="font-semibold text-slate-700 dark:text-slate-300">{{ $expenseDetails['created_by'] }}</p></div>
+                @if($expenseDetails['employee'])
+                <div class="col-span-2"><p class="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1">{{ __('expenses.employee') }}</p><p class="font-semibold text-slate-700 dark:text-slate-300">{{ $expenseDetails['employee'] }}</p></div>
+                @endif
+                @if($expenseDetails['notes'])
+                <div class="col-span-2"><p class="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1">{{ __('expenses.notes') }}</p><p class="text-slate-600 dark:text-slate-400 text-xs">{{ $expenseDetails['notes'] }}</p></div>
+                @endif
+            </div>
+
+            <!-- Reçu INLINE (image affichée, PDF en lien) -->
+            @if($expenseDetails['receipt_path'])
+            <div>
+                <p class="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-2">{{ __('expenses.receipt_preview') }}</p>
+                @if($expenseDetails['is_image'])
+                    <img src="{{ asset('storage/' . $expenseDetails['receipt_path']) }}" alt="receipt"
+                         class="w-full max-h-64 object-contain rounded-xl border border-slate-200 dark:border-slate-700 bg-white cursor-zoom-in"
+                         onclick="window.open(this.src, '_blank')">
+                @else
+                    <a href="{{ asset('storage/' . $expenseDetails['receipt_path']) }}" target="_blank" class="inline-flex items-center gap-2 text-blue-600 dark:text-blue-400 text-sm font-semibold hover:underline">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"/></svg>
+                        {{ __('expenses.receipt_pdf') }}
+                    </a>
+                @endif
+            </div>
+            @endif
+        </div>
+    </div>
+</div>
+@endif
 

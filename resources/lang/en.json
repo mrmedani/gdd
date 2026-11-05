@@ -940,5 +940,18 @@
     "dashboard.payroll_forecast": "Estimated payroll",
     "dashboard.employees_active": "active employees",
     "dashboard.top_expenses_title": "Main expenses",
-    "dashboard.of_period": "of the period"
+    "dashboard.of_period": "of the period",
+    "validation.amount_max": "The amount cannot exceed 1,000,000.",
+    "validation.amount_numeric": "The amount must be a valid number.",
+    "expenses.import_done": "Import finished: :ok created, :dupe duplicates skipped, :err errors.",
+    "expenses.import_no_file": "No file imported.",
+    "expenses.import_bad_header": "Invalid CSV — missing columns: :columns",
+    "expenses.duplicate_warning": "Duplicate",
+    "expenses.filter_summary": "Filtered total",
+    "expenses.filter_count": ":n expense(s)",
+    "expenses.view_details": "Details",
+    "expenses.expense_details": "Expense details",
+    "expenses.receipt_preview": "Receipt",
+    "expenses.receipt_pdf": "View PDF",
+    "expenses.export_selected": "Export selection"
 }

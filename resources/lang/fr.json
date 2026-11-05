@@ -940,5 +940,18 @@
     "dashboard.payroll_forecast": "Paie du mois estimée",
     "dashboard.employees_active": "employés actifs",
     "dashboard.top_expenses_title": "Principales dépenses",
-    "dashboard.of_period": "de la période"
+    "dashboard.of_period": "de la période",
+    "validation.amount_max": "Le montant ne peut pas dépasser 1 000 000.",
+    "validation.amount_numeric": "Le montant doit être un nombre valide.",
+    "expenses.import_done": "Import terminé : :ok créé(s), :dupe doublon(s) sauté(s), :err erreur(s).",
+    "expenses.import_no_file": "Aucun fichier importé.",
+    "expenses.import_bad_header": "CSV invalide — colonnes manquantes : :columns",
+    "expenses.duplicate_warning": "Doublon",
+    "expenses.filter_summary": "Total affiché",
+    "expenses.filter_count": ":n dépense(s)",
+    "expenses.view_details": "Détails",
+    "expenses.expense_details": "Détail de la dépense",
+    "expenses.receipt_preview": "Reçu",
+    "expenses.receipt_pdf": "Voir le PDF",
+    "expenses.export_selected": "Exporter sélection"
 }

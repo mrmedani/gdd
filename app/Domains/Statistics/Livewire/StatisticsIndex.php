@@ -446,7 +446,7 @@ class StatisticsIndex extends Component
         if (!$this->period) return;
         $period = $this->period;
         $this->notify(__('statistics.export_started', ['default' => 'Export CSV en cours…']));
-        return Excel::download(new StatisticsPeriodExport($period), 'depenses-' . $period . '.csv', Excel::CSV);
+        return Excel::download(new StatisticsPeriodExport($period), 'depenses-' . $period . '.csv', \Maatwebsite\Excel\Excel::CSV);
     }
 
     /** SQL de regroupement par PÉRIODE métier (21→20) — délégue à PeriodSql (source unique partagée Dashboard/Statistics). */

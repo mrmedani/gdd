@@ -36,7 +36,8 @@ class ExpenseForm extends Component
     {
         $rules = [
             'date' => 'required|date',
-            'amount' => 'required|numeric|min:0.01',
+            // FIX #10 : montant plafonné (évite les dépenses géantes accidentelles) + normalisation traitée au hook
+            'amount' => 'required|numeric|min:0.01|max:1000000',
             'category_id' => 'required|exists:expense_categories,id',
             'sub_category_id' => 'nullable|exists:expense_categories,id',
             'description' => 'required|string|max:500',
@@ -52,14 +53,26 @@ class ExpenseForm extends Component
         return $rules;
     }
 
-    protected $messages = [
-        'date.required' => 'validation.date_required',
-        'amount.required' => 'validation.amount_required',
-        'amount.min' => 'validation.amount_min',
-        'category_id.required' => 'validation.category_required',
-        'description.required' => 'validation.description_required',
-        'receipt.max' => 'validation.receipt_max',
-    ];
+    /**
+     * Messages i18n : les clés passent par __() — Livewire traite la valeur
+     * comme un STRING BRUT sinon (le bug affichait « validation.amount_min »
+     * littéral dans le formulaire).
+     */
+    /** Résout les messages i18n au moment de la validation (locale à jour) —
+     * Livewire 3 charge cette méthode automatiquement pour validate(). */
+    protected function validationMessages(): array
+    {
+        return [
+            'date.required' => __('validation.date_required'),
+            'amount.required' => __('validation.amount_required'),
+            'amount.min' => __('validation.amount_min'),
+            'amount.max' => __('validation.amount_max'),
+            'amount.numeric' => __('validation.amount_numeric'),
+            'category_id.required' => __('validation.category_required'),
+            'description.required' => __('validation.description_required'),
+            'receipt.max' => __('validation.receipt_max'),
+        ];
+    }
 
     public function mount(?Expense $expense = null): void
     {
@@ -89,14 +102,22 @@ class ExpenseForm extends Component
         }
     }
 
+    public function updatedAmount(): void
+    {
+        // Normalisation LIVE (espaces insécables + séparateurs de milliers)
+        $this->amount = str_replace(["\u{00A0}", ' ', ','], ['', '', '.'], (string) $this->amount);
+        $this->resetValidation('amount');
+    }
+
     public function save(): void
     {
-        // Nettoyer le montant avant validation
+        // Nettoyer le montant avant validation (espaces insécables + séparateurs de milliers + virgules)
         if (is_string($this->amount)) {
-            $this->amount = str_replace(',', '.', $this->amount);
+            $this->amount = str_replace(["\u{00A0}", ' ', ','], ['', '', '.'], $this->amount);
         }
 
-        $this->validate();
+        // Messages i18n exlicitement fournis (la locale peut différer au boot du composant)
+        $this->validate($this->rules(), $this->validationMessages());
 
         try {
             Expense::assertPeriodNotClosed($this->date);

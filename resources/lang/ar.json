@@ -940,5 +940,18 @@
     "dashboard.payroll_forecast": "رواتب الشهر المتوقعة",
     "dashboard.employees_active": "موظف نشط",
     "dashboard.top_expenses_title": "المصاريف الرئيسية",
-    "dashboard.of_period": "من الفترة"
+    "dashboard.of_period": "من الفترة",
+    "validation.amount_max": "لا يمكن أن يتجاوز المبلغ 1,000,000.",
+    "validation.amount_numeric": "يجب أن يكون المبلغ رقماً صالحاً.",
+    "expenses.import_done": "تم الاستيراد: :ok صُنعت، :dupe مكرر التُخي، :err خطأ.",
+    "expenses.import_no_file": "لم يتم استيراد ملف.",
+    "expenses.import_bad_header": "CSV غير صالح — أعمدة ناقصة: :columns",
+    "expenses.duplicate_warning": "مكرر",
+    "expenses.filter_summary": "المجموع المعروض",
+    "expenses.filter_count": ":n مصروف",
+    "expenses.view_details": "التفاصيل",
+    "expenses.expense_details": "تفاصيل المصروف",
+    "expenses.receipt_preview": "الإيصال",
+    "expenses.receipt_pdf": "عرض PDF",
+    "expenses.export_selected": "تصدير المحدد"
 }

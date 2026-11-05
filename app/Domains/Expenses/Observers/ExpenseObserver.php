@@ -16,6 +16,15 @@ use Illuminate\Support\Facades\Storage;
 
 class ExpenseObserver
 {
+    /**
+     * Flag de SILENCE notification (import CSV en masse) : quand true, les
+     * notifications WhatsApp/alertes par ligne sont SUPPRIMÉES — il faut
+     * (à l'import) 1 seule notification récapitulative à la fin, sinon
+     * 20 lignes importées = 20 messages aux admins = spam+anti-spam.
+     * AuditLog + invalidations de caches restent actifs (traçabilité cohérente).
+     */
+    public static bool $skipNotifications = false;
+
     private function notifyAdmins(object $notification): void
     {
         try {
@@ -61,7 +70,9 @@ class ExpenseObserver
 
         $this->deductAdvances($expense);
 
-        $this->notifyAdmins(new ExpenseCreatedNotification($expense));
+        if (!self::$skipNotifications) {
+            $this->notifyAdmins(new ExpenseCreatedNotification($expense));
+        }
 
         Log::info('Expense created', [
             'id' => $expense->id,
@@ -90,7 +101,9 @@ class ExpenseObserver
             'user_id' => auth()->id(),
         ]);
 
-        $this->notifyAdmins(new ExpenseModifiedNotification($expense, $expense->getChanges()));
+        if (!self::$skipNotifications) {
+            $this->notifyAdmins(new ExpenseModifiedNotification($expense, $expense->getChanges()));
+        }
     }
 
     public function deleted(Expense $expense): void
@@ -117,7 +130,9 @@ class ExpenseObserver
             'user_id' => auth()->id(),
         ]);
 
-        $this->notifyAdmins(new ExpenseDeletedNotification($expense));
+        if (!self::$skipNotifications) {
+            $this->notifyAdmins(new ExpenseDeletedNotification($expense));
+        }
     }
 
     private function deductAdvances(Expense $expense): void
