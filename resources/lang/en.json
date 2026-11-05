@@ -900,5 +900,12 @@
     "alerts.once_date_required": "The one-time due date is required.",
     "alerts.once_date_past": "Date must be today or later.",
     "station_charges.month_closed": "Period already closed",
-    "station_charges.toggle_confirm": "Change payment status of :name? This will send a WhatsApp notification and flip the Paid/Remaining tracking."
+    "station_charges.toggle_confirm": "Change payment status of :name? This will send a WhatsApp notification and flip the Paid/Remaining tracking.",
+    "statistics.station_charges_title": "Station commissions",
+    "statistics.station_paid": "Paid",
+    "statistics.station_unpaid": "Remaining",
+    "statistics.station_no_data": "No commission recorded for this period.",
+    "statistics.export_xlsx": "Excel",
+    "statistics.export_csv": "CSV",
+    "statistics.export_started": "Download starting…"
 }

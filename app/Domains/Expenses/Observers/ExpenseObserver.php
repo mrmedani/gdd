@@ -8,6 +8,7 @@ use App\Domains\Alerts\Notifications\ExpenseDeletedNotification;
 use App\Domains\Employees\Models\SalaryAdvance;
 use App\Domains\Expenses\Models\AuditLog;
 use App\Domains\Expenses\Models\Expense;
+use App\Domains\Statistics\Support\StatsCacheInvalidator;
 use App\Models\User;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Notification;
@@ -46,6 +47,7 @@ class ExpenseObserver
     {
         // INVALIDATION IA : la saisie fraîche doit être visible à l'assistant immédiatement
         \App\Domains\AI\Support\AiCacheInvalidator::invalidateExpenses();
+        \App\Domains\Statistics\Support\StatsCacheInvalidator::bump();
 
         if ($userId = auth()->id()) {
             AuditLog::create([
@@ -70,6 +72,7 @@ class ExpenseObserver
     public function updated(Expense $expense): void
     {
         \App\Domains\AI\Support\AiCacheInvalidator::invalidateExpenses();
+        \App\Domains\Statistics\Support\StatsCacheInvalidator::bump();
 
         if ($userId = auth()->id()) {
             AuditLog::create([
@@ -93,6 +96,7 @@ class ExpenseObserver
     public function deleted(Expense $expense): void
     {
         \App\Domains\AI\Support\AiCacheInvalidator::invalidateExpenses();
+        \App\Domains\Statistics\Support\StatsCacheInvalidator::bump();
 
         if ($userId = auth()->id()) {
             AuditLog::create([

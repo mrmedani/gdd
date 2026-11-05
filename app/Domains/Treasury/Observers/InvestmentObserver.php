@@ -8,16 +8,19 @@ class InvestmentObserver
 {
     public function created(Investment $iv): void
     {
+        \App\Domains\Statistics\Support\StatsCacheInvalidator::bump();
         \App\Domains\AI\Support\AiCacheInvalidator::invalidateInvestments();
     }
 
     public function updated(Investment $iv): void
     {
+        \App\Domains\Statistics\Support\StatsCacheInvalidator::bump();
         \App\Domains\AI\Support\AiCacheInvalidator::invalidateInvestments();
     }
 
     public function deleted(Investment $iv): void
     {
+        \App\Domains\Statistics\Support\StatsCacheInvalidator::bump();
         \App\Domains\AI\Support\AiCacheInvalidator::invalidateInvestments();
     }
 

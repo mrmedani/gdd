@@ -5,6 +5,7 @@ namespace App\Domains\Treasury\Livewire;
 use App\Domains\Alerts\Notifications\MonthlyClosureNotification;
 use App\Domains\Expenses\Models\Expense;
 use App\Domains\Treasury\Models\MonthlyClosure;
+use App\Domains\Statistics\Support\StatsCacheInvalidator;
 use App\Models\User;
 use App\Shared\Livewire\WithToast;
 use Carbon\Carbon;

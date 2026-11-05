@@ -6,6 +6,18 @@
             </h1>
             <p class="text-slate-500 dark:text-slate-500 text-sm mt-1.5 font-medium">{{ __('statistics.subtitle') }}</p>
         </div>
+        <!-- FIX : export XLSX/CSV de la période affichée -->
+        <div class="flex flex-wrap items-center gap-3 w-full md:w-72">
+            <button type="button" wire:click="exportExcel"
+                class="flex-1 px-4 py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl transition-colors shadow-lg shadow-emerald-600/20 cursor-pointer text-sm">
+                📥 {{ __('statistics.export_xlsx', ['default' => 'Excel']) }}
+            </button>
+            <button type="button" wire:click="exportCsv"
+                class="flex-1 px-4 py-3 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 font-bold rounded-xl hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors cursor-pointer text-sm">
+                📄 {{ __('statistics.export_csv', ['default' => 'CSV']) }}
+            </button>
+        </div>
+
         <div class="w-full md:w-72">
             <div x-data="{ 
                      open: false, 
@@ -95,6 +107,32 @@
                     <span class="text-slate-400 dark:text-slate-500 text-[11px]">{{ __('statistics.vs_previous') }}</span>
                 @endif
             </div>
+            @endif
+        </div>
+
+        <!-- FA: Total commissions stations (débruité tout nouveau module) -->
+        <div class="bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border border-slate-200/50 dark:border-slate-800/60 rounded-2xl p-5 shadow-lg">
+            <p class="text-slate-400 dark:text-slate-500 text-xs font-bold uppercase tracking-wider mb-1">{{ __('statistics.station_charges_title') }}</p>
+            <h3 class="text-2xl font-black text-amber-600 dark:text-amber-500"><span dir="rtl" style="unicode-bidi:plaintext">{{ formatMoney($stationChargesTotal) }}</span></h3>
+            <div class="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1">
+                <span class="inline-flex items-center gap-1 text-[11px] font-semibold bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300 px-2 py-1 rounded-lg">
+                    ✓ {{ __('statistics.station_paid') }}: <span dir="ltr">{{ formatMoney($stationPaidTotal) }}</span>
+                </span>
+                <span class="inline-flex items-center gap-1 text-[11px] font-semibold bg-rose-100 dark:bg-rose-900/30 text-rose-700 dark:text-rose-300 px-2 py-1 rounded-lg">
+                    ⏳ {{ __('statistics.station_unpaid') }}: <span dir="ltr">{{ formatMoney($stationUnpaidTotal) }}</span>
+                </span>
+            </div>
+            @if(count($stationChargesRows) > 0)
+            <div class="mt-3 space-y-1.5 max-h-40 overflow-y-auto">
+                @foreach($stationChargesRows as $row)
+                    <div class="flex items-center justify-between text-xs {{ $row['paid'] ? 'text-emerald-700 dark:text-emerald-300' : 'text-slate-600 dark:text-slate-400' }}">
+                        <span class="truncate">{{ $row['paid'] ? '✓' : '⏳' }} {{ $row['station'] }}</span>
+                        <span dir="ltr" class="font-semibold">{{ number_format($row['amount'], 2, ',', ' ') }}</span>
+                    </div>
+                @endforeach
+            </div>
+            @else
+            <p class="text-[11px] text-slate-400 dark:text-slate-500 mt-2">{{ __('statistics.station_no_data', ['default' => 'Aucune commission enregistrée pour cette période.']) }}</p>
             @endif
         </div>
         <div class="relative bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border border-slate-200/50 dark:border-slate-800/60 rounded-2xl p-5 shadow-lg overflow-hidden">

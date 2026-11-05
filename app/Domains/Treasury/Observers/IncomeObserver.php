@@ -8,6 +8,7 @@ use App\Domains\Alerts\Notifications\IncomeModifiedNotification;
 use App\Domains\Treasury\Models\Income;
 use App\Models\User;
 use Illuminate\Support\Facades\Log;
+use App\Domains\Statistics\Support\StatsCacheInvalidator;
 use Illuminate\Support\Facades\Notification;
 
 class IncomeObserver
@@ -40,18 +41,21 @@ class IncomeObserver
 
     public function created(Income $income): void
     {
+        \App\Domains\Statistics\Support\StatsCacheInvalidator::bump();
         \App\Domains\AI\Support\AiCacheInvalidator::invalidateIncomes();
         $this->notifyIncomesRoles(new IncomeCreatedNotification($income));
     }
 
     public function updated(Income $income): void
     {
+        \App\Domains\Statistics\Support\StatsCacheInvalidator::bump();
         \App\Domains\AI\Support\AiCacheInvalidator::invalidateIncomes();
         $this->notifyIncomesRoles(new IncomeModifiedNotification($income));
     }
 
     public function deleted(Income $income): void
     {
+        \App\Domains\Statistics\Support\StatsCacheInvalidator::bump();
         \App\Domains\AI\Support\AiCacheInvalidator::invalidateIncomes();
         $this->notifyIncomesRoles(new IncomeDeletedNotification($income));
     }

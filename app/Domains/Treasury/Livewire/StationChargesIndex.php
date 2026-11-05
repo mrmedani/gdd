@@ -7,6 +7,7 @@ use App\Models\User;
 use App\Domains\Treasury\Models\StationCharge;
 use App\Shared\Livewire\WithToast;
 use Illuminate\Support\Facades\Log;
+use App\Domains\Statistics\Support\StatsCacheInvalidator;
 use Illuminate\Support\Facades\Notification;
 use Livewire\Component;
 
@@ -113,6 +114,7 @@ class StationChargesIndex extends Component
 
         if (isset($charge) && $charge) {
             $this->notifyStations($charge, $this->chargeId ? 'updated' : 'created');
+            \App\Domains\Statistics\Support\StatsCacheInvalidator::bump();
         }
 
         $this->resetForm();
@@ -133,6 +135,7 @@ class StationChargesIndex extends Component
         $charge->delete();
         $this->notify(__('station_charges.deleted', ['default' => 'Commission supprimée.']));
         $this->notifyStations($snapshot, 'deleted');
+        \App\Domains\Statistics\Support\StatsCacheInvalidator::bump();
     }
 
     /** STATUT : bascule la station entre Payée / Non payée (toggle direct dans le tableau). */
@@ -148,6 +151,7 @@ class StationChargesIndex extends Component
         // WhatsApp + in-app : réglé / remis en impayé (actions = respect du même
         // destinataire : créateur + admins + opt-in)
         $this->notifyStations($charge, $charge->paid_at !== null ? 'paid' : 'unpaid');
+        \App\Domains\Statistics\Support\StatsCacheInvalidator::bump();
     }
 
     public function prevPeriod(): void

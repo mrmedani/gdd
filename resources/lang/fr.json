@@ -900,5 +900,12 @@
     "alerts.once_date_required": "La date de l'échéance unique est obligatoire.",
     "alerts.once_date_past": "La date doit être aujourd'hui ou plus tard.",
     "station_charges.month_closed": "Période déjà clôturée",
-    "station_charges.toggle_confirm": "Changer le statut de paiement de :name ? Le changement enverra une notification WhatsApp et basculera le suivi Payé/Reste."
+    "station_charges.toggle_confirm": "Changer le statut de paiement de :name ? Le changement enverra une notification WhatsApp et basculera le suivi Payé/Reste.",
+    "statistics.station_charges_title": "Commissions stations",
+    "statistics.station_paid": "Payé",
+    "statistics.station_unpaid": "Reste à percevoir",
+    "statistics.station_no_data": "Aucune commission enregistrée pour cette période.",
+    "statistics.export_xlsx": "Excel",
+    "statistics.export_csv": "CSV",
+    "statistics.export_started": "Téléchargement en cours…"
 }
