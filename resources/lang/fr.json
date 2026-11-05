@@ -899,5 +899,6 @@
     "alerts.recurrence_invalid": "Mode d'échéance invalide.",
     "alerts.once_date_required": "La date de l'échéance unique est obligatoire.",
     "alerts.once_date_past": "La date doit être aujourd'hui ou plus tard.",
-    "station_charges.month_closed": "Période déjà clôturée"
+    "station_charges.month_closed": "Période déjà clôturée",
+    "station_charges.toggle_confirm": "Changer le statut de paiement de :name ? Le changement enverra une notification WhatsApp et basculera le suivi Payé/Reste."
 }

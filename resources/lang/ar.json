@@ -898,5 +898,6 @@
     "alerts.recurrence_invalid": "طريقة الاستحقاق غير صالحة.",
     "alerts.once_date_required": "تاريخ الاستحقاق الوحيد إلزامي.",
     "alerts.once_date_past": "يجب أن يكون التاريخ اليوم أو بعده.",
-    "station_charges.month_closed": "فترة مغلقة بالفعل"
+    "station_charges.month_closed": "فترة مغلقة بالفعل",
+    "station_charges.toggle_confirm": "هل تريد تغيير حالة الدفع للـ :name؟ سيتم إرسال إشعار واتساب وسيتم تغيير معدل suivi المدفوع/المتبق."
 }
