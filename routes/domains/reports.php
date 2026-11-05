@@ -10,4 +10,9 @@ Route::middleware(['auth', 'permission:reports'])->prefix('reports')->name('repo
     Route::post('/annual-pdf', [ReportController::class, 'annualPdf'])->name('annual.pdf');
     Route::post('/monthly-excel', [ReportController::class, 'monthlyExcel'])->name('monthly.excel');
     Route::post('/annual-excel', [ReportController::class, 'annualExcel'])->name('annual.excel');
+
+    // Rapport personnalisé (plage de dates) + partage WhatsApp
+    Route::post('/custom-pdf', [ReportController::class, 'customPdf'])->name('custom.pdf');
+    Route::post('/custom-excel', [ReportController::class, 'customExcel'])->name('custom.excel');
+    Route::post('/share-whatsapp', [ReportController::class, 'shareWhatsApp'])->name('share.whatsapp');
 });

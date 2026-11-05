@@ -8,15 +8,31 @@ use App\Domains\Expenses\Models\ExpenseCategory;
 use App\Domains\Treasury\Models\MonthlyClosure;
 use App\Shared\Enums\PaymentMethod;
 use Illuminate\Support\Facades\Gate;
+use App\Shared\Livewire\WithToast;
 use Livewire\Component;
 
 class ReportsIndex extends Component
 {
+    use WithToast;
     public string $selectedPeriod = '';
     public int $annualYear;
     public ?int $filterCategory = null;
     public ?int $filterEmployee = null;
     public string $filterPaymentMethod = '';
+
+    // Rapport personnalisé (plage de dates libre)
+    public string $rangeFrom = '';
+    public string $rangeTo = '';
+
+    // Preview annuel (FIX #7)
+    public float $annualPreviewTotal = 0;
+    public int $annualPreviewCount = 0;
+    public float $annualPreviewAvg = 0;
+    public array $annualPreviewByMonth = [];
+    public array $annualPreviewByCategory = [];
+    public ?int $annualCategory = null;
+    public ?int $annualEmployee = null;
+    public string $annualPaymentMethod = '';
 
     public float $previewTotal = 0;
     public int $previewCount = 0;
@@ -33,16 +49,29 @@ class ReportsIndex extends Component
         $this->selectedPeriod = getPeriodFromDate(now());
         $this->annualYear = (int) now()->year;
         $this->refreshPreview();
+        $this->refreshAnnualPreview();
     }
 
-    public function updatedSelectedPeriod(): void
+    /**
+     * FIX #1 : le preview suit TOUS les changements de filtres (avant, les filtres
+     * cat/employé/paiement étaient ignorés dans le preview mais appliqués au PDF
+     * téléchargé → le preview « mentait »).
+     * FIX #5 : annualYear met à jour le preview ANNUEL, plus le mensuel.
+     */
+    public function updated(string $property, mixed $value): void
     {
-        $this->refreshPreview();
-    }
-
-    public function updatedAnnualYear(): void
-    {
-        $this->refreshPreview();
+        if ($property === 'selectedPeriod') {
+            $this->refreshPreview();
+            return;
+        }
+        if ($property === 'annualYear' || str_starts_with($property, 'annual')) {
+            $this->refreshAnnualPreview();
+            return;
+        }
+        if (str_starts_with($property, 'filter') || str_starts_with($property, 'range')) {
+            $this->refreshPreview();
+            return;
+        }
     }
 
     public function refreshPreview(): void
@@ -95,6 +124,99 @@ class ReportsIndex extends Component
         }
 
         return $query;
+    }
+
+    /**
+     * FIX #7 : preview du rapport ANNUEL (total, 12 mois, top categories) —
+     * le volet annuel téléchargeait sans jamais montrer son contenu.
+     */
+    public function refreshAnnualPreview(): void
+    {
+        $year = (int) $this->annualYear;
+
+        $expenses = $this->buildAnnualQuery($year)->get();
+        $this->annualPreviewTotal = (float) $expenses->sum('amount');
+        $this->annualPreviewCount = $expenses->count();
+        $activeMonths = collect(range(1, 12))->filter(function ($m) use ($expenses, $year) {
+            return $expenses->contains(fn ($e) => getPeriodFromDate($e->date) === sprintf('%04d-%02d', $year, $m));
+        })->count();
+        $this->annualPreviewAvg = $activeMonths > 0 ? round($this->annualPreviewTotal / $activeMonths, 2) : 0;
+
+        // 12 périodes métier (label 21→20) de l'année
+        $periodTotals = [];
+        foreach ($expenses as $e) {
+            $p = getPeriodFromDate($e->date);
+            $periodTotals[$p] = ($periodTotals[$p] ?? 0) + (float) $e->amount;
+        }
+        $this->annualPreviewByMonth = collect(range(1, 12))->map(function ($m) use ($year, $periodTotals) {
+            $p = sprintf('%04d-%02d', $year, $m);
+            $periodDate = \Carbon\Carbon::createFromFormat('Y-m', $p);
+            return [
+                'label' => __($periodDate->startOfMonth()->format('F')),
+                'total' => (float) ($periodTotals[$p] ?? 0),
+            ];
+        })->toArray();
+
+        // Top catégories
+        $this->annualPreviewByCategory = \App\Domains\Reports\Support\ReportAggregator::byCategory($expenses, $this->annualPreviewTotal)
+            ->map(fn ($items, $cat) => ['name' => $cat] + $items)
+            ->take(6)
+            ->values()
+            ->toArray();
+    }
+
+    private function buildAnnualQuery(int $year): \Illuminate\Database\Eloquent\Builder
+    {
+        $query = Expense::with('category.parent')->byYear($year);
+
+        $filters = [
+            'category_id' => $this->annualCategory,
+            'employee_id' => $this->annualEmployee,
+            'payment_method' => $this->annualPaymentMethod,
+        ];
+        \App\Domains\Reports\Support\ReportAggregator::applyFilters($query, $filters);
+        return $query;
+    }
+
+    /**
+     * FIX #8 : envoi WhatsApp du PDF — le téléphone de l'utilisateur vient de
+     * son profil (whatsapp_phone), le worker push le document.
+     */
+    public function sendWhatsApp(string $kind): void
+    {
+        $data = [];
+        if ($kind === 'monthly') {
+            $data['year'] = (int) \Carbon\Carbon::createFromFormat('!Y-m', $this->selectedPeriod)->year;
+            $data['month'] = (int) \Carbon\Carbon::createFromFormat('!Y-m', $this->selectedPeriod)->month;
+            $data += ['category_id' => $this->filterCategory, 'employee_id' => $this->filterEmployee, 'payment_method' => $this->filterPaymentMethod];
+        } elseif ($kind === 'annual') {
+            $data['year'] = $this->annualYear;
+            $data += ['category_id' => $this->annualCategory, 'employee_id' => $this->annualEmployee, 'payment_method' => $this->annualPaymentMethod];
+        } else {
+            // Rapport personnalisé : validation préalable client
+            if (!$this->rangeFrom || !$this->rangeTo) {
+                $this->dispatch('toast', type: 'warning', message: __('reports.custom_range_missing'));
+                return;
+            }
+            if ($this->rangeTo < $this->rangeFrom) {
+                $this->dispatch('toast', type: 'warning', message: __('reports.custom_range_bad'));
+                return;
+            }
+            $data = [
+                'date_from' => $this->rangeFrom,
+                'date_to' => $this->rangeTo,
+                'category_id' => $this->filterCategory,
+                'employee_id' => $this->filterEmployee,
+                'payment_method' => $this->filterPaymentMethod,
+            ];
+        }
+
+        $result = \App\Domains\Reports\Support\ReportPdf::shareWhatsApp(auth()->id(), $kind, $data);
+        if ($result['ok']) {
+            $this->notify(__('reports.share_sent'), 'success');
+        } else {
+            $this->notify($result['error'] ?? __('reports.share_failed'), 'error');
+        }
     }
 
     public function render()

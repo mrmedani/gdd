@@ -1,5 +1,6 @@
 const express = require('express');
 const { Client, LocalAuth } = require('whatsapp-web.js');
+const { MessageMedia } = require('whatsapp-web.js');
 const qrcode = require('qrcode');
 const path = require('path');
 const fs = require('fs');
@@ -218,6 +219,28 @@ app.post('/send', async (req, res) => {
     try {
         const n = chatId.includes('@c.us') ? chatId : `${chatId}@c.us`;
         await client.sendMessage(n, message);
+        res.json({ ok: true });
+    } catch (err) {
+        res.status(500).json({ ok: false, error: err.message });
+    }
+});
+
+// Envoi d'un FICHIER (document) — ex : PDF de rapport envoyé via WhatsApp
+app.post('/send-media', async (req, res) => {
+    const { chatId, filePath, mimetype, filename, caption } = req.body || {};
+    if (!client || clientStatus !== 'connected') {
+        return res.status(400).json({ ok: false, error: 'WhatsApp not connected' });
+    }
+    if (!chatId) return res.status(400).json({ ok: false, error: 'chatId required' });
+    if (!filePath || !fs.existsSync(filePath)) {
+        return res.status(400).json({ ok: false, error: 'filePath required/not found' });
+    }
+    try {
+        const n = chatId.includes('@c.us') ? chatId : `${chatId}@c.us`;
+        const media = MessageMedia.fromFilePath(filePath);
+        if (mimetype) media.mimetype = mimetype;
+        if (filename) media.filename = filename;
+        await client.sendMessage(n, media, { caption: caption || undefined });
         res.json({ ok: true });
     } catch (err) {
         res.status(500).json({ ok: false, error: err.message });

@@ -91,6 +91,36 @@ class WhatsAppService
         return ($json['ok'] ?? false) === true;
     }
 
+    /**
+     * Envoi d'un FICHIER (document, ex : PDF de rapport) avec légende.
+     * Le worker expose /send-media (ajout : whatsapp-worker/server.js).
+     */
+    public static function sendMedia(string $workerUrl, string $chatId, string $filePath, ?string $filename = null, ?string $caption = null, int $timeout = 60): bool
+    {
+        $number = ltrim($chatId, '+');
+        if (!str_contains($number, '@')) {
+            $number .= '@c.us';
+        }
+        if (!is_file($filePath)) {
+            Log::warning('WhatsApp sendMedia: file not found', ['path' => $filePath]);
+            return false;
+        }
+        $payload = json_encode([
+            'chatId' => $number,
+            'filePath' => $filePath,
+            'mimetype' => 'application/pdf',
+            'filename' => $filename,
+            'caption' => $caption,
+        ]);
+        $result = static::curlRequest('POST', $workerUrl . '/send-media', $payload, $timeout);
+        if ($result === null) {
+            Log::warning('WhatsApp: send-media request failed');
+            return false;
+        }
+        $json = json_decode($result, true);
+        return ($json['ok'] ?? false) === true;
+    }
+
     public static function startWorker(string $workerUrl): bool
     {
         return static::curlRequest('POST', $workerUrl . '/start', null, 5) !== null;
