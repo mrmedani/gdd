@@ -365,10 +365,10 @@
                     <div class="p-3 bg-white/15 rounded-2xl backdrop-blur-md border border-white/10">
                         <svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                     </div>
-                    <span class="text-blue-100 font-bold text-xs uppercase tracking-wider">{{ __('dashboard.monthly_total') }}</span>
+                    <span class="text-blue-100 font-bold text-[10px] sm:text-xs uppercase tracking-wider min-w-0 text-end leading-tight">{{ __('dashboard.monthly_total') }}</span>
                 </div>
                 <div>
-                    <h3 class="text-3xl font-black tracking-tight font-heading">{{ formatMoney($monthlyTotal) }}</h3>
+                    <h3 class="text-xl sm:text-3xl font-black tracking-tight font-heading whitespace-nowrap overflow-hidden text-ellipsis">{{ formatMoney($monthlyTotal) }}</h3>
                     <p class="text-blue-100/90 font-semibold mt-1.5 text-xs flex items-center gap-1.5"><span class="bg-white/20 px-2 py-0.5 rounded">{{ getCurrency() }}</span> &bull; {{ $monthlyCount }} {{ __('dashboard.expenses_count') }}</p>
                 </div>
             </div>
@@ -384,10 +384,10 @@
                     <div class="p-3 bg-white/15 rounded-2xl backdrop-blur-md border border-white/10">
                         <svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                     </div>
-                    <span class="text-amber-100 font-bold text-xs uppercase tracking-wider">{{ __('dashboard.today') }}</span>
+                    <span class="text-amber-100 font-bold text-[10px] sm:text-xs uppercase tracking-wider min-w-0 text-end leading-tight">{{ __('dashboard.today') }}</span>
                 </div>
                 <div>
-                    <h3 class="text-3xl font-black tracking-tight font-heading">{{ formatMoney($dailyTotal) }}</h3>
+                    <h3 class="text-xl sm:text-3xl font-black tracking-tight font-heading whitespace-nowrap overflow-hidden text-ellipsis">{{ formatMoney($dailyTotal) }}</h3>
                     <p class="text-amber-100/90 font-semibold mt-1.5 text-xs flex items-center gap-1.5"><span class="bg-white/20 px-2 py-0.5 rounded">{{ getCurrency() }}</span> &bull; {{ __('dashboard.daily_total') }}</p>
                 </div>
             </div>
@@ -400,10 +400,10 @@
                 <div class="p-3 bg-green-50 dark:bg-green-500/10 text-green-600 dark:text-green-400 rounded-2xl border border-green-100/50 dark:border-green-500/20 group-hover:bg-green-600 group-hover:text-white transition-colors duration-300">
                     <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg>
                 </div>
-                <span class="text-slate-400 dark:text-slate-500 font-bold text-xs uppercase tracking-wider">{{ __('dashboard.daily_average') }}</span>
+                <span class="text-slate-400 dark:text-slate-500 font-bold text-[10px] sm:text-xs uppercase tracking-wider min-w-0 text-end leading-tight">{{ __('dashboard.daily_average') }}</span>
             </div>
             <div>
-                <h3 class="text-3xl font-black text-slate-800 dark:text-white font-heading">{{ formatMoney($averagePerDay) }} <span class="text-sm text-slate-400 font-bold">{{ getCurrency() }}</span></h3>
+                <h3 class="text-xl sm:text-3xl font-black text-slate-800 dark:text-white font-heading whitespace-nowrap text-ellipsis overflow-hidden">{{ formatMoney($averagePerDay) }} <span class="text-sm text-slate-400 font-bold">{{ getCurrency() }}</span></h3>
                 <p class="text-green-600 dark:text-green-400 font-bold mt-1.5 text-xs flex items-center">
                     <svg class="w-4 h-4 me-1.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                     {{ __('dashboard.healthy_average') }}
@@ -418,10 +418,10 @@
                 <div class="p-3 bg-purple-50 dark:bg-purple-500/10 text-purple-600 dark:text-purple-400 rounded-2xl border border-purple-100/50 dark:border-purple-500/20 group-hover:bg-purple-600 group-hover:text-white transition-colors duration-300">
                     <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
                 </div>
-                <span class="text-slate-400 dark:text-slate-500 font-bold text-xs uppercase tracking-wider">{{ __('dashboard.this_month') }}</span>
+                <span class="text-slate-400 dark:text-slate-500 font-bold text-[10px] sm:text-xs uppercase tracking-wider min-w-0 text-end leading-tight">{{ __('dashboard.this_month') }}</span>
             </div>
             <div>
-                <h3 class="text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-pink-500 dark:from-purple-400 dark:to-pink-300 font-heading">{{ $currentPeriodLabel }}</h3>
+                <h3 class="text-sm sm:text-2xl leading-snug font-black text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-pink-500 dark:from-purple-400 dark:to-pink-300 font-heading">{{ $currentPeriodLabel }}</h3>
                 <p class="text-slate-400 dark:text-slate-400 font-semibold mt-1.5 text-xs flex items-center gap-1.5">
                     <span class="bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded">{{ $remainingDays }} {{ __('dashboard.remaining_days') }}</span>
                 </p>
@@ -435,7 +435,7 @@
                 <div class="p-2 md:p-3 bg-teal-50 dark:bg-teal-500/10 text-teal-600 dark:text-teal-400 rounded-2xl border border-teal-100/50 dark:border-teal-500/20">
                     <svg class="w-6 h-6 md:w-7 md:h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a4 4 0 00-8 0v2M3 9h18l-1 12H4L3 9z"/></svg>
                 </div>
-                <span class="text-slate-400 dark:text-slate-500 font-bold text-xs uppercase tracking-wider">{{ __('dashboard.period_incomes') }}</span>
+                <span class="text-slate-400 dark:text-slate-500 font-bold text-[10px] sm:text-xs uppercase tracking-wider min-w-0 text-end leading-tight">{{ __('dashboard.period_incomes') }}</span>
             </div>
             <div>
                 <h3 class="text-lg md:text-3xl font-black text-teal-600 dark:text-teal-400 font-heading">{{ formatMoney($incomeTotal) }}</h3>
@@ -457,7 +457,7 @@
                 </div>
                 <div class="flex-1">
                     <p class="text-red-100 font-bold text-xs uppercase tracking-wider mb-1">{{ __('settings.cash_deficit') }}</p>
-                    <h3 class="text-3xl font-black tracking-tight font-heading">{{ formatMoney($cashDeficit) }}</h3>
+                    <h3 class="text-xl sm:text-3xl font-black tracking-tight font-heading whitespace-nowrap overflow-hidden text-ellipsis">{{ formatMoney($cashDeficit) }}</h3>
                     <p class="text-red-100/90 font-semibold mt-1.5 text-xs flex items-center gap-1.5"><span class="bg-white/20 px-2 py-0.5 rounded">{{ getCurrency() }}</span> &bull; {{ __('dashboard.deficit_desc') }}</p>
                 </div>
             </div>
@@ -474,7 +474,7 @@
             <div class="flex-1">
                 <p class="text-slate-500 dark:text-slate-400 font-bold text-xs uppercase tracking-wider mb-1">{{ __('dashboard.growth') }}</p>
                 @if($growthRate !== null)
-                    <h3 class="text-3xl font-black {{ $growthRate >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-500' }} font-heading">
+                    <h3 class="text-xl sm:text-3xl font-black {{ $growthRate >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-500' }} font-heading">
                         {{ $growthRate >= 0 ? '+' : '' }}{{ number_format($growthRate, 1) }}%
                     </h3>
                     <p class="{{ $growthRate >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-500' }} font-bold mt-1.5 text-xs flex items-center">
@@ -554,7 +554,7 @@
             </div>
             <div>
                 <p class="text-slate-500 dark:text-slate-400 font-bold text-xs uppercase tracking-wider mb-1">{{ __('dashboard.payroll_forecast') }}</p>
-                <h3 class="text-2xl font-black text-indigo-600 dark:text-indigo-400 font-heading">{{ formatMoney($payrollForecast) }}</h3>
+                <h3 class="text-lg sm:text-2xl font-black text-indigo-600 dark:text-indigo-400 font-heading whitespace-nowrap overflow-hidden text-ellipsis">{{ formatMoney($payrollForecast) }}</h3>
                 <p class="text-slate-400 dark:text-slate-500 font-semibold mt-1 text-xs">{{ $payrollEmployees }} {{ __('dashboard.employees_active') }}</p>
             </div>
         </div>

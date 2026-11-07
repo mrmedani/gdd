@@ -74,8 +74,8 @@
     <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
         <div class="relative overflow-hidden bg-gradient-to-br from-blue-600 to-indigo-700 rounded-2xl p-5 text-white shadow-lg">
             <div class="absolute top-0 right-0 -mr-6 -mt-6 w-20 h-20 rounded-full bg-white opacity-10 blur-2xl"></div>
-            <p class="text-blue-100 text-xs font-bold uppercase tracking-wider mb-1">{{ __('statistics.expenses') }}</p>
-            <h3 class="text-2xl font-black">{{ formatMoney($totalExpenses) }}</h3>
+            <p class="text-blue-100 text-[10px] sm:text-xs font-bold uppercase tracking-wider mb-1">{{ __('statistics.expenses') }}</p>
+            <h3 class="text-lg sm:text-2xl font-black">{{ formatMoney($totalExpenses) }}</h3>
             <div class="flex items-center gap-2 mt-2">
                 <span class="text-[11px] text-blue-200 font-semibold">{{ $expenseCount }} {{ __('statistics.operations') }}</span>
                 <span class="text-[11px] text-blue-200 font-semibold">- {{ __('statistics.avg_day') }} {{ formatMoney($averagePerDay) }}</span>
@@ -83,15 +83,15 @@
         </div>
         <div class="relative overflow-hidden bg-gradient-to-br from-emerald-600 to-teal-600 rounded-2xl p-5 text-white shadow-lg">
             <div class="absolute top-0 right-0 -mr-6 -mt-6 w-20 h-20 rounded-full bg-white opacity-10 blur-2xl"></div>
-            <p class="text-emerald-100 text-xs font-bold uppercase tracking-wider mb-1">{{ __('statistics.gains') }}</p>
-            <h3 class="text-2xl font-black">{{ formatMoney($totalGains) }}</h3>
+            <p class="text-emerald-100 text-[10px] sm:text-xs font-bold uppercase tracking-wider mb-1">{{ __('statistics.gains') }}</p>
+            <h3 class="text-lg sm:text-2xl font-black">{{ formatMoney($totalGains) }}</h3>
             <div class="mt-2">
                 <span class="text-[11px] text-emerald-200 font-semibold">{{ __('statistics.balance') }}: {{ formatMoney($balance) }}</span>
             </div>
         </div>
         <div class="bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border border-slate-200/50 dark:border-slate-800/60 rounded-2xl p-5 shadow-lg">
-            <p class="text-slate-400 dark:text-slate-500 text-xs font-bold uppercase tracking-wider mb-1">{{ __('statistics.prev_period') }}</p>
-            <h3 class="text-2xl font-black text-slate-800 dark:text-white">{{ formatMoney($previousExpenses) }}</h3>
+            <p class="text-slate-400 dark:text-slate-500 text-[10px] sm:text-xs font-bold uppercase tracking-wider mb-1 truncate">{{ __('statistics.prev_period') }}</p>
+            <h3 class="text-lg sm:text-2xl font-black text-slate-800 dark:text-white">{{ formatMoney($previousExpenses) }}</h3>
             @if($previousExpenses > 0)
             <div class="flex items-center gap-1.5 mt-2">
                 @if($expensesChange > 0)
@@ -112,8 +112,8 @@
 
         <!-- FA: Total commissions stations (débruité tout nouveau module) -->
         <div class="bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border border-slate-200/50 dark:border-slate-800/60 rounded-2xl p-5 shadow-lg">
-            <p class="text-slate-400 dark:text-slate-500 text-xs font-bold uppercase tracking-wider mb-1">{{ __('statistics.station_charges_title') }}</p>
-            <h3 class="text-2xl font-black text-amber-600 dark:text-amber-500"><span dir="rtl" style="unicode-bidi:plaintext">{{ formatMoney($stationChargesTotal) }}</span></h3>
+            <p class="text-slate-400 dark:text-slate-500 text-[10px] sm:text-xs font-bold uppercase tracking-wider mb-1 truncate">{{ __('statistics.station_charges_title') }}</p>
+            <h3 class="text-lg sm:text-2xl font-black text-amber-600 dark:text-amber-500"><span dir="rtl" style="unicode-bidi:plaintext">{{ formatMoney($stationChargesTotal) }}</span></h3>
             <div class="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1">
                 <span class="inline-flex items-center gap-1 text-[11px] font-semibold whitespace-nowrap bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300 px-2 py-1 rounded-lg">
                     ✓ {{ __('statistics.station_paid') }}: <span dir="ltr">{{ formatMoney($stationPaidTotal) }}</span>
@@ -137,7 +137,7 @@
         </div>
         <div class="relative bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border border-slate-200/50 dark:border-slate-800/60 rounded-2xl p-5 shadow-lg overflow-hidden">
             <div class="absolute top-0 right-0 w-16 h-16 bg-indigo-50 dark:bg-indigo-500/5 rounded-full blur-2xl -mr-6 -mt-6"></div>
-            <p class="text-slate-400 dark:text-slate-500 text-xs font-bold uppercase tracking-wider mb-1">{{ __('statistics.period_label') }}</p>
+            <p class="text-slate-400 dark:text-slate-500 text-[10px] sm:text-xs font-bold uppercase tracking-wider mb-1 truncate">{{ __('statistics.period_label') }}</p>
             <h3 class="text-lg font-black text-slate-800 dark:text-white leading-tight">{{ formatPeriodLabel($period) }}</h3>
             <div class="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1">
                 <span class="inline-flex items-center gap-1 text-[11px] text-slate-500 dark:text-slate-400 font-semibold bg-slate-100 dark:bg-slate-800 px-2 py-1 rounded-lg">
@@ -181,8 +181,8 @@
         <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
             <div class="relative overflow-hidden bg-gradient-to-br from-emerald-600 to-teal-600 rounded-2xl p-5 text-white shadow-lg">
                 <div class="absolute top-0 right-0 -mr-6 -mt-6 w-20 h-20 rounded-full bg-white opacity-10 blur-2xl"></div>
-                <p class="text-emerald-100 text-xs font-bold uppercase tracking-wider mb-1">{{ __('statistics.incomes_total') }}</p>
-                <h3 class="text-2xl font-black">+ {{ formatMoney($incomeTotal) }}</h3>
+                <p class="text-emerald-100 text-[10px] sm:text-xs font-bold uppercase tracking-wider mb-1">{{ __('statistics.incomes_total') }}</p>
+                <h3 class="text-lg sm:text-2xl font-black">+ {{ formatMoney($incomeTotal) }}</h3>
                 <div class="mt-2"><span class="text-[11px] text-emerald-200 font-semibold">{{ __('statistics.period_label') }}: {{ formatPeriodLabel($period) }}</span></div>
             </div>
 
@@ -199,8 +199,8 @@
                     $val = $idx !== false ? ($incomeByTypeValues[$idx] ?? 0) : 0;
                 @endphp
                 <div class="bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border border-slate-200/50 dark:border-slate-800/60 rounded-2xl p-5 shadow-lg">
-                    <p class="text-slate-400 dark:text-slate-500 text-xs font-bold uppercase tracking-wider mb-1">{{ $ic['label'] }}</p>
-                    <h3 class="text-2xl font-black text-slate-800 dark:text-white">+ {{ formatMoney($val) }}</h3>
+                    <p class="text-slate-400 dark:text-slate-500 text-[10px] sm:text-xs font-bold uppercase tracking-wider mb-1 truncate">{{ $ic['label'] }}</p>
+                    <h3 class="text-lg sm:text-2xl font-black text-slate-800 dark:text-white">+ {{ formatMoney($val) }}</h3>
                 </div>
             @endforeach
         </div>
@@ -241,7 +241,7 @@
                     <svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                 </div>
                 <div>
-                    <p class="text-amber-100 font-bold text-xs uppercase tracking-wider mb-1">{{ __('dashboard.today') }}</p>
+                    <p class="text-amber-100 font-bold text-[10px] sm:text-xs uppercase tracking-wider mb-1">{{ __('dashboard.today') }}</p>
                     <h3 class="text-3xl font-black tracking-tight font-heading">{{ formatMoney($dailyTotal) }}</h3>
                 </div>
             </div>
@@ -264,7 +264,7 @@
                     <svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                 </div>
                 <div>
-                    <p class="text-red-100 font-bold text-xs uppercase tracking-wider mb-1">{{ __('settings.cash_deficit') }}</p>
+                    <p class="text-red-100 font-bold text-[10px] sm:text-xs uppercase tracking-wider mb-1">{{ __('settings.cash_deficit') }}</p>
                     <h3 class="text-3xl font-black tracking-tight font-heading">{{ formatMoney($cashDeficit) }}</h3>
                 </div>
             </div>
