@@ -187,7 +187,7 @@
     <div x-data="{ show: @entangle('showDeleteModal') }" 
          x-show="show" 
          style="display: none"
-         class="fixed inset-0 z-[100] flex items-center justify-center p-4">
+         class="fixed inset-0 z-[100] flex items-end sm:items-center justify-center p-0 sm:p-4">
         
         <div x-show="show" 
              x-transition:enter="ease-out duration-300" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100" x-transition:leave="ease-in duration-200" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0"
@@ -196,7 +196,7 @@
         
         <div x-show="show" 
              x-transition:enter="ease-out duration-300" x-transition:enter-start="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95" x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100" x-transition:leave="ease-in duration-200" x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100" x-transition:leave-end="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
-             class="relative bg-white dark:bg-slate-900 rounded-2xl shadow-lg w-full max-w-md border border-slate-200 dark:border-slate-800 overflow-hidden max-h-[92vh] md:rounded-2xl rounded-t-3xl">
+             class="relative bg-white dark:bg-slate-900 rounded-2xl shadow-lg w-full max-w-md border border-slate-200 dark:border-slate-800 overflow-hidden rounded-t-3xl sm:rounded-2xl" style="max-height: 92vh;">
             
             <div class="shrink-0 p-4 sm:p-6 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center bg-slate-50/50 dark:bg-slate-950/40">
                 <h3 class="text-lg font-bold text-slate-800 dark:text-white">{{ __('caisse.delete_modal_title') }}</h3>
@@ -205,7 +205,7 @@
                 </button>
             </div>
             
-            <form wire:submit="deleteClosure" class="p-6 space-y-5">
+            <form wire:submit="deleteClosure" class="p-4 sm:p-6 space-y-4 sm:space-y-5" style="overflow-y: auto; overscroll-behavior: contain; max-height: calc(92vh - 72px); padding-bottom: calc(1.5rem + env(safe-area-inset-bottom, 0px));">
                 <div class="flex items-center gap-3 text-rose-600 dark:text-rose-400 bg-rose-50/50 dark:bg-rose-950/20 p-4 rounded-xl border border-rose-100/30 dark:border-rose-900/30">
                     <svg class="w-6 h-6 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
                     <p class="text-sm font-semibold">{{ __('caisse.delete_modal_warning') }}</p>
@@ -247,7 +247,7 @@
         <!-- Modal Content -->
         <div x-show="show" 
              x-transition:enter="ease-out duration-300" x-transition:enter-start="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95" x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100" x-transition:leave="ease-in duration-200" x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100" x-transition:leave-end="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
-             class="relative bg-white dark:bg-slate-900 rounded-t-3xl sm:rounded-2xl shadow-lg w-full sm:w-auto max-w-lg border border-slate-200 dark:border-slate-800 overflow-hidden flex flex-col max-h-[92vh] self-end sm:self-center"
+             class="relative bg-white dark:bg-slate-900 rounded-t-3xl sm:rounded-2xl shadow-lg w-full max-w-lg border border-slate-200 dark:border-slate-800 overflow-hidden" style="max-height: 92vh; display: flex; flex-direction: column;">
             
             <div class="shrink-0 p-4 sm:p-6 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center bg-slate-50/50 dark:bg-slate-950/40">
                 <h3 class="text-lg font-bold text-slate-800 dark:text-white">{{ __('caisse.modal_title') }}</h3>
@@ -256,7 +256,7 @@
                 </button>
             </div>
             
-            <form wire:submit="closeMonthSubmit" class="p-4 sm:p-6 space-y-4 sm:space-y-6 overflow-y-auto flex-1 min-h-0 overscroll-contain pb-[calc(1.5rem+env(safe-area-inset-bottom,0px))]">
+            <form wire:submit="closeMonthSubmit" class="p-4 sm:p-6 space-y-4 sm:space-y-6" style="overflow-y: auto; overscroll-behavior: contain; max-height: calc(92vh - 72px); padding-bottom: calc(1.5rem + env(safe-area-inset-bottom, 0px));">
                 <!-- Month Selection -->
                 <div>
                     <label class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">{{ __('caisse.month_to_close') }} <span class="text-red-500">*</span></label>
