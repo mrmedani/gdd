@@ -125,9 +125,9 @@
     </div>
     <!-- Formulaire (modal) -->
     @if($showForm)
-    <div class="fixed inset-0 z-50 flex items-center justify-center p-4" x-data x-show="true" wire:key="modal">
+    <div class="fixed inset-0 z-50 flex items-end sm:items-center justify-center sm:p-4" x-data x-show="true" wire:key="modal" style="padding-bottom: env(safe-area-inset-bottom, 0px);">
         <div class="absolute inset-0 bg-slate-950/60 backdrop-blur-sm" wire:click="resetForm"></div>
-        <form wire:submit="save" class="relative bg-white dark:bg-slate-900 w-full max-w-lg rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-800 p-6 space-y-5">
+        <form wire:submit="save" class="relative bg-white dark:bg-slate-900 w-full max-w-lg rounded-t-3xl sm:rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-800 p-4 sm:p-6 space-y-5">
             <h2 class="text-lg font-black text-slate-900 dark:text-white">
                 {{ $chargeId ? __('station_charges.edit_title', ['default' => 'Modifier la commission']) : __('station_charges.add_title', ['default' => 'Nouvelle commission']) }}
             </h2>

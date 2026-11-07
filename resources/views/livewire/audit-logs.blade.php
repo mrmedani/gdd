@@ -76,10 +76,10 @@
             <table class="min-w-full text-sm text-start {{ session('locale', 'ar') === 'ar' ? 'rtl:text-right' : 'ltr:text-left' }}">
                 <thead class="bg-slate-50/50 dark:bg-slate-950/30 text-slate-500 dark:text-slate-500 font-semibold text-xs border-b border-slate-100 dark:border-slate-800/60">
                     <tr>
-                        <th class="py-4 px-6">{{ __('audit.user') }}</th>
-                        <th class="py-4 px-6">{{ __('audit.action') }}</th>
-                        <th class="py-4 px-6">{{ __('audit.entity') }}</th>
-                        <th class="py-4 px-6">{{ __('audit.date') }}</th>
+                        <th class="py-4 px-3 md:px-6">{{ __('audit.user') }}</th>
+                        <th class="py-4 px-3 md:px-6">{{ __('audit.action') }}</th>
+                        <th class="py-4 px-3 md:px-6 hidden md:table-cell">{{ __('audit.entity') }}</th>
+                        <th class="py-4 px-3 md:px-6">{{ __('audit.date') }}</th>
                         <th class="py-4 px-6 text-center">{{ __('common.actions') }}</th>
                     </tr>
                 </thead>
@@ -104,7 +104,7 @@
                                     {{ __('audit.' . $log->action) }}
                                 </span>
                             </td>
-                            <td class="py-4 px-6 text-slate-500 dark:text-slate-500 font-semibold whitespace-nowrap">{{ $log->entity_type }} <span class="text-slate-300 dark:text-slate-700">#</span>{{ $log->entity_id }}</td>
+                            <td class="py-4 px-3 md:px-6 text-slate-500 dark:text-slate-500 font-semibold whitespace-nowrap hidden md:table-cell">{{ $log->entity_type }} <span class="text-slate-300 dark:text-slate-700">#</span>{{ $log->entity_id }}</td>
                             <td class="py-4 px-6 font-medium text-slate-500 dark:text-slate-400 whitespace-nowrap">
                                 <div class="flex items-center gap-1.5">
                                     <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
@@ -154,7 +154,7 @@
             </div>
 
             <div class="space-y-4">
-                <div class="grid grid-cols-2 gap-4 p-4 bg-slate-50/50 dark:bg-slate-800/30 rounded-2xl border border-slate-100 dark:border-slate-800/60">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 p-4 bg-slate-50/50 dark:bg-slate-800/30 rounded-2xl border border-slate-100 dark:border-slate-800/60">
                     <div>
                         <span class="text-xs font-semibold text-slate-400 dark:text-slate-500">{{ __('audit.user') }}</span>
                         <p class="font-semibold text-slate-700 dark:text-slate-200 mt-1">{{ $selectedLog->user?->name ?? '-' }}</p>

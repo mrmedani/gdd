@@ -206,6 +206,10 @@
         font-size:11px; font-weight:600; cursor:pointer; display:flex; align-items:center; gap:4px; padding:3px 7px;
         border-radius:8px; opacity:0; transition:opacity .15s, background .15s; font-family:inherit; }
     .ai-msg-wrap:hover .ai-copy-btn { opacity:1; }
+    /* Tactile (pas de hover) : le bouton copier reste visible */
+    @media (hover: none) {
+        .ai-copy-btn { opacity: 1; padding: 6px 10px; background: rgba(148,163,184,0.10); }
+    }
     .ai-copy-btn:hover { background:#f1f5f9; color:#475569; }
 
     /* ============ Tables ============ */
@@ -236,22 +240,40 @@
             border-radius: 0 !important; border: 0 !important;
             box-shadow: none !important;
         }
+        /* FIX THÈME : header + inputbar sombres (les inline #fff restaient clairs) */
+        #ai-chat-window.open > div:first-child {
+            background: #0f1117 !important;
+            border-bottom-color: rgba(51,65,85,0.55) !important;
+        }
+        #ai-chat-window.open > div:first-child div[style*="font-weight"] { color: #f1f5f9 !important; }
+        #ai-chat-window.open > div:first-child div[style*="font-size:11px"] { color: #94a3b8 !important; }
+        #ai-chat-window.open .ai-inputbar { background: #0f1117 !important; border-top-color: rgba(51,65,85,0.55) !important; }
+        #ai-chat-window.open .ai-inputbar textarea {
+            background: #1e2333 !important; color: #f1f5f9 !important;
+            border-color: rgba(51,65,85,0.6) !important;
+        }
         #ai-chatbot-toggle { bottom: 12px !important; }
         /* sur mobile le parent resize l'iframe lui-même (voir W/H dynamiques JS) */
 
-        /* ── Améliorations 2026-09-21 (analyse capture téléphone) ── */
-        /* Safe areas : l'input bar ne doit pas être collée à la barre de nav système */
-        #ai-chat-input-row, .ai-input-row {
-            padding-bottom: max(12px, env(safe-area-inset-bottom)) !important;
+        /* ── FIX CSS sélecteurs morts : les VRAIES classes (.ai-inputbar / div inline du header) ── */
+        /* Safe areas : l'input bar n'est plus collée à la barre gesture système */
+        #ai-chat-window .ai-inputbar {
+            padding-bottom: calc(14px + env(safe-area-inset-bottom, 0px)) !important;
         }
-        /* Header : marge droite + titre sur une ligne (ellipsis) */
-        .ai-header, header .ai-headrow { padding-top: max(10px, env(safe-area-inset-top)) !important; }
-        .ai-headrow span, header div[style*="font-weight"] {
+        /* Safe area TOP : le premier div (header inline) */
+        #ai-chat-window > div:first-child {
+            padding-top: calc(12px + env(safe-area-inset-top, 0px)) !important;
+        }
+        /* Titre sur une ligne (ellipsis) */
+        #ai-chat-window > div:first-child div[style*="font-weight"] {
             white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0;
         }
-        /* Contraste : bulle vs fond + icônes plus lisibles */
+        /* ── CORRECTION THÈME fullscreen mobile : le bloc forcé sombre était incohérent
+           (window sombre MAIS header/messages/input clairs inline + icônes gris sur blanc). ── */
+        /* Bulle IA : cohérente avec le fond sombre forcé */
         .ai-bubble-ai { background: #232838 !important; border: 1px solid rgba(255,255,255,0.07); }
-        .ai-iconbtn { color: #aab3c5 !important; }
+        /* Icônes header accessibles sur le header maintenant sombre */
+        #ai-chat-window > div:first-child .ai-iconbtn { color: #aab3c5 !important; }
         /* Input : cible tactile confortable */
         #ai-chat-input, .ai-input {
             min-height: 48px !important; font-size: 16px !important;
@@ -441,7 +463,10 @@
             toggle.style.opacity = '0';
             toggle.style.pointerEvents = 'none';
             unreadPending = false;
-            setTimeout(function () { input.focus(); }, 120);
+            // Pas d'autofocus mobile : le clavier virtuel masque 40% du viewport
+            if (window.matchMedia('(min-width: 768px)').matches) {
+                setTimeout(function () { input.focus(); }, 120);
+            }
         } else {
             win.classList.remove('open');
             toggle.style.opacity = '1';
@@ -775,7 +800,7 @@
                     del.type = 'button';
                     del.title = '{{ __('ai.delete_session') }}';
                     del.innerHTML = '<svg style="width:15px;height:15px;color:#f87171;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>';
-                    del.style.cssText = 'background:none;border:0;cursor:pointer;padding:5px;border-radius:9px;color:#f87171;display:flex;transition:background .15s;';
+                    del.style.cssText = 'background:none;border:0;cursor:pointer;padding:8px;border-radius:9px;color:#f87171;display:flex;transition:background .15s;';
                     del.addEventListener('mouseenter', function () { del.style.background = 'rgba(239,68,68,0.12)'; });
                     del.addEventListener('mouseleave', function () { del.style.background = 'none'; });
                     del.addEventListener('click', function (e) {

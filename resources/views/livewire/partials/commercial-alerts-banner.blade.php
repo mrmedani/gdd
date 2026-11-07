@@ -16,7 +16,7 @@
          x-transition:leave="transition-all duration-200 ease-in"
          x-transition:leave-start="opacity-100 translate-y-0 sm:translate-y-0 sm:scale-100"
          x-transition:leave-end="opacity-0 translate-y-8 sm:translate-y-0 sm:scale-95"
-         class="relative bg-white dark:bg-slate-900 rounded-t-3xl sm:rounded-3xl shadow-2xl w-full sm:w-auto sm:min-w-[480px] sm:max-w-lg border border-slate-200/50 dark:border-slate-800/60 overflow-hidden max-h-[90vh] sm:max-h-[70vh] flex flex-col">
+         class="relative bg-white dark:bg-slate-900 rounded-t-3xl sm:rounded-3xl shadow-2xl w-full sm:w-auto sm:min-w-[480px] sm:max-w-lg border border-slate-200/50 dark:border-slate-800/60 overflow-hidden max-h-[90vh] sm:max-h-[70vh] flex flex-col" style="padding-bottom: env(safe-area-inset-bottom, 0px);">
         <div class="shrink-0 p-6 border-b border-slate-100 dark:border-slate-800/60">
             <div class="flex justify-between items-center mb-4">
                 <h3 class="text-lg font-bold text-slate-800 dark:text-white flex items-center gap-2">

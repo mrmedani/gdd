@@ -136,13 +136,13 @@
     <div class="fixed top-0 start-1/4 w-[500px] h-[500px] bg-blue-500/10 dark:bg-blue-600/10 rounded-full blur-[120px] pointer-events-none z-0"></div>
     <div class="fixed bottom-0 end-1/4 w-[450px] h-[450px] bg-indigo-500/10 dark:bg-purple-600/10 rounded-full blur-[100px] pointer-events-none z-0"></div>
 
-    <div x-data="{ sidebar: window.innerWidth >= 1024 }" class="flex h-screen overflow-hidden relative z-10">
+    <div x-data="{ sidebar: window.innerWidth >= 1024 }" class="flex overflow-hidden relative z-10" style="height: 100dvh;">
         @auth
             <!-- Sidebar -->
             <aside class="fixed inset-y-0 start-0 z-50 w-72 shrink-0 bg-white dark:bg-slate-900 border-e border-slate-200 dark:border-slate-800 transform transition-all duration-300 ease-in-out lg:relative lg:!translate-x-0 flex flex-col shadow-sm lg:shadow-none overflow-hidden"
                    :class="sidebar ? 'translate-x-0' : 'ltr:-translate-x-full rtl:translate-x-full'">
                 
-                <div class="flex items-center justify-between h-20 px-6 pt-[env(safe-area-inset-top)] bg-blue-700 border-b border-blue-800/10 dark:border-slate-700/20">
+                <div class="flex items-center justify-between bg-blue-700 border-b border-blue-800/10 dark:border-slate-700/20" style="height: calc(5rem + env(safe-area-inset-top, 0px)); padding-top: env(safe-area-inset-top, 0px); padding-left: 1.5rem; padding-right: 1.5rem; box-sizing: border-box;">
                     @php $logoUrl = storage_url(\App\Domains\Settings\Models\Setting::get('app_logo')); @endphp
                     <a href="{{ route('dashboard') }}" class="flex items-center gap-3">
                         @if($logoUrl)
@@ -152,7 +152,7 @@
                         @endif
                     </a>
                     <div class="flex items-center gap-1">
-                        <button @click="sidebar = false" class="lg:hidden text-white/80 hover:text-white p-1.5 rounded-lg hover:bg-white/10 transition-colors focus:outline-none">
+                        <button @click="sidebar = false" class="lg:hidden text-white/80 hover:text-white p-2.5 me-1 rounded-lg hover:bg-white/10 transition-colors focus:outline-none min-h-[44px] min-w-[44px] flex items-center justify-center">
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
                         </button>
                     </div>
@@ -366,19 +366,19 @@
             </aside>
 
             <!-- Main Content Wrapper -->
-            <div class="flex-1 flex flex-col h-screen overflow-hidden bg-slate-50 dark:bg-slate-950 transition-colors duration-300">
+            <div class="flex-1 flex flex-col overflow-hidden bg-slate-50 dark:bg-slate-950 transition-colors duration-300 min-h-0">
                 <!-- Top Navbar -->
                 <nav class="bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-b border-slate-200/60 dark:border-slate-800/60 shadow-[0_2px_15px_rgb(0,0,0,0.015)] sticky top-0 z-20 transition-colors duration-300">
-                    <div class="px-6 h-20 pt-[env(safe-area-inset-top)] flex items-center justify-between">
+                    <div class="flex items-center justify-between px-4 md:px-6" style="height: calc(5rem + env(safe-area-inset-top, 0px)); padding-top: env(safe-area-inset-top, 0px);">
                         <div class="flex items-center">
                             <button @click="sidebar = true" class="lg:hidden p-2.5 -ms-2 text-slate-500 dark:text-slate-400 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
                                 <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
                             </button>
                         </div>
                         
-                        <div class="flex items-center gap-4">
+                        <div class="flex items-center gap-2 md:gap-4">
                             <!-- Theme Toggle 2026 -->
-                            <button @click="dark = !dark" class="relative p-2.5 text-slate-500 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 bg-slate-100 dark:bg-slate-800/80 rounded-2xl transition-all duration-300 hover:scale-105 active:scale-95 border border-slate-200/50 dark:border-slate-700/50 cursor-pointer" title="Changer le thème">
+                            <button @click="dark = !dark" class="relative p-2.5 text-slate-500 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 bg-slate-100 dark:bg-slate-800/80 rounded-2xl transition-all duration-300 hover:scale-105 active:scale-95 border border-slate-200/50 dark:border-slate-700/50 cursor-pointer hidden md:inline-flex" title="Changer le thème">
                                 <template x-if="!dark">
                                     <svg class="w-5 h-5 transform transition-transform duration-500 rotate-0 hover:rotate-90 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
                                 </template>
@@ -391,15 +391,15 @@
                             <div class="flex bg-slate-100/80 dark:bg-slate-800/80 backdrop-blur-md rounded-2xl p-1 shadow-inner border border-slate-200/60 dark:border-slate-700/50">
                                 <form method="POST" action="{{ route('locale.switch', 'ar') }}" class="inline">
                                     @csrf
-                                    <button type="submit" class="text-xs font-bold px-3 py-1.5 rounded-xl transition-all duration-300 {{ session('locale', 'ar') === 'ar' ? 'bg-white dark:bg-slate-700 text-blue-600 dark:text-blue-400 shadow-sm border border-slate-200/50 dark:border-slate-600' : 'text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200' }}">AR</button>
+                                    <button type="submit" class="text-xs font-bold px-2.5 md:px-3 py-2 min-h-[40px] rounded-xl transition-all duration-300 {{ session('locale', 'ar') === 'ar' ? 'bg-white dark:bg-slate-700 text-blue-600 dark:text-blue-400 shadow-sm border border-slate-200/50 dark:border-slate-600' : 'text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200' }}">AR</button>
                                 </form>
                                 <form method="POST" action="{{ route('locale.switch', 'fr') }}" class="inline">
                                     @csrf
-                                    <button type="submit" class="text-xs font-bold px-3 py-1.5 rounded-xl transition-all duration-300 {{ session('locale') === 'fr' ? 'bg-white dark:bg-slate-700 text-blue-600 dark:text-blue-400 shadow-sm border border-slate-200/50 dark:border-slate-600' : 'text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200' }}">FR</button>
+                                    <button type="submit" class="text-xs font-bold px-2.5 md:px-3 py-2 min-h-[40px] rounded-xl transition-all duration-300 {{ session('locale') === 'fr' ? 'bg-white dark:bg-slate-700 text-blue-600 dark:text-blue-400 shadow-sm border border-slate-200/50 dark:border-slate-600' : 'text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200' }}">FR</button>
                                 </form>
                                 <form method="POST" action="{{ route('locale.switch', 'en') }}" class="inline">
                                     @csrf
-                                    <button type="submit" class="text-xs font-bold px-3 py-1.5 rounded-xl transition-all duration-300 {{ session('locale') === 'en' ? 'bg-white dark:bg-slate-700 text-blue-600 dark:text-blue-400 shadow-sm border border-slate-200/50 dark:border-slate-600' : 'text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200' }}">EN</button>
+                                    <button type="submit" class="text-xs font-bold px-2.5 md:px-3 py-2 min-h-[40px] rounded-xl transition-all duration-300 {{ session('locale') === 'en' ? 'bg-white dark:bg-slate-700 text-blue-600 dark:text-blue-400 shadow-sm border border-slate-200/50 dark:border-slate-600' : 'text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200' }}">EN</button>
                                 </form>
                             </div>
 
@@ -458,7 +458,7 @@
                         </form>
                     </div>
                 @endif
-                <main class="flex-1 overflow-y-auto p-4 md:p-8 lg:p-10 pb-[env(safe-area-inset-bottom)]">
+                <main class="flex-1 overflow-y-auto p-4 pb-[calc(1rem+env(safe-area-inset-bottom,0px))] md:p-8 md:pb-[calc(2rem+env(safe-area-inset-bottom,0px))] lg:p-10 lg:pb-[calc(2.5rem+env(safe-area-inset-bottom,0px))] min-h-0">
                     <div class="max-w-7xl mx-auto">
                         {{ $slot ?? '' }}
                         @yield('content')
@@ -467,7 +467,7 @@
             </div>         </div>
 
             <!-- Overlay for mobile sidebar -->
-            <div x-show="sidebar" @click="sidebar = false" 
+            <div x-show="sidebar" @click="sidebar = false" @keydown.escape.window="sidebar = false" 
                  x-transition:enter="transition-opacity ease-linear duration-300" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100" x-transition:leave="transition-opacity ease-linear duration-300" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0"
                  class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-20 lg:hidden" style="display: none;"></div>
         @else
@@ -565,7 +565,7 @@
                     if (document.getElementById('sw-update-toast')) return;
                     const toast = document.createElement('div');
                     toast.id = 'sw-update-toast';
-                    toast.className = 'fixed bottom-4 start-4 z-[300] bg-blue-600 text-white text-sm font-semibold px-4 py-3 rounded-2xl shadow-2xl flex items-center gap-3 max-w-[90vw]';
+                    toast.className = 'fixed bottom-24 start-4 z-[300] bg-blue-600 text-white text-sm font-semibold px-4 py-3 rounded-2xl shadow-2xl flex items-center gap-3 max-w-[90vw]';
                     toast.innerHTML = '<span>📦 {{ __("pwa.update_available", ["default" => "Une nouvelle version est disponible"]) }}</span>' +
                         '<button onclick="navigator.serviceWorker.controller && navigator.serviceWorker.controller.postMessage({type:\'SKIP_WAITING\'}); sessionStorage.setItem(\'sw_update_reload\',\'1\');" class="bg-white/20 hover:bg-white/30 px-3 py-1 rounded-xl">{{ __("pwa.reload", ["default" => "Actualiser"]) }}</button>';
                     document.body.appendChild(toast);
@@ -662,7 +662,7 @@
     @php $aiCfg = \App\Domains\AI\Support\WidgetConfig::get(); @endphp
     @if($aiCfg['enabled'])
     <iframe src="{{ route('ai.chat') }}" title="{{ __('ai.title') }}" id="ai-chatbot-frame"
-        style="position:fixed;bottom:0;{{ $aiCfg['position'] === 'left' ? 'left:0;' : 'right:0;' }}width:100px;height:100px;border:0;z-index:200;background:transparent;overflow:hidden;"></iframe>
+        style="position:fixed;bottom:env(safe-area-inset-bottom, 0px);{{ $aiCfg['position'] === 'left' ? 'left:0;' : 'right:0;' }}width:100px;height:100px;border:0;z-index:200;background:transparent;overflow:hidden;"></iframe>
     <script>
     (function () {
         var frame = document.getElementById('ai-chatbot-frame');

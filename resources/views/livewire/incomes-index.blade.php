@@ -140,7 +140,7 @@
                     @forelse($incomes as $income)
                         <tr class="hover:bg-blue-50/20 dark:hover:bg-slate-800/30 transition-colors">
                             <td class="py-4 px-6 font-medium text-slate-700 dark:text-slate-300 whitespace-nowrap">{{ $income->date->format('d/m/Y') }}</td>
-                            <td class="py-4 px-6">
+                            <td class="py-4 px-3 md:px-6">
                                 <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-300">
                                     {{ \App\Domains\Treasury\Models\Income::sourceTypeLabel($income->source_type) }}
                                 </span>
@@ -148,9 +148,15 @@
                             <td class="py-4 px-6 text-slate-600 dark:text-slate-400">{{ $income->source_name ?? '-' }}</td>
                             <td class="py-4 px-6 text-slate-600 dark:text-slate-400">{{ $income->sub_type ? \App\Domains\Treasury\Models\Income::subTypeLabel($income->sub_type) : '-' }}</td>
                             <td class="py-4 px-6 font-bold text-emerald-600 dark:text-emerald-400 whitespace-nowrap text-end"><span dir="ltr">+ {{ number_format($income->amount, 2, ',', ' ') }} {{ getCurrency() }}</span></td>
-                            <td class="py-4 px-6 text-end whitespace-nowrap">
-                                <button wire:click="edit({{ $income->id }})" class="text-blue-600 dark:text-blue-400 font-semibold hover:underline cursor-pointer">{{ __('common.edit') }}</button>
-                                <button wire:click="delete({{ $income->id }})" wire:confirm="{{ __('incomes.confirm_delete') }}" class="text-rose-500 dark:text-rose-400 font-semibold hover:underline ms-3 cursor-pointer">{{ __('common.delete') }}</button>
+                            <td class="py-4 px-4 md:px-6">
+                                <div class="flex items-end justify-end gap-2">
+                                <button wire:click="edit({{ $income->id }})" class="min-h-[44px] min-w-[44px] inline-flex items-center justify-center bg-slate-100 dark:bg-slate-800 text-blue-600 dark:text-blue-400 hover:bg-blue-500 hover:text-white rounded-xl transition-colors cursor-pointer" title="{{ __('common.edit') }}">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+                                </button>
+                                <button wire:click="delete({{ $income->id }})" wire:confirm="{{ __('incomes.confirm_delete') }}" class="min-h-[44px] min-w-[44px] inline-flex items-center justify-center bg-slate-100 dark:bg-slate-800 text-rose-500 hover:bg-rose-500 hover:text-white rounded-xl transition-colors cursor-pointer" title="{{ __('common.delete') }}">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                                </button>
+                                </div>
                             </td>
                         </tr>
                     @empty

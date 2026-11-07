@@ -115,10 +115,10 @@
             <p class="text-slate-400 dark:text-slate-500 text-xs font-bold uppercase tracking-wider mb-1">{{ __('statistics.station_charges_title') }}</p>
             <h3 class="text-2xl font-black text-amber-600 dark:text-amber-500"><span dir="rtl" style="unicode-bidi:plaintext">{{ formatMoney($stationChargesTotal) }}</span></h3>
             <div class="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1">
-                <span class="inline-flex items-center gap-1 text-[11px] font-semibold bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300 px-2 py-1 rounded-lg">
+                <span class="inline-flex items-center gap-1 text-[11px] font-semibold whitespace-nowrap bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300 px-2 py-1 rounded-lg">
                     ✓ {{ __('statistics.station_paid') }}: <span dir="ltr">{{ formatMoney($stationPaidTotal) }}</span>
                 </span>
-                <span class="inline-flex items-center gap-1 text-[11px] font-semibold bg-rose-100 dark:bg-rose-900/30 text-rose-700 dark:text-rose-300 px-2 py-1 rounded-lg">
+                <span class="inline-flex items-center gap-1 text-[11px] font-semibold whitespace-nowrap bg-rose-100 dark:bg-rose-900/30 text-rose-700 dark:text-rose-300 px-2 py-1 rounded-lg">
                     ⏳ {{ __('statistics.station_unpaid') }}: <span dir="ltr">{{ formatMoney($stationUnpaidTotal) }}</span>
                 </span>
             </div>
@@ -663,11 +663,11 @@
             <table class="min-w-full text-sm text-start {{ session('locale', 'ar') === 'ar' ? 'rtl:text-right' : 'ltr:text-left' }}">
                 <thead class="bg-slate-50/50 dark:bg-slate-950/30 text-slate-500 dark:text-slate-500 font-bold text-xs uppercase tracking-wider border-b border-slate-100 dark:border-slate-800/60">
                     <tr>
-                        <th class="py-4 px-6">{{ __('caisse.month') }}</th>
+                        <th class="py-4 px-3 md:px-6">{{ __('caisse.month') }}</th>
                         <th class="py-4 px-6 text-center" style="width:80px">{{ __('common.type') }}</th>
                         <th class="py-4 px-6 text-right">{{ __('expenses.amount') }}</th>
-                        <th class="py-4 px-6 text-center">{{ __('statistics.remaining') }}</th>
-                        <th class="py-4 px-6 text-center">{{ __('caisse.close_date') }}</th>
+                        <th class="py-4 px-3 md:px-6 text-center">{{ __('statistics.remaining') }}</th>
+                        <th class="py-4 px-3 md:px-6 text-center hidden md:table-cell">{{ __('caisse.close_date') }}</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-slate-100 dark:divide-slate-800/50">
@@ -677,8 +677,8 @@
                         $barWidth = ($d['amount'] / $maxAmount) * 100;
                     @endphp
                     <tr class="hover:bg-slate-50/30 dark:hover:bg-slate-800/30 transition-colors">
-                        <td class="py-4 px-6 font-bold text-slate-800 dark:text-slate-200 text-xs">{{ $d['month'] }}</td>
-                        <td class="py-4 px-6 text-center">
+                        <td class="py-4 px-3 md:px-6 font-bold text-slate-800 dark:text-slate-200 text-xs">{{ $d['month'] }}</td>
+                        <td class="py-4 px-3 md:px-6 text-center">
                             @if($d['type'] === 'deficit_increased')
                                 <span class="inline-flex items-center gap-1 px-2.5 py-1 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 rounded-full text-xs font-bold border border-red-100/30 dark:border-red-800/30">
                                     <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 10l7-7m0 0l7 7m-7-7v18"/></svg>
@@ -691,7 +691,7 @@
                                 </span>
                             @endif
                         </td>
-                        <td class="py-4 px-6">
+                        <td class="py-4 px-3 md:px-6">
                             <div class="flex flex-col items-end">
                                 <span class="font-bold whitespace-nowrap {{ $d['type'] === 'deficit_increased' ? 'text-red-600 dark:text-red-400' : 'text-amber-600 dark:text-amber-400' }}">{{ formatMoney($d['amount']) }}</span>
                                 <div class="w-24 bg-slate-200 dark:bg-slate-700 rounded-full h-1.5 mt-1 overflow-hidden">
@@ -699,12 +699,12 @@
                                 </div>
                             </div>
                         </td>
-                        <td class="py-4 px-6 text-center">
+                        <td class="py-4 px-3 md:px-6 text-center">
                             <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold {{ $d['remaining'] > 0 ? 'bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 border border-red-100/30 dark:border-red-800/30' : 'bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400 border border-emerald-100/30 dark:border-emerald-800/30' }}">
                                 {{ formatMoney($d['remaining']) }}
                             </span>
                         </td>
-                        <td class="py-4 px-6 text-center font-semibold text-slate-400 dark:text-slate-500 text-xs">{{ $d['date'] }}</td>
+                        <td class="py-4 px-3 md:px-6 text-center font-semibold text-slate-400 dark:text-slate-500 text-xs hidden md:table-cell">{{ $d['date'] }}</td>
                     </tr>
                     @endforeach
                 </tbody>
@@ -928,9 +928,7 @@ document.addEventListener('alpine:init', () => {
                     this.renderChart();
                     createObserver(this).observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
                     
-                    window.addEventListener('resize', () => {
-                        if(this.chart) this.chart.resize();
-                    });
+                    // FIX : resize global en bas de page (listeners dupliqués supprimés)
                 } else { setTimeout(check, 100); }
             };
             check();
@@ -1117,9 +1115,7 @@ document.addEventListener('alpine:init', () => {
                     this.renderChart();
                     createObserver(this).observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
 
-                    window.addEventListener('resize', () => {
-                        if(this.chart) this.chart.resize();
-                    });
+                    // FIX : resize global en bas de page (listeners dupliqués supprimés)
                 } else { setTimeout(check, 100); }
             };
             check();

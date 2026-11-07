@@ -45,9 +45,9 @@
                         <th class="py-4 px-4 w-12">
                             <input type="checkbox" wire:click="toggleSelectAll" class="w-4 h-4 rounded accent-blue-600 cursor-pointer" />
                         </th>
-                        <th class="py-4 px-6">{{ __('settings.backup_filename') }}</th>
-                        <th class="py-4 px-6">{{ __('settings.backup_date') }}</th>
-                        <th class="py-4 px-6">{{ __('settings.backup_size') }}</th>
+                        <th class="py-4 px-3 md:px-6">{{ __('settings.backup_filename') }}</th>
+                        <th class="py-4 px-3 md:px-6">{{ __('settings.backup_date') }}</th>
+                        <th class="py-4 px-3 md:px-6">{{ __('settings.backup_size') }}</th>
                         <th class="py-4 px-6 text-center">{{ __('common.actions') }}</th>
                     </tr>
                 </thead>
@@ -57,31 +57,31 @@
                             <td class="py-4 px-4">
                                 <input type="checkbox" wire:click="toggleSelect('{{ $backup['name'] }}')" {{ in_array($backup['name'], $selectedBackups) ? 'checked' : '' }} class="w-4 h-4 rounded accent-blue-600 cursor-pointer" />
                             </td>
-                            <td class="py-4 px-6">
+                            <td class="py-4 px-3 md:px-6">
                                 <div class="flex items-center gap-3">
                                     <div class="w-9 h-9 rounded-xl flex items-center justify-center text-sm font-bold {{ $backup['extension'] === 'sql' ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400' : 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400' }}">
                                         {{ strtoupper($backup['extension']) }}
                                     </div>
-                                    <span class="font-semibold text-slate-700 dark:text-slate-300">{{ $backup['name'] }}</span>
+                                    <span class="font-semibold text-slate-700 dark:text-slate-300 max-w-[140px] sm:max-w-none truncate inline-block align-middle" title="{{ $backup['name'] }}">{{ $backup['name'] }}</span>
                                 </div>
                             </td>
                             <td class="py-4 px-6 text-slate-600 dark:text-slate-400 font-medium">{{ $backup['date'] }}</td>
-                            <td class="py-4 px-6">
+                            <td class="py-4 px-3 md:px-6">
                                 <span class="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-bold bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400">
                                     {{ $backup['size'] }}
                                 </span>
                             </td>
-                            <td class="py-4 px-6">
+                            <td class="py-4 px-3 md:px-6">
                                 <div class="flex items-center justify-center gap-2">
-                                    <button wire:click="restoreBackup('{{ $backup['name'] }}')" wire:confirm="{{ __('settings.confirm_restore_backup') }}" wire:loading.attr="disabled" class="inline-flex items-center gap-1.5 px-3 py-2 bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400 border border-blue-200/50 dark:border-blue-800/30 rounded-xl font-bold hover:bg-blue-100 dark:hover:bg-blue-900/40 transition-all text-xs cursor-pointer">
+                                    <button wire:click="restoreBackup('{{ $backup['name'] }}')" wire:confirm="{{ __('settings.confirm_restore_backup') }}" wire:loading.attr="disabled" class="inline-flex items-center gap-1.5 px-2.5 py-2 min-h-[40px] bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400 border border-blue-200/50 dark:border-blue-800/30 rounded-xl font-bold hover:bg-blue-100 dark:hover:bg-blue-900/40 transition-all text-xs cursor-pointer">
                                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
                                         {{ __('settings.backup_restore_btn') }}
                                     </button>
-                                    <a href="{{ route('settings.backup.download', ['filename' => $backup['name']]) }}" class="inline-flex items-center gap-1.5 px-3 py-2 bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-400 border border-emerald-200/50 dark:border-emerald-800/30 rounded-xl font-bold hover:bg-emerald-100 dark:hover:bg-emerald-900/40 transition-all text-xs cursor-pointer">
+                                    <a href="{{ route('settings.backup.download', ['filename' => $backup['name']]) }}" class="inline-flex items-center gap-1.5 px-2.5 py-2 min-h-[40px] bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-400 border border-emerald-200/50 dark:border-emerald-800/30 rounded-xl font-bold hover:bg-emerald-100 dark:hover:bg-emerald-900/40 transition-all text-xs cursor-pointer">
                                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
                                         {{ __('common.download') }}
                                     </a>
-                                    <button wire:click="deleteBackup('{{ $backup['name'] }}')" wire:confirm="{{ __('settings.confirm_delete_backup') }}" class="inline-flex items-center gap-1.5 px-3 py-2 bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-400 border border-red-200/50 dark:border-red-800/30 rounded-xl font-bold hover:bg-red-100 dark:hover:bg-red-900/40 transition-all text-xs cursor-pointer">
+                                    <button wire:click="deleteBackup('{{ $backup['name'] }}')" wire:confirm="{{ __('settings.confirm_delete_backup') }}" class="inline-flex items-center gap-1.5 px-2.5 py-2 min-h-[40px] bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-400 border border-red-200/50 dark:border-red-800/30 rounded-xl font-bold hover:bg-red-100 dark:hover:bg-red-900/40 transition-all text-xs cursor-pointer">
                                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
                                         {{ __('common.delete') }}
                                     </button>
