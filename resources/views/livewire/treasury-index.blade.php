@@ -196,9 +196,9 @@
         
         <div x-show="show" 
              x-transition:enter="ease-out duration-300" x-transition:enter-start="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95" x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100" x-transition:leave="ease-in duration-200" x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100" x-transition:leave-end="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
-             class="relative bg-white dark:bg-slate-900 rounded-2xl shadow-lg w-full max-w-md border border-slate-200 dark:border-slate-800 overflow-hidden">
+             class="relative bg-white dark:bg-slate-900 rounded-2xl shadow-lg w-full max-w-md border border-slate-200 dark:border-slate-800 overflow-hidden max-h-[92vh] md:rounded-2xl rounded-t-3xl">
             
-            <div class="p-6 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center bg-slate-50/50 dark:bg-slate-950/40">
+            <div class="shrink-0 p-4 sm:p-6 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center bg-slate-50/50 dark:bg-slate-950/40">
                 <h3 class="text-lg font-bold text-slate-800 dark:text-white">{{ __('caisse.delete_modal_title') }}</h3>
                 <button @click="show = false" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors cursor-pointer">
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
@@ -247,16 +247,16 @@
         <!-- Modal Content -->
         <div x-show="show" 
              x-transition:enter="ease-out duration-300" x-transition:enter-start="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95" x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100" x-transition:leave="ease-in duration-200" x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100" x-transition:leave-end="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
-             class="relative bg-white dark:bg-slate-900 rounded-2xl shadow-lg w-full max-w-lg border border-slate-200 dark:border-slate-800 overflow-hidden">
+             class="relative bg-white dark:bg-slate-900 rounded-t-3xl sm:rounded-2xl shadow-lg w-full sm:w-auto max-w-lg border border-slate-200 dark:border-slate-800 overflow-hidden flex flex-col max-h-[92vh] self-end sm:self-center"
             
-            <div class="p-6 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center bg-slate-50/50 dark:bg-slate-950/40">
+            <div class="shrink-0 p-4 sm:p-6 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center bg-slate-50/50 dark:bg-slate-950/40">
                 <h3 class="text-lg font-bold text-slate-800 dark:text-white">{{ __('caisse.modal_title') }}</h3>
                 <button @click="show = false" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors cursor-pointer">
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
                 </button>
             </div>
             
-            <form wire:submit="closeMonthSubmit" class="p-6 space-y-6">
+            <form wire:submit="closeMonthSubmit" class="p-4 sm:p-6 space-y-4 sm:space-y-6 overflow-y-auto flex-1 min-h-0 overscroll-contain pb-[calc(1.5rem+env(safe-area-inset-bottom,0px))]">
                 <!-- Month Selection -->
                 <div>
                     <label class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">{{ __('caisse.month_to_close') }} <span class="text-red-500">*</span></label>
@@ -302,37 +302,25 @@
                     @error('closeMonth') <span class="text-red-500 dark:text-red-400 text-xs mt-1 block">{{ $message }}</span> @enderror
                 </div>
 
-                <!-- Expenses Display (Readonly) -->
-                <div class="bg-rose-50/30 dark:bg-rose-950/20 border border-rose-100/50 dark:border-rose-900/30 p-4 rounded-xl">
-                    <label class="block text-xs font-semibold text-rose-800 dark:text-rose-400 mb-1.5">{{ __('caisse.total_expenses_auto') }}</label>
-                    <div class="text-2xl font-black text-rose-600 dark:text-rose-500 leading-none flex items-baseline gap-1">
-                        <span dir="ltr">{{ number_format((float)$calculatedExpenses, 2, ',', ' ') }}</span> <span class="text-sm font-bold">{{ getCurrency() }}</span>
-                    </div>
-                </div>
-
-                <!-- Incomes Display (Readonly) -->
-                <div class="bg-emerald-50/30 dark:bg-emerald-950/20 border border-emerald-100/50 dark:border-emerald-900/30 p-4 rounded-xl">
-                    <label class="block text-xs font-semibold text-emerald-800 dark:text-emerald-400 mb-1.5">{{ __('caisse.total_incomes_auto') }}</label>
-                    <div class="text-2xl font-black text-emerald-600 dark:text-emerald-500 leading-none flex items-baseline gap-1">
-                        <span dir="ltr">+ {{ number_format((float)$calculatedIncomes, 2, ',', ' ') }}</span> <span class="text-sm font-bold">{{ getCurrency() }}</span>
-                    </div>
-                </div>
-
-                <!-- Investments Display (Readonly) -->
-                <div class="bg-amber-50/30 dark:bg-amber-950/20 border border-amber-100/50 dark:border-amber-900/30 p-4 rounded-xl">
-                    <label class="block text-xs font-semibold text-amber-800 dark:text-amber-400 mb-1.5">{{ __('caisse.total_investments_auto') }}</label>
-                    <div class="text-2xl font-black text-amber-600 dark:text-amber-500 leading-none flex items-baseline gap-1">
-                        <span dir="ltr">− {{ number_format((float)$calculatedInvestments, 2, ',', ' ') }}</span> <span class="text-sm font-bold">{{ getCurrency() }}</span>
-                    </div>
-                </div>
-
-                <!-- Commissions stations Display (Readonly) -->
-                <div class="bg-violet-50/30 dark:bg-violet-950/20 border border-violet-100/50 dark:border-violet-900/30 p-4 rounded-xl">
-                    <label class="block text-xs font-semibold text-violet-800 dark:text-violet-400 mb-1.5">{{ __('caisse.total_station_charges_auto', ['default' => 'Commissions stations']) }}</label>
-                    <div class="text-2xl font-black text-violet-600 dark:text-violet-500 leading-none flex items-baseline gap-1">
-                        <span dir="ltr">− {{ number_format((float)$calculatedStationCharges, 2, ',', ' ') }}</span> <span class="text-sm font-bold">{{ getCurrency() }}</span>
-                    </div>
-                </div>
+                <!-- Totaux automatiques : grille compacte 2×2 -->
+<div class="grid grid-cols-2 gap-2 sm:gap-3">
+    <div class="bg-rose-50/30 dark:bg-rose-950/20 border border-rose-100/50 dark:border-rose-900/30 p-3 rounded-xl min-w-0">
+        <label class="block text-[10px] sm:text-xs font-semibold text-rose-800 dark:text-rose-400 mb-1 truncate">{{ __('caisse.total_expenses_auto') }}</label>
+        <div class="text-base sm:text-lg font-black text-rose-600 dark:text-rose-500 leading-none flex items-baseline gap-1 whitespace-nowrap overflow-hidden text-ellipsis"><span dir="ltr">{{ number_format((float)$calculatedExpenses, 2, ',', ' ') }}</span> <span class="text-[10px] sm:text-sm font-bold">{{ getCurrency() }}</span></div>
+    </div>
+    <div class="bg-emerald-50/30 dark:bg-emerald-950/20 border border-emerald-100/50 dark:border-emerald-900/30 p-3 rounded-xl min-w-0">
+        <label class="block text-[10px] sm:text-xs font-semibold text-emerald-800 dark:text-emerald-400 mb-1 truncate">{{ __('caisse.total_incomes_auto') }}</label>
+        <div class="text-base sm:text-lg font-black text-emerald-600 dark:text-emerald-500 leading-none flex items-baseline gap-1 whitespace-nowrap overflow-hidden text-ellipsis"><span dir="ltr">+ {{ number_format((float)$calculatedIncomes, 2, ',', ' ') }}</span> <span class="text-[10px] sm:text-sm font-bold">{{ getCurrency() }}</span></div>
+    </div>
+    <div class="bg-amber-50/30 dark:bg-amber-950/20 border border-amber-100/50 dark:border-amber-900/30 p-3 rounded-xl min-w-0">
+        <label class="block text-[10px] sm:text-xs font-semibold text-amber-800 dark:text-amber-400 mb-1 truncate">{{ __('caisse.total_investments_auto') }}</label>
+        <div class="text-base sm:text-lg font-black text-amber-600 dark:text-amber-500 leading-none flex items-baseline gap-1 whitespace-nowrap overflow-hidden text-ellipsis"><span dir="ltr">− {{ number_format((float)$calculatedInvestments, 2, ',', ' ') }}</span> <span class="text-[10px] sm:text-sm font-bold">{{ getCurrency() }}</span></div>
+    </div>
+    <div class="bg-violet-50/30 dark:bg-violet-950/20 border border-violet-100/50 dark:border-violet-900/30 p-3 rounded-xl min-w-0">
+        <label class="block text-[10px] sm:text-xs font-semibold text-violet-800 dark:text-violet-400 mb-1 truncate">{{ __('caisse.total_station_charges_auto', ['default' => 'Commissions stations']) }}</label>
+        <div class="text-base sm:text-lg font-black text-violet-600 dark:text-violet-500 leading-none flex items-baseline gap-1 whitespace-nowrap overflow-hidden text-ellipsis"><span dir="ltr">− {{ number_format((float)$calculatedStationCharges, 2, ',', ' ') }}</span> <span class="text-[10px] sm:text-sm font-bold">{{ getCurrency() }}</span></div>
+    </div>
+</div>
 
                 <!-- Gains Input -->
                 <div>
@@ -356,10 +344,10 @@
                 <!-- Live Balance Preview -->
                 @if($closeGains !== '')
                 @php $previewBalance = (float)str_replace([' ', ','], ['', '.'], $closeGains) + (float)$calculatedIncomes - (float)$calculatedExpenses - (float)$calculatedInvestments - (float)$calculatedStationCharges; @endphp
-                <div class="pt-4 border-t border-slate-100 dark:border-slate-800/60">
-                    <p class="text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1">{{ __('caisse.preview_balance') }}</p>
-                    <div class="text-3xl font-black flex items-baseline gap-1 {{ $previewBalance >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-500' }}">
-                        <span dir="ltr">{{ $previewBalance > 0 ? '+' : '' }}{{ number_format($previewBalance, 2, ',', ' ') }}</span> <span class="text-sm font-bold">{{ getCurrency() }}</span>
+                <div class="pt-3 border-t border-slate-100 dark:border-slate-800/60 flex items-center justify-between gap-3 flex-wrap">
+                    <p class="text-xs font-semibold text-slate-500 dark:text-slate-400">{{ __('caisse.preview_balance') }}</p>
+                    <div class="text-lg sm:text-2xl font-black flex items-baseline gap-1 whitespace-nowrap {{ $previewBalance >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-500' }}">
+                        <span dir="ltr">{{ $previewBalance > 0 ? '+' : '' }}{{ number_format($previewBalance, 2, ',', ' ') }}</span> <span class="text-xs font-bold">{{ getCurrency() }}</span>
                     </div>
                 </div>
                 @endif
