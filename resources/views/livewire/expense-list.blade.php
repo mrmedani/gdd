@@ -1,4 +1,17 @@
 <div class="space-y-6">
+    <style>
+        /* Vue desktop/mobile du tableau /expenses — CSS SCOPE,
+           indépendant du build Tailwind (bundle CSS compilé possiblement ancien) */
+        .expense-cards { display: none !important; }
+        @media (min-width: 768px) {
+            .expense-desktop-table { display: block !important; }
+            .expense-cards { display: none !important; }
+        }
+        @media (max-width: 767px) {
+            .expense-desktop-table { display: none !important; }
+            .expense-cards { display: block !important; }
+        }
+    </style>
     <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-4">
         <div>
             <h1 class="text-3xl font-extrabold text-slate-800 dark:text-white tracking-tight font-heading">{{ __('nav.expenses') }}</h1>
@@ -135,7 +148,7 @@
     <!-- Data Table -->
     <div wire:key="expense-table" class="bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 overflow-hidden">
         <!-- Old selection banner removed for new Floating Action Bar -->
-        <div class="hidden md:block overflow-x-auto">
+        <div class="expense-desktop-table hidden md:block overflow-x-auto">
             <table class="min-w-full text-sm text-start {{ session('locale', 'ar') === 'ar' ? 'rtl:text-right' : 'ltr:text-left' }}">
                 <thead class="bg-slate-50/50 dark:bg-slate-950/30 text-slate-400 dark:text-slate-500 font-bold text-xs uppercase tracking-wider border-b border-slate-100 dark:border-slate-800/60">
                     <tr>
@@ -239,7 +252,7 @@
         </div>
 
         <!-- Vue CARTES mobile (< md) : description+montant en tête, actions toujours à l'écran -->
-        <div class="md:hidden divide-y divide-slate-100 dark:divide-slate-800">
+        <div class="expense-cards md:hidden divide-y divide-slate-100 dark:divide-slate-800">
             @forelse($expenses as $expense)
                 <div class="p-4">
                     <div class="flex items-start justify-between gap-3">
