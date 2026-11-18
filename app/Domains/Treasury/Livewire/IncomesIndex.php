@@ -131,6 +131,35 @@ class IncomesIndex extends Component
         $this->resetPage();
     }
 
+    /** Navigation de période — identique à /station-charges (month-picker grid). */
+    public function prevPeriod(): void
+    {
+        $this->period = \Carbon\Carbon::createFromFormat('Y-m', $this->period)
+            ->subMonthNoOverflow()->format('Y-m');
+        $this->resetPage();
+    }
+
+    public function nextPeriod(): void
+    {
+        $this->period = \Carbon\Carbon::createFromFormat('Y-m', $this->period)
+            ->addMonthNoOverflow()->format('Y-m');
+        $this->resetPage();
+    }
+
+    /** Saut direct via le month-picker grid (comme la clôture de caisse). */
+    public function goToPeriod(string $ym): void
+    {
+        // getPeriodFromDate() retourne une STRING 'Y-m' — Carbon AVANT toute
+        // arithmétique (sinon « Call to member function on string » au clic).
+        $maxYm = \Carbon\Carbon::createFromFormat('Y-m', getPeriodFromDate(now()))
+            ->addYearNoOverflow()->format('Y-m');
+        // bornage doux : accepte toute période ≤ période courante + 1 an
+        if (\Carbon\Carbon::canBeCreatedFromFormat($ym, 'Y-m') && $ym <= $maxYm) {
+            $this->period = $ym;
+            $this->resetPage();
+        }
+    }
+
     public function filterByType(string $type): void
     {
         $this->sourceFilter = $this->sourceFilter === $type ? '' : $type;
@@ -171,6 +200,8 @@ class IncomesIndex extends Component
         return view('livewire.incomes-index', [
             'incomes' => $incomes,
             'sourceCards' => $sourceCards,
+            'periodShortLabel' => getPeriodRange($this->period)['start']->locale(app()->getLocale())->translatedFormat('j M')
+                . ' → ' . getPeriodRange($this->period)['end']->locale(app()->getLocale())->translatedFormat('j M Y'),
         ])->layout('layouts.app')->title(__('incomes.title'));
     }
 }
